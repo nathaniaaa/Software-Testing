@@ -1,37 +1,38 @@
 package tests;
 
-import io.appium.java_client.AppiumBy;
-import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.android.options.UiAutomator2Options;
+import java.net.URI;
+import java.time.Duration;
+import java.util.Collections;
+
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.PointerInput;
+import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-import java.net.URI;
-import java.time.Duration;
+import io.appium.java_client.AppiumBy;
+import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.options.UiAutomator2Options;
 
 public class BaseTest {
 
-    // Variable Global (bisa dipakai semua subclass file)
     protected AndroidDriver driver;
     protected WebDriverWait wait;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        // Setup Koneksi
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("2ab55c03") //UDID HP TESTING
-                .setDeviceName("HP TESTING")
+                .setUdid("RRCTA02QJAR") 
+                .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
-
-                // NOTE NOTE
-                // Di pancing untuk buka Settings dulu biar koneksi aman di Oppo
-                .setAppPackage("com.android.settings")
+                .setAppPackage("com.android.settings") // Trigger pancingan
                 .setAppActivity(".Settings")
                 .setAutoGrantPermissions(true)
                 .setNoReset(true);
@@ -40,54 +41,127 @@ public class BaseTest {
                 URI.create("http://127.0.0.1:4723").toURL(), options
         );
 
-        // Inisialisasi Wait (maksimal 20 detik)
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-        // Navigasi ke AyoLari 
-        masukKeMenuAyoLari();
+        // masukKeMenuAyoLari();
     }
 
     @AfterMethod
     public void tearDown() {
-        // Matikan driver setelah test selesai 
         if (driver != null) {
             driver.quit();
         }
     }
 
-    // FUNGSI NAVIGASI 
-    public void masukKeMenuAyoLari() {
-        System.out.println(" Memulai Navigasi ke AyoLari");
-        
-        // Buka MyTelkomsel
+    // --- TEST: TEST KONEKSI & SCROLL ---
+    @Test
+    public void testConnectionAndScroll() {
+        System.out.println("--- TESTING KONEKSI & SCROLL ---");
+
+        // 1. Wait for Settings List to Load
         try {
-            driver.activateApp("com.telkomsel.telkomselcm");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                AppiumBy.className("androidx.recyclerview.widget.RecyclerView")
+            ));
         } catch (Exception e) {
-            // Kalau app belum kebuka, bakal error dikit tapi lanjut
+            System.out.println("Warning: List menu belum muncul penuh.");
         }
 
+        // 2. Manual Scroll Test (Swipe Up)
+        System.out.println("Mencoba Scroll ke bawah (Manual)...");
+        scrollScreen();
+        try { Thread.sleep(1000); } catch (Exception e) {} 
+        
+        scrollScreen();
+        try { Thread.sleep(1000); } catch (Exception e) {}
+
+        // 3. SMART SCROLL TEST (Cari Teks)
+        // Kita cari menu yang biasanya ada di paling bawah Settings.
+        // Ganti teks "About" dengan "Tentang" jika HP kamu Bahasa Indonesia.
+        String textToFind = "Tentang"; 
+        
+        System.out.println("Mencoba Smart Scroll mencari: " + textToFind);
+        scrollToText(textToFind);
+
+        System.out.println("Semua Test Selesai!");
+        try { Thread.sleep(3000); } catch (Exception e) {}
+    }
+
+    public void masukKeMenuAyoLari() {
+        System.out.println("Memulai Navigasi ke AyoLari");
         try {
-            // Cari & Klik Menu 'AyoLari' (Logic Index ke-5)
+            driver.activateApp("com.telkomsel.telkomselcm");
+        } catch (Exception e) {}
+
+        try {
             System.out.println("Mencari Menu AyoLari");
-            
+            // XPath index ke-5 sesuai request sebelumnya
             String xpathAyoLari = "(//android.widget.FrameLayout[@resource-id='com.telkomsel.telkomselcm:id/cvDigitalService'])[5]";
             
             WebElement btnAyoLari = wait.until(
                 ExpectedConditions.elementToBeClickable(AppiumBy.xpath(xpathAyoLari))
             );
             btnAyoLari.click();
-            System.out.println("Tombol Menu diklik");
 
-            // Validasi: sudah masuk? (Cek tombol 'Mulai Lari')
             wait.until(ExpectedConditions.presenceOfElementLocated(
                 AppiumBy.accessibilityId("Mulai Lari")
             ));
-            System.out.println("Berhasil: Sudah berada di dalam halaman AyoLari.");
+            System.out.println("Berhasil masuk AyoLari.");
 
         } catch (Exception e) {
-            System.out.println("Gagal: Tidak bisa masuk ke AyoLari");
-            System.out.println("Error: " + e.getMessage());
-            Assert.fail("Gagal masuk ke menu AyoLari, cek kode/koneksi/xpath");
+            System.out.println("Gagal masuk AyoLari: " + e.getMessage());
+            Assert.fail("Gagal navigasi.");
+        }
+    }
+    
+    // REUSABLE SCROLL METHODS
+    /**
+     * METHOD 1: MANUAL SWIPE
+     * Melakukan swipe layar dari bawah ke atas (seperti scroll TikTok/IG).
+     * Cocok untuk sekedar geser layar.
+     */
+    public void scrollScreen() {
+        System.out.println("Melakukan Scroll Layar...");
+        Dimension size = driver.manage().window().getSize();
+        
+        // Titik tengah X
+        int centerX = size.width / 2;
+        
+        // Titik mulai Y (Bawah layar, 80%)
+        int startY = (int) (size.height * 0.8);
+        
+        // Titik akhir Y (Atas layar, 20%)
+        int endY = (int) (size.height * 0.2);
+
+        // W3C Action Sequence (Standar baru Appium)
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence sequence = new Sequence(finger, 1);
+
+        sequence.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX, startY));
+        sequence.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        sequence.addAction(finger.createPointerMove(Duration.ofMillis(1000), PointerInput.Origin.viewport(), centerX, endY));
+        sequence.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        driver.perform(Collections.singletonList(sequence));
+    }
+
+    /**
+     * METHOD 2: SMART SCROLL TO TEXT
+     * Mencari teks spesifik dan otomatis scroll sampai ketemu.
+     * Cocok untuk cari tombol 'Simpan' atau 'Logout' yang ada di bawah.
+     * @param visibleText Teks yang muncul di layar (Case Sensitive)
+     */
+    public void scrollToText(String visibleText) {
+        System.out.println("Mencari teks: " + visibleText);
+        try {
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
+                ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\").instance(0))"
+            ));
+            System.out.println("Teks ditemukan!");
+        } catch (Exception e) {
+            System.out.println("Gagal scroll ke teks: " + visibleText);
+            Assert.fail("Elemen dengan teks '" + visibleText + "' tidak ketemu setelah scroll.");
         }
     }
 }
