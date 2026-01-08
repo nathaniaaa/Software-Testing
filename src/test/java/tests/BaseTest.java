@@ -24,7 +24,7 @@ public class BaseTest {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("RRCTA02QJAR") // Sesuaikan Device ID
+                .setUdid("2ab55c03") // Sesuaikan Device ID
                 .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
                 .setAppPackage("com.android.settings") // Pancingan awal
@@ -54,8 +54,16 @@ public class BaseTest {
     public void masukKeMenuAyoLari() {
         System.out.println("Navigasi ke AyoLari...");
         try {
-            // Pindah langsung ke App MyTelkomsel
+            // Buka App MyTelkomsel
             driver.activateApp("com.telkomsel.telkomselcm");
+
+            // Tunggu sebentar, loading homepage stabil (kadang ada iklan/banner)
+            try { Thread.sleep(5000); } catch (Exception e) {}
+
+            // Tutup Iklan/Pop-up kalau ada
+            try {
+                driver.findElement(AppiumBy.id("com.telkomsel.telkomselcm:id/btSecondTypeFirstSecondary")).click();
+            } catch (Exception e) {}
             
             // Cari menu Ayo Lari (Index ke-5)
             String xpathAyoLari = "(//android.widget.FrameLayout[@resource-id='com.telkomsel.telkomselcm:id/cvDigitalService'])[5]";
