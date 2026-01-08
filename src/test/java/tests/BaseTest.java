@@ -1,9 +1,16 @@
 package tests;
 
+import java.io.File;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.Date;
 
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -21,23 +28,24 @@ public class BaseTest {
     protected ActionHelper actions; 
 
     // LOCATORS
-    // Perhatikan: ID elemen tetap menggunakan 'com.telkomsel.mytelkomsel' (sesuai Inspector)
-    private final AppiumBy AD_CLOSE_BUTTON = (AppiumBy) AppiumBy.id("com.telkomsel.telkomselcm:id/btSecondTypeFirstSecondary");
-    private final AppiumBy MALL_TAB_ID = (AppiumBy) AppiumBy.accessibilityId("Mall");
+    // [FIX 1] Gunakan tipe 'By' dan XPath Text agar lebih akurat
+    private final By AD_CLOSE_BUTTON_TEXT = AppiumBy.xpath("//android.widget.Button[@text='Nanti Saja']");
+    private final By AD_CLOSE_BUTTON_ID = AppiumBy.id("com.telkomsel.telkomselcm:id/btSecondTypeFirstSecondary");
+    private final By MALL_TAB_ID = AppiumBy.accessibilityId("Mall");
 
     @BeforeMethod
     public void setUp() throws Exception {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("RRCTA02QJAR") 
+                .setUdid("2ab55c03") 
                 .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
-                // --- PERBAIKAN DI SINI ---
-                // Gunakan package asli aplikasi (yang terinstall di HP)
                 .setAppPackage("com.telkomsel.telkomselcm") 
-                // Hapus setAppActivity agar Appium mencari default launcher sendiri
-                // .setAppActivity(...) <--- DIHAPUS
+                // [FIX PENTING] Wildcard "*" artinya tunggu activity APAPUN. 
+                // Ini solusi error "SplashActivityRevamp never started".
+                .setAppWaitActivity("*") 
+                .setAppWaitDuration(Duration.ofMillis(30000)) // Tunggu max 30 detik buat app buka
                 .setAutoGrantPermissions(true)
                 .setNoReset(true);
 
@@ -61,25 +69,23 @@ public class BaseTest {
     public void masukKeMenuAyoLari() {
         System.out.println("Navigasi ke AyoLari via Mall...");
         
-        // Pastikan app aktif
         try {
             driver.activateApp("com.telkomsel.telkomselcm");
         } catch (Exception e) {}
 
-        // 1. HANDLE ADS
+        // 1. HANDLE ADS (Upgrade Logic)
         handlePotentialAds();
 
         // 2. TAP "MALL" TAB
         System.out.println("Klik Menu Mall...");
         try {
+            // Kita tunggu agak sabar buat Tab Mall
             WebElement mallTab = wait.until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
             mallTab.click();
         } catch (Exception e) {
-            System.out.println("Gagal klik Mall Tab. Coba tap koordinat manual...");
-            // actions.tapByCoordinates(540, 2200); 
+            System.out.println("Gagal klik Mall Tab. Iklan mungkin menghalangi atau Tab belum load.");
         }
         
-        // Tunggu Mall loading
         try { Thread.sleep(3000); } catch (Exception e) {}
 
         // 3. MANUAL SCROLL LOOP TO FIND "LARI"
@@ -89,7 +95,6 @@ public class BaseTest {
 
         for (int i = 0; i < maxScrolls; i++) {
             try {
-                // Strict text match untuk menghindari salah klik banner
                 WebElement lariIcon = driver.findElement(AppiumBy.androidUIAutomator(
                     "new UiSelector().text(\"Lari\")"
                 ));
@@ -102,7 +107,7 @@ public class BaseTest {
             } catch (Exception e) {
                 System.out.println("Menu belum terlihat, scroll ke bawah (" + (i + 1) + "/" + maxScrolls + ")...");
                 actions.scrollVertical(); 
-                try { Thread.sleep(1500); } catch (Exception ex) {} // Jeda agak lama biar UI stabil
+                try { Thread.sleep(1500); } catch (Exception ex) {} 
             }
         }
 
@@ -118,7 +123,7 @@ public class BaseTest {
             ));
             btnMulai.click();
         } catch (Exception e) {
-            System.out.println("Button not found (Maybe already on dashboard).");
+            System.out.println("Button Ayo Mulai tidak muncul (Mungkin sudah di dashboard).");
         }
 
         // 5. DISMISS NOTIFICATION
@@ -128,28 +133,56 @@ public class BaseTest {
         System.out.println("Sukses masuk dashboard Lari.");
     }
 
+    // [FIX LOGIC IKLAN] Lebih Cerdas & Sabar
     public void handlePotentialAds() {
         System.out.println("Checking for Ads...");
-        try {
-            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
-            WebElement closeBtn = shortWait.until(ExpectedConditions.visibilityOfElementLocated(AD_CLOSE_BUTTON));
-            closeBtn.click();
-            shortWait.until(ExpectedConditions.invisibilityOfElementLocated(AD_CLOSE_BUTTON));
-        } catch (Exception e) {}
+        WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-        // Cek apakah layar tertutup (Mall tab tidak bisa diklik)
         try {
-            new WebDriverWait(driver, Duration.ofSeconds(2))
-                .until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
-        } catch (Exception e) {
-             System.out.println("Ad detected (Type B). Tapping outside...");
-             actions.tapByCoordinates(540, 150);
-             try { Thread.sleep(1500); } catch (InterruptedException ex) {}
+            // Prioritas 1: Cari TEKS "Nanti Saja" (Paling akurat)
+            WebElement textBtn = shortWait.until(ExpectedConditions.presenceOfElementLocated(AD_CLOSE_BUTTON_TEXT));
+            textBtn.click();
+            System.out.println("Iklan ditutup via Teks.");
+        } catch (Exception e1) {
+            // Prioritas 2: Kalau teks gak ketemu, cari ID-nya
+            try {
+                WebElement idBtn = shortWait.until(ExpectedConditions.presenceOfElementLocated(AD_CLOSE_BUTTON_ID));
+                idBtn.click();
+                System.out.println("Iklan ditutup via ID.");
+            } catch (Exception e2) {
+                System.out.println("Aman, tidak ada iklan.");
+            }
         }
     }
 
     public void tapCenterScreen() {
         Dimension size = driver.manage().window().getSize();
         actions.tapByCoordinates(size.width / 2, size.height / 2);
+    }
+
+    // GLOBAL HELPERS
+    public void click(By locator) {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+    }
+
+    public String getText(By locator) {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        return driver.findElement(locator).getText();
+    }
+
+    public void waitForVisibility(By locator) {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    public void takeScreenshot(String fileName) {
+        try {
+            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            File destFile = new File("screenshots/" + fileName + "_" + timestamp + ".png");
+            FileUtils.copyFile(srcFile, destFile);
+        } catch (Exception e) {
+            System.out.println("Gagal screenshot: " + e.getMessage());
+        }
     }
 }

@@ -1,69 +1,66 @@
-package tests.flow;
+package tests.flow.aktivitas;
 
 import tests.BaseTest;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
-
-import java.io.File;
-import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
-public class TestRincianLari extends BaseTest {
+public class TestRiwayatLari extends BaseTest {
 
-    // ========================================================
-    // 1. DAFTAR LOCATORS
-    // ========================================================
-    
+    // Daftar Lokasi
+
+    // Tombol Lihat Semua di bagian Riwayat Lari pada HomePage
     By btnLihatSemua = AppiumBy.xpath("(//android.widget.TextView[@text='Lihat Semua'])[2]");
+    // Kartu Aktivitas Lari Pertama di List Riwayat Lari
     By cardAktivitasPertama = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View[2]");
 
+    // Halaman Detail Setelah klik Kartu Aktivitas
     By titlePage = AppiumBy.xpath("//android.widget.TextView[@text='Rincian Lari']");
+    // Ikon Back di Halaman Detail
     By btnBack = AppiumBy.xpath("//android.widget.Button[1]"); 
     
     // Element Peta
+    // Button Zoom In bawaan peta
     By btnZoomIn = AppiumBy.accessibilityId("Zoom in"); 
     By btnZoomOut = AppiumBy.accessibilityId("Zoom out");
+    // Button i bawaan peta
+    By btnInfoMap = AppiumBy.xpath("//android.view.View[@text=\"Toggle attribution\"]");
+    // Button Arah Mata Angin bawaan peta
+    By btnCompass = AppiumBy.accessibilityId("Reset bearing to north");
     
     // Element Grafik
     By textSumbuY = AppiumBy.xpath("//android.widget.TextView[@text='150 m']"); 
 
-    // ========================================================
-    // 2. TEST CASES
-    // ========================================================
-
+    // Test Case
     @Test(priority = 1)
-    public void testMasukKeRincianLari() {
-        System.out.println("--- TEST 1: Navigasi ke Rincian Lari ---");
+    public void testMasukKeRiwayatLari() {
+        System.out.println("TEST 1: Navigasi ke Riwayat Lari");
 
-        // Gunakan 'actions' untuk scroll
-        // actions.scrollToText("Lihat Semua"); 
+        // Masuk ke Riwayat Lari melalui HomePage
+        // Gunakan actions untuk scroll hingga menemukan teks "Riwayat Lari"
+        actions.scrollToText("Riwayat Lari"); 
         
-        System.out.println("Klik tombol Lihat Semua...");
+        System.out.println("Klik tombol Lihat Semua");
         click(btnLihatSemua);
 
-        System.out.println("Memilih aktivitas lari pertama...");
+        System.out.println("Memilih aktivitas lari pertama");
         click(cardAktivitasPertama);
 
         waitForVisibility(titlePage);
         String judul = getText(titlePage);
-        Assert.assertEquals(judul, "Rincian Lari", "Judul halaman tidak sesuai!");
+        Assert.assertEquals(judul, "Riwayat Lari", "Judul halaman tidak sesuai!");
         
         System.out.println("Berhasil masuk ke halaman: " + judul);
-        takeScreenshot("MasukRincianLari_Success");
+        takeScreenshot("MasukRiwayatLari_Success");
     }
 
     @Test(priority = 2)
     public void testCekStatistikUI() {
-        System.out.println("--- TEST 2: Validasi Elemen Statistik ---");
+        System.out.println("TEST 2: Validasi Elemen Statistik");
         
         boolean isJarakAda = driver.findElements(AppiumBy.xpath("//android.widget.TextView[contains(@text, 'km')]")).size() > 0;
         boolean isWaktuAda = driver.findElements(AppiumBy.xpath("//android.widget.TextView[contains(@text, ':')]")).size() > 0;
@@ -76,21 +73,18 @@ public class TestRincianLari extends BaseTest {
 
     @Test(priority = 3)
     public void testInteraksiPeta() {
-        System.out.println("--- TEST 3: Interaksi Peta (Map) ---");
+        System.out.println("TEST 3: Interaksi Peta (Map)");
 
-        // REVISI: Panggil via object 'actions'
+        // Scroll ke bagian Peta
         actions.scrollToText("Peta");
 
-        // Opsi 1: Pakai Button Zoom bawaan aplikasi
+        // Menggunakan tombol zoom in bawaan peta
         System.out.println("Mencoba Zoom In (Tombol)...");
         click(btnZoomIn);
         try { Thread.sleep(1000); } catch (Exception e) {} 
 
-        // Opsi 2: Pakai Gesture Pinch (Opsional, dari ActionHelper)
-        // System.out.println("Mencoba Pinch Zoom In...");
-        // actions.zoomIn(); 
-
-        System.out.println("Mencoba Zoom Out...");
+        // Menggunakan Gesture Pinch dari ActionHelper
+        System.out.println("Mencoba Zoom Out");
         click(btnZoomOut);
         
         takeScreenshot("BuktiInteraksiPeta");
@@ -99,10 +93,10 @@ public class TestRincianLari extends BaseTest {
 
     @Test(priority = 4)
     public void testScrapingGrafikKetinggian() {
-        System.out.println("--- TEST 4: Interaksi Grafik Ketinggian ---");
+        System.out.println("TEST 4: Interaksi Grafik Ketinggian");
 
-        // REVISI: Panggil via object 'actions'
-        actions.scrollToText("Ketinggian");
+        // Scroll ke bagian Grafik Ketinggian
+        actions.scrollToText("Maksimal Ketinggian");
 
         WebElement grafikContainer = null;
         try {
@@ -117,12 +111,12 @@ public class TestRincianLari extends BaseTest {
         
         int safeStartX = startX + (int)(grafikContainer.getSize().getWidth() * 0.2); 
         
-        System.out.println("Mulai melakukan Tap Scanning pada grafik...");
+        System.out.println("Mulai melakukan Tap Scanning pada grafik");
         
         int[] tapPoints = {safeStartX, (startX+endX)/2, endX - 50};
         
         for (int pointX : tapPoints) {
-            // REVISI: Panggil via object 'actions'
+            // Menggunakan tapByCoordinates dari ActionHelper
             actions.tapByCoordinates(pointX, centerY);
             
             try { Thread.sleep(500); } catch (Exception e) {} 
@@ -142,7 +136,7 @@ public class TestRincianLari extends BaseTest {
     
     @Test(priority = 5)
     public void testKembaliKeMenu() {
-        System.out.println("--- TEST 5: Kembali ke Halaman Sebelumnya ---");
+        System.out.println("TEST 5: Kembali ke Halaman Sebelumnya");
         
         click(btnBack);
         
@@ -150,36 +144,5 @@ public class TestRincianLari extends BaseTest {
         Assert.assertFalse(isStillInDetail, "Seharusnya sudah keluar dari halaman detail!");
         
         System.out.println("Berhasil kembali.");
-    }
-
-    // ========================================================
-    // HELPERS LOKAL (Karena kamu menghapusnya dari BaseTest)
-    // ========================================================
-    // Sebaiknya fungsi ini dimasukkan lagi ke BaseTest biar rapi,
-    // tapi kalau mau quick fix, taruh di sini dulu gapapa.
-    
-    public void click(By locator) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
-    }
-
-    public String getText(By locator) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-        return driver.findElement(locator).getText();
-    }
-
-    public void waitForVisibility(By locator) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-    }
-
-    public void takeScreenshot(String fileName) {
-        try {
-            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            File destFile = new File("screenshots/" + fileName + "_" + timestamp + ".png");
-            FileUtils.copyFile(srcFile, destFile);
-        } catch (Exception e) {
-            System.out.println("Gagal screenshot: " + e.getMessage());
-        }
     }
 }
