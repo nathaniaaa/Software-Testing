@@ -1,20 +1,20 @@
-<!-- <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
 <suite name="AyoLari Automation Suite">
     
-    <test name="Test Creation">
+    <!-- <test name="Test Creation">
         <classes>
             <class name="tests.creation.NAMAFILE" />
             <class name="tests.creation.NAMAFILE" />
             <class name="tests.creation.NAMAFILE" />
         </classes>
-    </test>
+    </test> -->
 
     <test name="Test Flow">
         <classes>
-            <class name="tests.flow.NAMAFILE" />
-            <class name="tests.flow.NAMAFILE" />
-            <class name="tests.flow.NAMAFILE" />
+            <class name="tests.flow.TestRincianLari" />
+            <!-- <class name="tests.flow.NAMAFILE" />
+            <class name="tests.flow.NAMAFILE" /> -->
         </classes>
     </test>
 
-</suite> -->
+</suite>

@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Point;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
@@ -21,7 +23,71 @@ public class ActionHelper {
         this.driver = driver;
     }
 
-    // --- SCROLL / SWIPE ---
+    // ========================================================================
+    // 1. TAP & CLICK ACTIONS (PENTING BUAT GRAFIK & BUTTON)
+    // ========================================================================
+
+    /**
+     * Tap pada koordinat spesifik (X, Y).
+     * SANGAT PENTING untuk kasus CHART/GRAFIK MyTelkomsel.
+     */
+    public void tapByCoordinates(int x, int y) {
+        System.out.println("Tapping at: " + x + ", " + y);
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence tap = new Sequence(finger, 1);
+        
+        tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+        tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        tap.addAction(new Pause(finger, Duration.ofMillis(100))); // Jeda dikit biar stabil
+        tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        
+        driver.perform(Collections.singletonList(tap));
+    }
+
+    public void doubleTap(WebElement element) {
+        Point location = element.getLocation();
+        Dimension size = element.getSize();
+        int centerX = location.getX() + (size.getWidth() / 2);
+        int centerY = location.getY() + (size.getHeight() / 2);
+
+        System.out.println("Double Tapping Element...");
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence doubleTap = new Sequence(finger, 1);
+
+        // Tap 1
+        doubleTap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX, centerY));
+        doubleTap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        doubleTap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        // Pause antar tap
+        doubleTap.addAction(new Pause(finger, Duration.ofMillis(100)));
+        // Tap 2
+        doubleTap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        doubleTap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        driver.perform(Collections.singletonList(doubleTap));
+    }
+
+    public void longPress(WebElement element) {
+        Point location = element.getLocation();
+        Dimension size = element.getSize();
+        int centerX = location.getX() + (size.getWidth() / 2);
+        int centerY = location.getY() + (size.getHeight() / 2);
+
+        System.out.println("Long Pressing Element...");
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence longPress = new Sequence(finger, 1);
+
+        longPress.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX, centerY));
+        longPress.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        longPress.addAction(new Pause(finger, Duration.ofSeconds(2))); // Tahan 2 detik
+        longPress.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        driver.perform(Collections.singletonList(longPress));
+    }
+
+    // ========================================================================
+    // 2. SCROLL & SWIPE ACTIONS
+    // ========================================================================
 
     public void scrollVertical() {
         System.out.println("Scrolling Down...");
@@ -40,6 +106,12 @@ public class ActionHelper {
         int centerY = size.height / 2;
         performSwipe(startX, centerY, endX, centerY);
     }
+    
+    // Drag/Pan Peta (Geser Peta pelan-pelan, bukan swipe cepat)
+    public void dragMap(int startX, int startY, int endX, int endY) {
+        System.out.println("Dragging Map...");
+        performSwipe(startX, startY, endX, endY, 2000); // 2000ms = 2 detik (gerak lambat)
+    }
 
     public void scrollToText(String visibleText) {
         System.out.println("Smart Scrolling to: " + visibleText);
@@ -53,7 +125,9 @@ public class ActionHelper {
         }
     }
 
-    // --- ZOOM GESTURES (Multi-Touch) ---
+    // ========================================================================
+    // 3. ZOOM GESTURES (MULTI-TOUCH)
+    // ========================================================================
 
     public void zoomIn() {
         System.out.println("Zooming IN (Pinch Open)...");
@@ -65,16 +139,23 @@ public class ActionHelper {
         performPinch(false);
     }
 
-    // --- PRIVATE HELPERS (The complex W3C Logic) ---
+    // ========================================================================
+    // PRIVATE HELPERS (W3C LOGIC)
+    // ========================================================================
 
     private void performSwipe(int startX, int startY, int endX, int endY) {
+        performSwipe(startX, startY, endX, endY, 800); // Default speed 800ms
+    }
+
+    private void performSwipe(int startX, int startY, int endX, int endY, int durationMs) {
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence sequence = new Sequence(finger, 1);
         
         sequence.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
         sequence.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        sequence.addAction(new Pause(finger, Duration.ofMillis(200))); // Wait for touch to stabilize
-        sequence.addAction(finger.createPointerMove(Duration.ofMillis(800), PointerInput.Origin.viewport(), endX, endY));
+        sequence.addAction(new Pause(finger, Duration.ofMillis(200))); 
+        // Durasi swipe menentukan kecepatan (makin besar makin pelan/drag)
+        sequence.addAction(finger.createPointerMove(Duration.ofMillis(durationMs), PointerInput.Origin.viewport(), endX, endY));
         sequence.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
 
         driver.perform(Collections.singletonList(sequence));
@@ -85,12 +166,12 @@ public class ActionHelper {
         int centerX = size.width / 2;
         int centerY = size.height / 2;
         
-        // Finger 1 (Left side)
+        // Finger 1 (Kiri)
         int f1StartX = centerX - 50;
-        int f1EndX = zoomIn ? centerX - 300 : centerX - 50; // Move Out if Zoom In, Stay if Zoom Out
-        if (!zoomIn) f1StartX = centerX - 300; // Start Far if Zoom Out
+        int f1EndX = zoomIn ? centerX - 300 : centerX - 50; 
+        if (!zoomIn) f1StartX = centerX - 300; 
         
-        // Finger 2 (Right side)
+        // Finger 2 (Kanan)
         int f2StartX = centerX + 50;
         int f2EndX = zoomIn ? centerX + 300 : centerX + 50;
         if (!zoomIn) f2StartX = centerX + 300;
