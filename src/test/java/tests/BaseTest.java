@@ -14,8 +14,8 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
@@ -33,12 +33,13 @@ public class BaseTest {
     private final By AD_CLOSE_BUTTON_ID = AppiumBy.id("com.telkomsel.telkomselcm:id/btSecondTypeFirstSecondary");
     private final By MALL_TAB_ID = AppiumBy.accessibilityId("Mall");
 
-    @BeforeMethod
+    // @BeforeMethod
+    @BeforeClass
     public void setUp() throws Exception {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("2ab55c03") 
+                .setUdid("RRCTA02QJAR") 
                 .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
                 .setAppPackage("com.telkomsel.telkomselcm") 
@@ -59,7 +60,8 @@ public class BaseTest {
         masukKeMenuAyoLari();
     }
 
-    @AfterMethod
+    // @AfterMethod
+    @AfterClass
     public void tearDown() {
         if (driver != null) {
             driver.quit();
