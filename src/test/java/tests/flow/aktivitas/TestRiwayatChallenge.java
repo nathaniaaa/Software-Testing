@@ -53,6 +53,8 @@ public class TestRiwayatChallenge extends BaseTest {
     public void testInteraksiDetailRiwayatChallenge() {
         System.out.println("TEST 2: Interaksi Pada Halaman Detail Riwayat Challenge");
 
+        try { Thread.sleep(2000); } catch (Exception e) {}
+
         // STEP 3: Masuk ke Card
         System.out.println("3. Masuk ke Riwayat Challenge Pertama");
         click(cardChallengePertama);
@@ -64,11 +66,9 @@ public class TestRiwayatChallenge extends BaseTest {
         System.out.println("4. Halaman Deskripsi terbuka, mencoba Scroll ke bawah");
         try {
             // Scroll ke bawah untuk baca deskripsi
-            actions.swipeUp(); 
-            Thread.sleep(1000);
-            
-            // Opsional: Scroll balik ke atas jika tombol Leaderboard ikut ter-scroll hilang
-            // actions.swipeDown(); 
+            actions.scrollVertical(); 
+            Thread.sleep(3000);
+
         } catch (Exception e) {
             System.out.println("Gagal scroll: " + e.getMessage());
         }
@@ -76,7 +76,7 @@ public class TestRiwayatChallenge extends BaseTest {
         // STEP 5: Pindah ke Leaderboard
         System.out.println("5. Klik Tab Leaderboard");
         click(btnLeaderboard);
-        try { Thread.sleep(1000); } catch (Exception e) {}
+        try { Thread.sleep(3000); } catch (Exception e) {}
         
         // Validasi simpel: Pastikan tombol deskripsi masih ada (tidak crash)
         Assert.assertTrue(driver.findElements(btnDeskripsi).size() > 0, "Tab Leaderboard gagal dimuat");

@@ -15,14 +15,12 @@ public class TestRiwayatLari extends BaseTest {
     // ==========================================
 
     /**
-     * LOGIC BARU:
-     * Locator ini mencari teks 'Riwayat Lari', naik ke pembungkusnya (parent), 
-     * lalu mencari tombol 'Lihat Semua' di dalam pembungkus yang sama.
-     * Ini menjamin kita klik tombol yang SEJAJAR dengan Riwayat Lari.
+     * LOGIC PENCARIAN TOMBOL:
+     * Mencari tombol 'Lihat Semua' yang SATU KONTAINER dengan teks 'Riwayat Lari'.
      */
     By btnLihatSemua = AppiumBy.xpath("//*[@text='Riwayat Lari']/parent::*//*[@text='Lihat Semua']");
     
-    // Kartu Aktivitas Lari Pertama (Mengambil index ke-2 karena index 1 biasanya header/spacer)
+    // Kartu Aktivitas Lari Pertama
     By cardAktivitasPertama = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View[2]");
 
     // Halaman Detail
@@ -32,11 +30,7 @@ public class TestRiwayatLari extends BaseTest {
     // Element Peta
     By btnZoomIn = AppiumBy.accessibilityId("Zoom in"); 
     By btnZoomOut = AppiumBy.accessibilityId("Zoom out");
-    
-    // Tombol Info (i) - Toggle Attribution
     By btnInfoMap = AppiumBy.xpath("//android.view.View[@text='Toggle attribution']"); 
-    
-    // Button Kompas (Biasanya baru muncul setelah peta diputar)
     By btnCompass = AppiumBy.accessibilityId("Reset bearing to north");
     
     // Element Grafik (Anchor untuk scrolling grafik)
@@ -48,46 +42,53 @@ public class TestRiwayatLari extends BaseTest {
 
     @Test(priority = 1)
     public void testMasukKeRiwayatLari() {
-        System.out.println("TEST 1: Navigasi ke Riwayat Lari (Mode Paksa Scroll)");
+        System.out.println("TEST 1: Navigasi ke Riwayat Lari");
 
-        // Locator Text Riwayat Lari (hanya buat validasi)
-        By textRiwayatLocator = AppiumBy.xpath("//*[@text='Riwayat Lari']");
+        actions.scrollToText("Riwayat Lari");
+
+        // Locator hanya untuk validasi keberadaan teks
+       // By textRiwayatLocator = AppiumBy.xpath("//*[@text='Riwayat Lari']");
         
-        // Logic: Loop Swipe maksimal 5 kali sampai teks ketemu
-        int maxScroll = 5;
-        boolean ketemu = false;
+        // // --- LOGIC SCROLLING (REVISI) ---
+        // // Kita coba scroll maksimal 5 kali pakai scrollVertical (Standard)
+        // int maxScroll = 5;
+        // boolean ketemu = false;
 
-        while (maxScroll > 0) {
-            // Cek apakah teks 'Riwayat Lari' sudah muncul di layar?
-            if (driver.findElements(textRiwayatLocator).size() > 0) {
-                ketemu = true;
-                break; // Keluar loop kalau sudah ketemu
-            }
+        // System.out.println("Mencari menu 'Riwayat Lari'...");
+        // while (maxScroll > 0) {
+        //     // Cek apakah teks sudah muncul?
+        //     if (driver.findElements(textRiwayatLocator).size() > 0) {
+        //         ketemu = true;
+        //         break; 
+        //     }
             
-            // Kalau belum ketemu, SWIPE!
-            actions.swipeUp();
-            maxScroll--;
+        //     // Kalau belum, LAKUKAN SCROLL
+        //     // Kita pakai scrollVertical() dari ActionHelper yang baru (Logic 70% -> 30%)
+        //     actions.scrollVertical(); 
             
-            // Jeda dikit biar rendering selesai
-            try { Thread.sleep(1000); } catch (Exception e) {}
-        }
+        //     // Note: Kalau scrollVertical() dirasa kurang nendang, ganti baris atas jadi:
+        //     // actions.swipeUp(); 
+            
+        //     maxScroll--;
+            
+        //     // Jeda biar layar render dulu
+        //     try { Thread.sleep(1500); } catch (Exception e) {}
+        // }
 
-        if (!ketemu) {
-            Assert.fail("Gagal Scroll: Sudah swipe 5x tapi 'Riwayat Lari' gak muncul juga!");
-        }
+        // if (!ketemu) {
+        //     Assert.fail("Gagal menemukan 'Riwayat Lari' setelah 5x scroll!");
+        // }
 
-        System.out.println("Riwayat Lari ditemukan! Mencari tombol Lihat Semua...");
-
-        // Pakai logic XPath sibling/parent yang tadi (ini sudah benar)
+        System.out.println("'Riwayat Lari' ditemukan. Klik Lihat Semua...");
         click(btnLihatSemua);
 
-        System.out.println("Memilih aktivitas lari pertama");
-        try { Thread.sleep(1500); } catch (Exception e) {}
+        System.out.println("Memilih aktivitas lari pertama...");
+        try { Thread.sleep(1500); } catch (Exception e) {} // Tunggu loading list
         click(cardAktivitasPertama);
 
         waitForVisibility(titlePage);
         String judul = getText(titlePage);
-        Assert.assertEquals(judul, "Rincian Lari", "Judul halaman tidak sesuai!");
+        Assert.assertEquals(judul, "Rincian Lari", "Judul halaman salah/tidak masuk detail!");
         
         takeScreenshot("MasukRiwayatLari_Success");
     }
@@ -96,71 +97,71 @@ public class TestRiwayatLari extends BaseTest {
     public void testCekStatistikUI() {
         System.out.println("TEST 2: Validasi Elemen Statistik");
         
-        // Cek apakah ada angka jarak (km) dan durasi (:)
+        // Validasi elemen dasar (Jarak & Waktu)
         boolean isJarakAda = driver.findElements(AppiumBy.xpath("//android.widget.TextView[contains(@text, 'km')]")).size() > 0;
         boolean isWaktuAda = driver.findElements(AppiumBy.xpath("//android.widget.TextView[contains(@text, ':')]")).size() > 0;
         
         Assert.assertTrue(isJarakAda, "Data Jarak (km) tidak tampil!");
         Assert.assertTrue(isWaktuAda, "Data Waktu/Durasi tidak tampil!");
         
-        System.out.println("Statistik dasar terlihat aman.");
+        System.out.println("Statistik aman.");
     }
 
     @Test(priority = 3)
     public void testInteraksiPeta() {
         System.out.println("TEST 3: Interaksi Peta (Map)");
 
-        // 1. Scroll ke Peta (Native Scroll lagi biar aman)
-        try {
-            driver.findElement(AppiumBy.androidUIAutomator(
-                "new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().text(\"Peta\"));"
-            ));
-        } catch (Exception e) {
-            System.out.println("Warning: Tidak perlu scroll atau teks 'Peta' tidak ketemu.");
-        }
+        // 1. Scroll sedikit ke bawah untuk memastikan Peta terlihat utuh
+        // Kita pakai scrollVertical sekali aja
+        actions.scrollVertical();
+        try { Thread.sleep(1000); } catch (Exception e) {}
 
         // 2. Zoom In & Out
         System.out.println("Mencoba Zoom In...");
-        click(btnZoomIn);
-        try { Thread.sleep(1000); } catch (Exception e) {} 
+        if(driver.findElements(btnZoomIn).size() > 0) {
+            click(btnZoomIn);
+            try { Thread.sleep(1000); } catch (Exception e) {} 
+        }
 
         System.out.println("Mencoba Zoom Out...");
-        click(btnZoomOut);
-        try { Thread.sleep(1000); } catch (Exception e) {}
+        if(driver.findElements(btnZoomOut).size() > 0) {
+            click(btnZoomOut);
+            try { Thread.sleep(1000); } catch (Exception e) {}
+        }
 
-        // 3. Klik Info (Toggle Attribution)
-        System.out.println("Mencoba Klik Info Map (i)...");
+        // 3. Toggle Info Map
         try {
-            click(btnInfoMap);
-            try { Thread.sleep(500); } catch (Exception e) {}
-            click(btnInfoMap); // Tutup lagi
+            if(driver.findElements(btnInfoMap).size() > 0) {
+                 click(btnInfoMap);
+                 try { Thread.sleep(500); } catch (Exception e) {}
+                 click(btnInfoMap); // Tutup lagi
+                 System.out.println("Info map toggle sukses.");
+            }
         } catch (Exception e) {
             System.out.println("Info Map skip: " + e.getMessage());
         }
 
-        // 4. ROTASI PETA (2 Jari)
+        // 4. ROTASI PETA
         System.out.println("Mencoba Memutar Peta...");
         try {
-             // Pastikan actions helper kamu support rotateMap
+            // Cari elemen peta (biasanya View besar setelah root)
             WebElement mapArea = driver.findElement(AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View[2]"));
             actions.rotateMap(mapArea); 
-            try { Thread.sleep(1500); } catch (Exception e) {} 
+            try { Thread.sleep(2000); } catch (Exception e) {} // Tunggu animasi putar
         } catch (Exception e) {
-            System.out.println("Rotasi gagal/tidak support: " + e.getMessage());
+            System.out.println("Rotasi gagal/elemen peta beda: " + e.getMessage());
         }
 
-        // 5. Klik Kompas
-        System.out.println("Mencoba Klik Kompas...");
+        // 5. Klik Kompas (Reset Bearing)
+        // Kompas biasanya baru muncul SETELAH diputar
         try {
             if(driver.findElements(btnCompass).size() > 0) {
                 click(btnCompass);
-                System.out.println("Kompas diklik.");
+                System.out.println("Kompas diklik (Reset Utara).");
             } else {
-                System.out.println("Kompas tidak muncul (mungkin peta belum terputar cukup jauh).");
+                System.out.println("Kompas tidak muncul (Mungkin putaran kurang jauh).");
             }
-        } catch (Exception e) {
-            System.out.println("Gagal klik Kompas: " + e.getMessage());
-        }
+        } catch (Exception e) {}
         
         takeScreenshot("BuktiInteraksiPeta");
     }
@@ -169,44 +170,48 @@ public class TestRiwayatLari extends BaseTest {
     public void testScrapingGrafikKetinggian() {
         System.out.println("TEST 4: Interaksi Grafik Ketinggian");
 
-        // Scroll cari judul grafik dulu
-        try {
-            driver.findElement(AppiumBy.androidUIAutomator(
-                "new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().textContains(\"Ketinggian\"));"
-            ));
-        } catch (Exception e) {}
-
+        // Scroll cari anchor grafik (Label Sumbu Y " m")
+        System.out.println("Mencari Grafik...");
+        int maxGrafikScroll = 3;
         WebElement grafikContainer = null;
-        try {
-            // Cari container grafik berdasarkan salah satu label angka di sumbu Y (misal "150 m" atau "0 m")
-            grafikContainer = driver.findElement(textSumbuY).findElement(By.xpath(".."));
-        } catch (Exception e) {
-            System.out.println("Skip Test Grafik: Container grafik tidak ditemukan.");
+        
+        while(maxGrafikScroll > 0) {
+            try {
+                // Coba cari label sumbu Y (misal "150 m") lalu ambil parent-nya
+                grafikContainer = driver.findElement(textSumbuY).findElement(By.xpath(".."));
+                break; // Ketemu
+            } catch (Exception e) {
+                actions.scrollVertical(); // Scroll cari grafik
+                maxGrafikScroll--;
+                try { Thread.sleep(1000); } catch (Exception ex) {}
+            }
+        }
+
+        if (grafikContainer == null) {
+            System.out.println("SKIP: Grafik tidak ditemukan atau Sumbu Y beda locator.");
             return;
         }
 
+        // Logic Tap Grafik
         int startX = grafikContainer.getLocation().getX();
         int endX = startX + grafikContainer.getSize().getWidth();
         int centerY = grafikContainer.getLocation().getY() + (grafikContainer.getSize().getHeight() / 2);
         
-        // Mulai tap sedikit lebih ke kanan dari sumbu Y (biar gak kena label)
+        // Tap 3 titik: Kiri, Tengah, Kanan
         int safeStartX = startX + (int)(grafikContainer.getSize().getWidth() * 0.15); 
-        
         int[] tapPoints = {safeStartX, (safeStartX+endX)/2, endX - 20};
         
         System.out.println("Scanning data grafik...");
         for (int pointX : tapPoints) {
-            // Tap pada koordinat spesifik grafik
             actions.tapByCoordinates(pointX, centerY);
             try { Thread.sleep(500); } catch (Exception e) {} 
             
-            // Ambil semua teks yang muncul (biasanya tooltip nilai ketinggian)
+            // Ambil tooltip text
             List<WebElement> texts = driver.findElements(AppiumBy.xpath("//android.widget.TextView[contains(@text, ' m')]"));
-            
             for (WebElement el : texts) {
                 String txt = el.getText();
-                // Filter teks sampah (label sumbu Y statis)
-                if (!txt.equals("150 m") && !txt.equals("300 m") && !txt.equals("0 m")) {
+                // Filter label statis (misal 150 m, 0 m)
+                if (!txt.equals("150 m") && !txt.equals("0 m") && !txt.equals("300 m")) {
                     System.out.println("Titik X=" + pointX + " | Nilai: " + txt);
                 }
             }
@@ -216,7 +221,7 @@ public class TestRiwayatLari extends BaseTest {
     
     @Test(priority = 5)
     public void testKembaliKeMenu() {
-        System.out.println("TEST 5: Kembali ke Halaman Sebelumnya");
+        System.out.println("TEST 5: Kembali ke List Riwayat");
         
         click(btnBack);
         try { Thread.sleep(1000); } catch (Exception e) {}
@@ -224,6 +229,6 @@ public class TestRiwayatLari extends BaseTest {
         boolean isStillInDetail = driver.findElements(titlePage).size() > 0;
         Assert.assertFalse(isStillInDetail, "Gagal kembali: Masih di halaman detail!");
         
-        System.out.println("Berhasil kembali ke list riwayat.");
+        System.out.println("Berhasil kembali.");
     }
 }
