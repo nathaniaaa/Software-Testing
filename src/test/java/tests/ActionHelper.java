@@ -140,6 +140,69 @@ public class ActionHelper {
         driver.perform(Collections.singletonList(swipe));
         System.out.println("Swiping up (Fling Mode: 60% -> 25%)...");
     }
+
+    // ========================================================================
+    // 4. SWIPE LANJUTAN (SOLUSI ANTI CAROUSEL)
+    // ========================================================================
+
+    /**
+     * Swipe dari bagian paling bawah layar (Safe Zone).
+     * Digunakan jika Anchor belum ketemu.
+     */
+    public void swipeFromBottom() {
+        Dimension size = driver.manage().window().getSize();
+        int width = size.getWidth();
+        int height = size.getHeight();
+
+        // Mulai dari 85% layar (Bawah) -> Geser ke 40% (Tengah)
+        int startX = width / 2;
+        int startY = (int) (height * 0.85); 
+        int endY = (int) (height * 0.40);
+
+        System.out.println("Swiping from BOTTOM (Safe Zone)...");
+
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence swipe = new Sequence(finger, 1);
+        
+        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
+        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        swipe.addAction(new Pause(finger, Duration.ofMillis(200))); 
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(600), PointerInput.Origin.viewport(), startX, endY));
+        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        
+        driver.perform(Collections.singletonList(swipe));
+    }
+
+    /**
+     * Swipe dengan bertumpu pada elemen statis (Anchor).
+     * Solusi paling ampuh untuk halaman yang penuh slider horizontal.
+     */
+    public void swipeFromElement(WebElement element) {
+        Point location = element.getLocation();
+        Dimension size = element.getSize();
+        
+        int startX = location.getX() + (size.getWidth() / 2);
+        int startY = location.getY() + (size.getHeight() / 2);
+        
+        int endY = startY - 500; 
+        if (endY < 100) endY = 200;
+
+        System.out.println("Swiping from anchor element at: " + startX + "," + startY);
+
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence swipe = new Sequence(finger, 1);
+        
+        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
+        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        swipe.addAction(new Pause(finger, Duration.ofMillis(200))); 
+        
+        // --- UBAH DISINI: DARI 600 JADI 1200 (BIAR LEBIH HALUS & GAK CRASH) ---
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(1200), PointerInput.Origin.viewport(), startX, endY));
+        
+        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        
+        driver.perform(Collections.singletonList(swipe));
+    }
     
     // Drag/Pan Peta (Geser Peta pelan-pelan, bukan swipe cepat)
     public void dragMap(int startX, int startY, int endX, int endY) {

@@ -15,10 +15,13 @@ public class TestRiwayatLari extends BaseTest {
     // ==========================================
 
     /**
-     * LOGIC PENCARIAN TOMBOL:
-     * Mencari tombol 'Lihat Semua' yang SATU KONTAINER dengan teks 'Riwayat Lari'.
+     * [FIX FINAL LOCATOR]
+     * Menggunakan 'following::'.
+     * Artinya: Cari teks "Riwayat Lari", abaikan apapun diatasnya, 
+     * lalu ambil tombol "Lihat Semua" PERTAMA yang muncul SETELAH teks itu.
+     * Ini akan mengabaikan tombol 'Lihat Semua' milik Challenge yang ada di atas.
      */
-    By btnLihatSemua = AppiumBy.xpath("//*[@text='Riwayat Lari']/parent::*//*[@text='Lihat Semua']");
+    By btnLihatSemua = AppiumBy.xpath("//*[@text='Riwayat Lari']/following::android.widget.TextView[contains(@text, 'Lihat Semua')][1]");
     
     // Kartu Aktivitas Lari Pertama
     By cardAktivitasPertama = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View[2]");
@@ -43,52 +46,66 @@ public class TestRiwayatLari extends BaseTest {
     @Test(priority = 1)
     public void testMasukKeRiwayatLari() {
         System.out.println("TEST 1: Navigasi ke Riwayat Lari");
-
-        actions.scrollToText("Riwayat Lari");
-
-        // Locator hanya untuk validasi keberadaan teks
-       // By textRiwayatLocator = AppiumBy.xpath("//*[@text='Riwayat Lari']");
         
-        // // --- LOGIC SCROLLING (REVISI) ---
-        // // Kita coba scroll maksimal 5 kali pakai scrollVertical (Standard)
-        // int maxScroll = 5;
-        // boolean ketemu = false;
+        // Target: Teks "Riwayat Lari"
+        By textRiwayatLocator = AppiumBy.xpath("//*[@text='Riwayat Lari']");
+        
+        // ANCHOR: Kita pakai kotak 'Total Lari Harian' buat tumpuan swipe
+        // Kotak ini statis (tidak geser kiri-kanan), jadi aman buat tumpuan.
+        By safeZoneLocator = AppiumBy.xpath("//*[@text='Total Lari Harian']");
 
-        // System.out.println("Mencari menu 'Riwayat Lari'...");
-        // while (maxScroll > 0) {
-        //     // Cek apakah teks sudah muncul?
-        //     if (driver.findElements(textRiwayatLocator).size() > 0) {
-        //         ketemu = true;
-        //         break; 
-        //     }
-            
-        //     // Kalau belum, LAKUKAN SCROLL
-        //     // Kita pakai scrollVertical() dari ActionHelper yang baru (Logic 70% -> 30%)
-        //     actions.scrollVertical(); 
-            
-        //     // Note: Kalau scrollVertical() dirasa kurang nendang, ganti baris atas jadi:
-        //     // actions.swipeUp(); 
-            
-        //     maxScroll--;
-            
-        //     // Jeda biar layar render dulu
-        //     try { Thread.sleep(1500); } catch (Exception e) {}
-        // }
+        int maxScroll = 5;
+        boolean ketemu = false;
 
-        // if (!ketemu) {
-        //     Assert.fail("Gagal menemukan 'Riwayat Lari' setelah 5x scroll!");
-        // }
+        // --- LOOP SCROLL ---
+        while (maxScroll > 0) {
+            // 1. Cek apakah 'Riwayat Lari' sudah muncul?
+            if (driver.findElements(textRiwayatLocator).size() > 0) {
+                ketemu = true;
+                break;
+            }
+            
+            // 2. LOGIC SWIPE AMAN
+            try {
+                if (driver.findElements(safeZoneLocator).size() > 0) {
+                    System.out.println("Anchor ditemukan. Swipe aman...");
+                    WebElement safeElement = driver.findElement(safeZoneLocator);
+                    // Swipe pelan dari elemen anchor (Anti-Carousel)
+                    actions.swipeFromElement(safeElement);
+                } else {
+                    // Fallback: Kalau anchor belum kelihatan, swipe dari bawah layar
+                    System.out.println("Anchor belum terlihat. Swipe dari bawah...");
+                    actions.swipeFromBottom();
+                }
+            } catch (Exception e) {
+                System.out.println("Swipe error (lanjut): " + e.getMessage());
+            }
+            
+            maxScroll--;
+            // Jeda agak lama biar animasi scroll berhenti total (penting buat HP Oppo)
+            try { Thread.sleep(2000); } catch (Exception e) {}
+        }
+        // -------------------
+
+        if (!ketemu) {
+            Assert.fail("Gagal Scroll: 'Riwayat Lari' tidak ditemukan setelah 5x swipe!");
+        }
 
         System.out.println("'Riwayat Lari' ditemukan. Klik Lihat Semua...");
+        
+        // Jeda ekstra sebelum klik untuk memastikan layout stabil
+        try { Thread.sleep(1000); } catch (Exception e) {}
+        
         click(btnLihatSemua);
 
         System.out.println("Memilih aktivitas lari pertama...");
-        try { Thread.sleep(1500); } catch (Exception e) {} // Tunggu loading list
+        try { Thread.sleep(1500); } catch (Exception e) {}
         click(cardAktivitasPertama);
 
+        // Validasi Halaman
         waitForVisibility(titlePage);
         String judul = getText(titlePage);
-        Assert.assertEquals(judul, "Rincian Lari", "Judul halaman salah/tidak masuk detail!");
+        Assert.assertEquals(judul, "Rincian Lari", "Salah masuk halaman! Pastikan tidak klik Challenge.");
         
         takeScreenshot("MasukRiwayatLari_Success");
     }
