@@ -48,7 +48,10 @@ public class BaseTest {
                 .setAppWaitActivity("*") 
                 .setAppWaitDuration(Duration.ofMillis(30000)) // Tunggu max 30 detik buat app buka
                 .setAutoGrantPermissions(true)
-                .setNoReset(true);
+                .setNoReset(true)
+                .setNewCommandTimeout(Duration.ofSeconds(60)) // Jangan matikan sesi kalau diam 60 detik
+                .setAdbExecTimeout(Duration.ofSeconds(60));   // Tunggu ADB lebih lama
+                
 
         driver = new AndroidDriver(
                 URI.create("http://127.0.0.1:4723").toURL(), options
@@ -69,6 +72,12 @@ public class BaseTest {
     }
 
     public void masukKeMenuAyoLari() {
+        // --- Wait system to set up ---
+        try { 
+            System.out.println("Menunggu aplikasi stabil...");
+            Thread.sleep(5000); // Beri waktu 5 detik agar Appium Server "nyawa"-nya kumpul
+        } catch (InterruptedException e) {}
+        // ---------------------
         System.out.println("Navigasi ke AyoLari via Mall...");
         
         try {
