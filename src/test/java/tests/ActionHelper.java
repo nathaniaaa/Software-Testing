@@ -92,10 +92,10 @@ public class ActionHelper {
     public void scrollVertical() {
         System.out.println("Scrolling Down...");
         Dimension size = driver.manage().window().getSize();
-        int startX = size.width / 2;
-        int startY = (int) (size.height * 0.8);
-        int endY = (int) (size.height * 0.2);
-        performSwipe(startX, startY, startX, endY);
+        int anchorX = (int) (size.width * 0.1);
+        int startY = (int) (size.height * 0.70);
+        int endY = (int) (size.height * 0.30);
+        performSwipe(anchorX, startY, anchorX, endY, 800);
     }
 
     public void scrollHorizontal() {
@@ -105,6 +105,40 @@ public class ActionHelper {
         int endX = (int) (size.width * 0.2);
         int centerY = size.height / 2;
         performSwipe(startX, centerY, endX, centerY);
+    }
+
+    // --- HELPER UNTUK PAKSA SCROLL MANUAL ---
+    // --- HELPER UNTUK PAKSA SCROLL MANUAL (REVISI) ---
+    public void swipeUp() {
+        // Ambil ukuran layar
+        Dimension size = driver.manage().window().getSize();
+        int width = size.getWidth();
+        int height = size.getHeight();
+
+        // LOGIC BARU: SWIPE DI TENGAH (SAFE ZONE)
+        // Hindari 20% atas (Header) dan 30% bawah (Menu Bar)
+        int startX = width / 2;
+        int startY = (int) (height * 0.60); // Mulai dari 60% layar (tengah agak bawah)
+        int endY = (int) (height * 0.25);   // Geser sampai 25% layar (atas)
+        
+        // Buat pointer input (jari telunjuk)
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence swipe = new Sequence(finger, 1);
+        
+        // Gerakkan jari: Tekan -> Geser Cepat -> Lepas
+        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
+        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        
+        // Pause dikit banget biar touch register (jangan lama-lama)
+        swipe.addAction(new Pause(finger, Duration.ofMillis(100))); 
+        
+        // Durasinya dipersingkat jadi 400ms biar jadi "FLING" bukan "DRAG"
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(400), PointerInput.Origin.viewport(), startX, endY));
+        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        
+        // Eksekusi
+        driver.perform(Collections.singletonList(swipe));
+        System.out.println("Swiping up (Fling Mode: 60% -> 25%)...");
     }
     
     // Drag/Pan Peta (Geser Peta pelan-pelan, bukan swipe cepat)
@@ -190,6 +224,56 @@ public class ActionHelper {
                 .addAction(finger2.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
                 .addAction(finger2.createPointerMove(Duration.ofMillis(1000), PointerInput.Origin.viewport(), f2EndX, centerY + 100))
                 .addAction(finger2.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        driver.perform(Arrays.asList(sequence1, sequence2));
+    }
+
+    /**
+     * Melakukan Gerakan Memutar (Rotation) dengan 2 jari.
+     * Berguna untuk memunculkan tombol Kompas/Reset Bearing di Peta.
+     */
+    /**
+     * Melakukan Gerakan Memutar (Rotation) PADA ELEMEN TERTENTU.
+     * Lebih aman karena koordinat dihitung dari lokasi elemen, bukan layar.
+     */
+    public void rotateMap(WebElement mapElement) {
+        System.out.println("Performing Map Rotation on specific element...");
+
+        // 1. Ambil Lokasi & Ukuran Peta yg sebenarnya
+        Point location = mapElement.getLocation();
+        Dimension size = mapElement.getSize();
+
+        // 2. Hitung Titik Tengah Peta
+        int centerX = location.getX() + (size.getWidth() / 2);
+        int centerY = location.getY() + (size.getHeight() / 2);
+
+        // 3. Tentukan Jari-jari putaran (30% dari lebar peta biar aman gak keluar batas)
+        int radius = (int) (size.getWidth() * 0.3);
+
+        System.out.println("Center: " + centerX + "," + centerY + " | Radius: " + radius);
+
+        // Jari 1: Mulai dari Kiri (Jam 9) ke Atas (Jam 12)
+        PointerInput finger1 = new PointerInput(PointerInput.Kind.TOUCH, "finger1");
+        Sequence sequence1 = new Sequence(finger1, 1)
+                .addAction(finger1.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX - radius, centerY))
+                .addAction(finger1.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(new Pause(finger1, Duration.ofMillis(100))); // Tambah pause dikit biar touch register
+        
+        // Gerakan melengkung manual (Kuadran Kiri Atas)
+        // Kita simulasikan geser lurus aja diagonal, biasanya map udah nangkep
+        sequence1.addAction(finger1.createPointerMove(Duration.ofMillis(1500), PointerInput.Origin.viewport(), centerX, centerY - radius));
+        sequence1.addAction(finger1.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        // Jari 2: Mulai dari Kanan (Jam 3) ke Bawah (Jam 6)
+        PointerInput finger2 = new PointerInput(PointerInput.Kind.TOUCH, "finger2");
+        Sequence sequence2 = new Sequence(finger2, 1)
+                .addAction(finger2.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX + radius, centerY))
+                .addAction(finger2.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(new Pause(finger2, Duration.ofMillis(100)));
+        
+        // Gerakan melengkung manual (Kuadran Kanan Bawah)
+        sequence2.addAction(finger2.createPointerMove(Duration.ofMillis(1500), PointerInput.Origin.viewport(), centerX, centerY + radius));
+        sequence2.addAction(finger2.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
 
         driver.perform(Arrays.asList(sequence1, sequence2));
     }
