@@ -1,10 +1,11 @@
-package tests.flow.challenge; // Sesuaikan dengan package kamu
+package tests.flow.challenge; 
 
 import tests.BaseTest;
 import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class TestRewards extends BaseTest {
 
@@ -32,10 +33,10 @@ public class TestRewards extends BaseTest {
 
         // Klik Bottom Nav Challenge
         System.out.println("Klik menu Challenge");
-        click(navChallenge);
+        driver.findElement(navChallenge).click();
         
         // Validasi: Pastikan tombol Rewards muncul sebagai tanda halaman challenge terbuka
-        waitForVisibility(tabRewards);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(tabRewards));
         Assert.assertTrue(driver.findElements(tabRewards).size() > 0, "Gagal masuk halaman Challenge!");
         
         takeScreenshot("Halaman_Challenge_Terbuka");
@@ -48,17 +49,17 @@ public class TestRewards extends BaseTest {
         // Klik Tab Rewards
         sleep(1500); 
         System.out.println("Klik Tab Rewards");
-        click(tabRewards);
+        wait.until(ExpectedConditions.elementToBeClickable(tabRewards)).click();
 
         // Klik Button Riwayat Rewards
-        waitForVisibility(btnRiwayatReward);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
         
         sleep(1500); 
         System.out.println("Klik Riwayat Rewards");
-        click(btnRiwayatReward);
+        driver.findElement(btnRiwayatReward).click();
 
         // Validasi Halaman Riwayat
-        waitForVisibility(btnBack);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnBack));
         System.out.println("Masuk ke halaman Riwayat Rewards.");
         takeScreenshot("Halaman_Riwayat_Rewards");
 
@@ -67,7 +68,7 @@ public class TestRewards extends BaseTest {
         System.out.println("Klik Back");
         
         if (driver.findElements(btnBack).size() > 0) {
-            click(btnBack);
+            driver.findElement(btnBack);
         } else {
             // Fallback: pakai bawaan system jika tombol back gak ada
             System.out.println("Tombol Back UI tidak ada, pakai Back System.");
