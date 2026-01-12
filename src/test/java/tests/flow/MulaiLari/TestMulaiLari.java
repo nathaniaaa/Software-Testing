@@ -45,8 +45,8 @@ public class TestMulaiLari extends BaseTest {
     public void testBukaHalamanMulaiLari() {
         System.out.println("TEST 1: Klik ikon Mulai Lari (Bottom Navigation)");
         
-        click(navMulaiLari);
-        waitForVisibility(btnOutdoor);
+        driver.findElement(navMulaiLari).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnOutdoor));
         Assert.assertTrue(driver.findElements(btnOutdoor).size() > 0, "Bottom Navigation Mulai Lari gagal dibuka!");
     }
 
@@ -55,7 +55,7 @@ public class TestMulaiLari extends BaseTest {
         System.out.println("TEST 2: Pilih Outdoor & Auto Start");
 
         try { Thread.sleep(1000); } catch (Exception e) {}
-        click(btnOutdoor);
+        wait.until(ExpectedConditions.elementToBeClickable(btnOutdoor)).click();
 
         //  Setting Perizinan Baterai jika diminta
         // Tungu pop-up perizinan muncul (maks 5 detik)
@@ -66,7 +66,7 @@ public class TestMulaiLari extends BaseTest {
             // JIKA MUNCUL -> pergi ke setting baterai
             System.out.println("Button Perizinan Muncul -> Masuk ke Setting Baterai");
             try { Thread.sleep(1000); } catch (Exception e) {}
-            click(btnPergiKePengaturan);
+            driver.findElement(btnPergiKePengaturan).click();
             
             handleOppoSettings(); // Atur perizinan di setting lalu kembali 
             
@@ -80,8 +80,8 @@ public class TestMulaiLari extends BaseTest {
                 
                 // Klik Mulai Lari di Bottom Navigation
                 if (driver.findElements(navMulaiLari).size() > 0) {
-                    click(navMulaiLari);
-                    waitForVisibility(btnOutdoor); // Tunggu modal muncul lagi
+                    driver.findElement(navMulaiLari).click();
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(btnOutdoor)); // Tunggu modal muncul lagi
 
                     try { Thread.sleep(1000); } catch (Exception e) {}
                 }
@@ -89,7 +89,7 @@ public class TestMulaiLari extends BaseTest {
 
             // Klik Outdoor lagi (setelah urusan baterai kelar)
             System.out.println("Klik Outdoor lagi untuk mulai");
-            click(btnOutdoor);
+            driver.findElement(btnOutdoor).click();
 
         } catch (Exception e) {
             // JIKA TIDAK MUNCUL -> Aman, lanjut cek lokasi
@@ -112,7 +112,7 @@ public class TestMulaiLari extends BaseTest {
             String checked = switchElement.getAttribute("checked");
             
             if (checked.equals("false")) {
-                click(toggleLokasiSwitch);
+                switchElement.click();
                 System.out.println("Toggle Lokasi dinyalakan");
                 try { Thread.sleep(1500); } catch (Exception e) {}
             } else {
@@ -121,7 +121,7 @@ public class TestMulaiLari extends BaseTest {
 
             // Klik Back untuk kembali ke App (dan auto start)
             if (driver.findElements(btnBackLocationSettings).size() > 0) {
-                 click(btnBackLocationSettings);
+                 driver.findElement(btnBackLocationSettings).click();
             } else {
                  driver.navigate().back();
             }
@@ -155,19 +155,19 @@ public class TestMulaiLari extends BaseTest {
         System.out.println("Berhenti lari");
 
         // Klik STOP
-        click(btnStop);
+        wait.until(ExpectedConditions.elementToBeClickable(btnStop)).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnFinish));
 
-        waitForVisibility(btnFinish); 
         // Klik FINISH
-        click(btnFinish);
+        driver.findElement(btnFinish).click();
 
-        waitForVisibility(btnBackFromResult);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnBackFromResult));
         
         System.out.println("Selesai!");
         try { Thread.sleep(2000); } catch (Exception e) {}
 
         takeScreenshot("Hasil_Lari_Selesai");
-        click(btnBackFromResult);
+        driver.findElement(btnBackFromResult).click();
     }
 
     // Handle setting OPPO untuk perizinan baterai
@@ -176,17 +176,17 @@ public class TestMulaiLari extends BaseTest {
 
         // Klik menu "Penggunaan baterai"
         if (driver.findElements(menuPenggunaanBaterai).size() > 0) {
-            click(menuPenggunaanBaterai);
+            driver.findElement(menuPenggunaanBaterai).click();
             try { Thread.sleep(1500); } catch (Exception e) {}
             
             // Klik toggle
             if (driver.findElements(toggleLatarBelakang).size() > 0) {
-                click(toggleLatarBelakang);
+                driver.findElement(toggleLatarBelakang).click();
                 
                 // Konfirmasi popup -> pilih "izinkan"
                 try { Thread.sleep(1000); } catch (Exception e) {}
                 if (driver.findElements(btnIzinkanSystem).size() > 0) {
-                     click(btnIzinkanSystem);
+                     driver.findElement(btnIzinkanSystem).click();
                 }
             }
             
