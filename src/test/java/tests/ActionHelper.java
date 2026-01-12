@@ -340,4 +340,25 @@ public class ActionHelper {
 
         driver.perform(Arrays.asList(sequence1, sequence2));
     }
+
+    /**
+     * Tap layar berdasarkan RASIO (Persentase).
+     * Contoh: xRatio 0.5 (Tengah), yRatio 0.2 (Atas).
+     */
+    public void tapAtScreenRatio(double xRatio, double yRatio) {
+        Dimension size = driver.manage().window().getSize();
+        int x = (int) (size.width * xRatio);
+        int y = (int) (size.height * yRatio);
+
+        System.out.println("Tapping at Ratio: " + xRatio + ", " + yRatio + " (Pixel: " + x + ", " + y + ")");
+
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence tap = new Sequence(finger, 1);
+        tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+        tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        tap.addAction(new Pause(finger, Duration.ofMillis(100)));
+        tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        
+        driver.perform(Collections.singletonList(tap));
+    }
 }
