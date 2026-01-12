@@ -28,30 +28,25 @@ public class BaseTest {
     protected ActionHelper actions; 
 
     // LOCATORS
-    // [FIX 1] Gunakan tipe 'By' dan XPath Text agar lebih akurat
     private final By AD_CLOSE_BUTTON_TEXT = AppiumBy.xpath("//android.widget.Button[@text='Nanti Saja']");
     private final By AD_CLOSE_BUTTON_ID = AppiumBy.id("com.telkomsel.telkomselcm:id/btSecondTypeFirstSecondary");
     private final By MALL_TAB_ID = AppiumBy.accessibilityId("Mall");
 
-    // @BeforeMethod
     @BeforeClass
     public void setUp() throws Exception {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("2ab55c03") 
+                .setUdid("RRCTA02QJAR") 
                 .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
                 .setAppPackage("com.telkomsel.telkomselcm") 
-                // [FIX PENTING] Wildcard "*" artinya tunggu activity APAPUN. 
-                // Ini solusi error "SplashActivityRevamp never started".
                 .setAppWaitActivity("*") 
-                .setAppWaitDuration(Duration.ofMillis(30000)) // Tunggu max 30 detik buat app buka
+                .setAppWaitDuration(Duration.ofMillis(30000)) 
                 .setAutoGrantPermissions(true)
                 .setNoReset(true)
-                .setNewCommandTimeout(Duration.ofSeconds(60)) // Jangan matikan sesi kalau diam 60 detik
-                .setAdbExecTimeout(Duration.ofSeconds(60));   // Tunggu ADB lebih lama
-                
+                .setNewCommandTimeout(Duration.ofSeconds(60)) 
+                .setAdbExecTimeout(Duration.ofSeconds(60)); 
 
         driver = new AndroidDriver(
                 URI.create("http://127.0.0.1:4723").toURL(), options
@@ -63,7 +58,6 @@ public class BaseTest {
         masukKeMenuAyoLari();
     }
 
-    // @AfterMethod
     @AfterClass
     public void tearDown() {
         if (driver != null) {
@@ -75,9 +69,9 @@ public class BaseTest {
         // --- Wait system to set up ---
         try { 
             System.out.println("Menunggu aplikasi stabil...");
-            Thread.sleep(5000); // Beri waktu 5 detik agar Appium Server "nyawa"-nya kumpul
+            Thread.sleep(5000); 
         } catch (InterruptedException e) {}
-        // ---------------------
+        
         System.out.println("Navigasi ke AyoLari via Mall...");
         
         try {
@@ -90,7 +84,6 @@ public class BaseTest {
         // 2. TAP "MALL" TAB
         System.out.println("Klik Menu Mall...");
         try {
-            // Kita tunggu agak sabar buat Tab Mall
             WebElement mallTab = wait.until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
             mallTab.click();
         } catch (Exception e) {
@@ -149,20 +142,34 @@ public class BaseTest {
         System.out.println("Checking for Ads...");
         WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
+        // --- TYPE A: Iklan dengan Tombol Close (Teks/ID) ---
         try {
-            // Prioritas 1: Cari TEKS "Nanti Saja" (Paling akurat)
+            // Prioritas 1: Cari TEKS "Nanti Saja"
             WebElement textBtn = shortWait.until(ExpectedConditions.presenceOfElementLocated(AD_CLOSE_BUTTON_TEXT));
             textBtn.click();
-            System.out.println("Iklan ditutup via Teks.");
+            System.out.println("Iklan (Type A) ditutup via Teks.");
         } catch (Exception e1) {
-            // Prioritas 2: Kalau teks gak ketemu, cari ID-nya
+            // Prioritas 2: Cari ID
             try {
                 WebElement idBtn = shortWait.until(ExpectedConditions.presenceOfElementLocated(AD_CLOSE_BUTTON_ID));
                 idBtn.click();
-                System.out.println("Iklan ditutup via ID.");
+                System.out.println("Iklan (Type A) ditutup via ID.");
             } catch (Exception e2) {
-                System.out.println("Aman, tidak ada iklan.");
+                System.out.println("Tidak ada iklan Type A.");
             }
+        }
+
+        // --- TYPE B: Iklan Overlay (Cek apakah layar terblokir) ---
+        // Jika Mall Tab tidak bisa diklik, berarti ada overlay/iklan yang harus di-tap outside
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(2))
+                .until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
+            // Jika berhasil clickable, berarti aman
+        } catch (Exception e) {
+             System.out.println("Ad detected (Type B). Tapping outside...");
+             // Koordinat aman (biasanya area kosong di atas overlay)
+             actions.tapByCoordinates(540, 150);
+             try { Thread.sleep(1500); } catch (InterruptedException ex) {}
         }
     }
 
