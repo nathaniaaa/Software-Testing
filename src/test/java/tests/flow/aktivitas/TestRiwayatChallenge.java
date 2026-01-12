@@ -31,16 +31,16 @@ public class TestRiwayatChallenge extends BaseTest {
     public void testNavigasiKeListChallenge() {
         System.out.println("TEST 1: Navigasi ke List Riwayat Challenge");
 
-        // STEP 1: Klik Menu Aktivitas di Bottom Navigation
-        System.out.println("1. Klik Ikon Aktivitas");
+        // Klik ikon Aktivitas di Bottom Navigation
+        System.out.println("Klik ikon Aktivitas");
         click(iconAktivitas);
         try { Thread.sleep(1000); } catch (Exception e) {}
 
-        // STEP 2: Klik Tab Challenge di Header
-        System.out.println("2. Klik Tab Riwayat Challenge");
+        // Klik Riwayat Challenge di header
+        System.out.println("Klik Riwayat Challenge");
         click(tabChallenge);
 
-        // Pastikan Card muncul
+        // Pastikan card muncul
         waitForVisibility(cardChallengePertama);
         boolean isCardVisible = driver.findElements(cardChallengePertama).size() > 0;
         Assert.assertTrue(isCardVisible, "Gagal: List Riwayat Challenge tidak tampil!");
@@ -51,19 +51,19 @@ public class TestRiwayatChallenge extends BaseTest {
 
     @Test(priority = 2)
     public void testInteraksiDetailRiwayatChallenge() {
-        System.out.println("TEST 2: Interaksi Pada Halaman Detail Riwayat Challenge");
+        System.out.println("TEST 2: Interaksi pada Halaman Detail Riwayat Challenge");
 
         try { Thread.sleep(2000); } catch (Exception e) {}
 
-        // STEP 3: Masuk ke Card
-        System.out.println("3. Masuk ke Riwayat Challenge Pertama");
+        // Masuk ke card
+        System.out.println("Masuk ke Riwayat Challenge Pertama");
         click(cardChallengePertama);
 
-        // Validasi masuk detail (Cek tombol Deskripsi)
+        // Validasi masuk detail (cek tombol Deskripsi)
         waitForVisibility(btnDeskripsi);
         
-        // STEP 4: Default Halaman di Deskripsi -> Scroll Dulu
-        System.out.println("4. Halaman Deskripsi terbuka, mencoba Scroll ke bawah");
+        // Default halaman di Deskripsi -> scroll dulu
+        System.out.println("Halaman Deskripsi terbuka, mencoba Scroll ke bawah");
         try {
             // Scroll ke bawah untuk baca deskripsi
             actions.scrollVertical(); 
@@ -73,16 +73,16 @@ public class TestRiwayatChallenge extends BaseTest {
             System.out.println("Gagal scroll: " + e.getMessage());
         }
 
-        // STEP 5: Pindah ke Leaderboard
-        System.out.println("5. Klik Tab Leaderboard");
+        // Pindah ke Leaderboard
+        System.out.println("Klik Button Leaderboard");
         click(btnLeaderboard);
         try { Thread.sleep(3000); } catch (Exception e) {}
         
-        // Validasi simpel: Pastikan tombol deskripsi masih ada (tidak crash)
+        // Validasi: pastikan tombol deskripsi masih ada (tidak crash)
         Assert.assertTrue(driver.findElements(btnDeskripsi).size() > 0, "Tab Leaderboard gagal dimuat");
 
-        // STEP 6: Balik lagi ke Deskripsi
-        System.out.println("6. Klik Balik ke Tab Deskripsi");
+        // Balik lagi ke Deskripsi
+        System.out.println("Klik button ke Deskripsi");
         click(btnDeskripsi);
         
         takeScreenshot("DetailChallenge_Interaction");
@@ -92,11 +92,11 @@ public class TestRiwayatChallenge extends BaseTest {
     public void testKembaliKeList() {
         System.out.println("TEST 3: Kembali ke List Riwayat Challenge");
 
-        // STEP 7: Tekan Back
-        System.out.println("7. Tekan tombol Back");
+        // Tekan Back
+        System.out.println("Tekan tombol Back");
         click(btnBack);
 
-        // Validasi: Harus balik ke halaman list (Card muncul lagi)
+        // Validasi: Harus balik ke halaman list (card muncul lagi)
         try { Thread.sleep(1000); } catch (Exception e) {}
         boolean isListVisible = driver.findElements(cardChallengePertama).size() > 0;
         

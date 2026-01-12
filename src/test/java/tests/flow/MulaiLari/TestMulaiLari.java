@@ -2,133 +2,202 @@ package tests.flow.MulaiLari;
 
 import tests.BaseTest;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import java.time.Duration;
 
 public class TestMulaiLari extends BaseTest {
 
-    // ==========================================
-    // DAFTAR LOKASI (LOCATORS) - Sesuai Excel
-    // ==========================================
+    // Daftar Lokasi 
 
-    // 1. Menu Bawah: Mulai Lari
+    // Ikon Mulai Lari (Bottom Navigation)
     By navMulaiLari = AppiumBy.xpath("//android.widget.TextView[@text='Mulai Lari']");
-
-    // 2. Modal Pilih Jenis Lari
-    // Note: Locator di Excel agak aneh ("Outdoor running Outdoor"), mungkin itu gabungan text & content-desc.
-    // Kita pakai contains biar aman, atau xpath spesifik.
+    // Tombol Outdoor pada Modal Pilih Lokasi Lari
     By btnOutdoor = AppiumBy.xpath("//android.widget.Button[contains(@text, 'Outdoor')]");
 
-    // 3. Prompt Izin Latar Belakang
+    // Halaman Perizinan Baterai 
     By btnPergiKePengaturan = AppiumBy.xpath("//android.widget.Button[@text='Pergi ke Pengaturan']");
 
-    // 4. Halaman Setting (KHUSUS OPPO/REALME - com.oplus.battery)
-    // Sesuai Excel Baris 8 & 9
-    By settingPenggunaanBaterai = AppiumBy.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.android.settings:id/recycler_view']/android.widget.LinearLayout[3]");
-    
-    // Ini locator opsional, kadang langsung masuk ke list, kadang harus klik menu dulu.
-    // Sesuaikan dengan yang muncul di layar HP kamu.
-    By settingIzinkanLatarBelakang = AppiumBy.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.oplus.battery:id/recycler_view']/android.widget.LinearLayout[2]");
-    
-    // Tombol Izinkan (Baris 10 Excel)
+    // Setting OPPO Locators (Perizinan Baterai)
+    By menuPenggunaanBaterai = AppiumBy.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.android.settings:id/recycler_view']/android.widget.LinearLayout[3]");
+    By toggleLatarBelakang = AppiumBy.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.oplus.battery:id/recycler_view']/android.widget.LinearLayout[2]");
     By btnIzinkanSystem = AppiumBy.id("android:id/button1");
+    By btnBackSettingOppo = AppiumBy.id("com.oplus.battery:id/coui_toolbar_back_view");
 
-    // Tombol Back di System (Header Kiri Atas)
-    By btnBackSystem = AppiumBy.accessibilityId("Kembali ke atas");
+    // Switch Toggle di Halaman Setting untuk Lokasi
+    By toggleLokasiSwitch = AppiumBy.id("android:id/switch_widget");
+    // Tombol Back di Halaman Lokasi Setting
+    By btnBackLocationSettings = AppiumBy.id("com.android.settings:id/coui_toolbar_back_view");
+
+    // Halaman Lari Sedang Berjalan
+    By btnStop = AppiumBy.id("com.telkomsel.telkomselcm:id/toggle_button_stop");
+    By btnFinish = AppiumBy.id("com.telkomsel.telkomselcm:id/btn_finish");
+    
+    By btnBackFromResult = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[1]/android.widget.Button[1]"); 
 
 
-    // ==========================================
-    // TEST CASES
-    // ==========================================
-
+    // Test Cases
     @Test(priority = 1)
     public void testBukaHalamanMulaiLari() {
-        System.out.println("--- TEST 1: Buka Menu Mulai Lari ---");
-
+        System.out.println("TEST 1: Klik ikon Mulai Lari (Bottom Navigation)");
+        
         click(navMulaiLari);
-        
-        // Validasi: Cek apakah tombol Outdoor muncul
         waitForVisibility(btnOutdoor);
-        Assert.assertTrue(driver.findElements(btnOutdoor).size() > 0, "Modal Pilihan Lari tidak muncul!");
-        
-        takeScreenshot("Menu_MulaiLari_Terbuka");
+        Assert.assertTrue(driver.findElements(btnOutdoor).size() > 0, "Bottom Navigation Mulai Lari gagal dibuka!");
     }
 
     @Test(priority = 2)
-    public void testPilihOutdoorDanSetting() {
-        System.out.println("--- TEST 2: Pilih Outdoor & Handle Izin ---");
+    public void testPilihOutdoorDanAutoStart() {
+        System.out.println("TEST 2: Pilih Outdoor & Auto Start");
 
-        // Klik Outdoor
+        try { Thread.sleep(1000); } catch (Exception e) {}
         click(btnOutdoor);
 
-        // Cek apakah muncul pop-up suruh ke pengaturan?
-        // Kita pakai try-catch karena kalau izin sudah pernah dikasih, pop-up ini GAK MUNCUL.
+        //  Setting Perizinan Baterai jika diminta
+        // Tungu pop-up perizinan muncul (maks 5 detik)
         try {
-            if (driver.findElements(btnPergiKePengaturan).size() > 0) {
-                System.out.println("Pop-up Izin muncul, menuju Pengaturan...");
-                click(btnPergiKePengaturan);
+            WebDriverWait waitIzin = new WebDriverWait(driver, Duration.ofSeconds(5));
+            waitIzin.until(ExpectedConditions.visibilityOfElementLocated(btnPergiKePengaturan));
+            
+            // JIKA MUNCUL -> pergi ke setting baterai
+            System.out.println("Button Perizinan Muncul -> Masuk ke Setting Baterai");
+            try { Thread.sleep(1000); } catch (Exception e) {}
+            click(btnPergiKePengaturan);
+            
+            handleOppoSettings(); // Atur perizinan di setting lalu kembali 
+            
+            System.out.println("Perizinan Baterai diatur. Kembali ke App dan mulai lagi");
+            try { Thread.sleep(2000); } catch (Exception e) {}
+            
+            // RE-OPEN MENU JIKA BALIK KE HOME
+            // Validasi (cek) apakah tombol Outdoor hilang? Kalau hilang, berarti di Home
+            if (driver.findElements(btnOutdoor).size() == 0) {
+                System.out.println("Posisi di Home. Buka menu 'Mulai Lari' lagi");
                 
-                // --- MASUK AREA SYSTEM SETTING (DANGER ZONE) ---
-                handleOppoBatterySettings();
-                
-                // Setelah selesai di setting, kita asumsikan user sudah memencet back sampai balik ke app
-                // Atau kita handle back button secara manual di fungsi handle
-            } else {
-                System.out.println("Pop-up Izin tidak muncul (Mungkin sudah diizinkan sebelumnya). Langsung lanjut.");
+                // Klik Mulai Lari di Bottom Navigation
+                if (driver.findElements(navMulaiLari).size() > 0) {
+                    click(navMulaiLari);
+                    waitForVisibility(btnOutdoor); // Tunggu modal muncul lagi
+
+                    try { Thread.sleep(1000); } catch (Exception e) {}
+                }
             }
+
+            // Klik Outdoor lagi (setelah urusan baterai kelar)
+            System.out.println("Klik Outdoor lagi untuk mulai");
+            click(btnOutdoor);
+
         } catch (Exception e) {
-            System.out.println("Error saat handling permission: " + e.getMessage());
+            // JIKA TIDAK MUNCUL -> Aman, lanjut cek lokasi
+            System.out.println("Izin Baterai aman/sudah ada");
         }
 
-        // Validasi akhir: Harusnya sekarang sudah masuk ke halaman "Persiapan Lari" (Peta/GPS)
-        // Tambahkan assertion sesuai halaman tujuan, misal tombol "Mulai" (Start)
-        takeScreenshot("Ready_To_Run");
-    }
-
-    // --- FUNGSI KHUSUS HANDLING SETTING OPPO ---
-    public void handleOppoBatterySettings() {
+        // Setting Lokasi (GPS) jika diminta
+        // Kadang setelah klik outdoor, dilempar ke setting Lokasi jika GPS mati
         try {
-            Thread.sleep(2000); // Tunggu app setting loading
+            // Tunggu sebentar apakah masuk ke page Setting Lokasi? (Cek Toggle Switch)
+            WebDriverWait waitLokasi = new WebDriverWait(driver, Duration.ofSeconds(5));
+            waitLokasi.until(ExpectedConditions.visibilityOfElementLocated(toggleLokasiSwitch));
             
-            // Logika di sini sangat bergantung pada apa yang tampil di layar HP mu saat ini.
-            // Berdasarkan Excel, sepertinya harus klik "Izinkan Aktivitas Latar Belakang"
+            System.out.println("Dialihkan ke Pengaturan Lokasi -> nyalakan toggle");
             
-            // Coba klik opsi yang dilist di Excel
-            // Hati-hati: Locator "LinearLayout[3]" itu index, rawan berubah kalau urutan menu beda.
-            // Lebih aman cari by Text kalau ada, misal "Izinkan"
+            // Cek status toggle, kalau mati (false) baru diklik
+            WebElement switchElement = driver.findElement(toggleLokasiSwitch);
+
+            // Get attribute 'checked' (nilai: true/false)
+            String checked = switchElement.getAttribute("checked");
             
-            System.out.println("Mencoba klik setting background...");
-            
-            // Cek apakah ada tombol "Izinkan" (Dialog System) langsung?
-            if (driver.findElements(btnIzinkanSystem).size() > 0) {
-                 click(btnIzinkanSystem);
+            if (checked.equals("false")) {
+                click(toggleLokasiSwitch);
+                System.out.println("Toggle Lokasi dinyalakan");
+                try { Thread.sleep(1500); } catch (Exception e) {}
             } else {
-                // Kalau masuk ke menu list dulu
-                // click(settingIzinkanLatarBelakang); // Sesuaikan alur real-nya
+                 System.out.println("Toggle Lokasi ternyata sudah nyala");
             }
 
-            System.out.println("Selesai setting, mencoba kembali ke aplikasi...");
-            
-            // Tekan Back 2-3 kali sampai balik ke aplikasi kita
-            // Kita pakai loop safety
-            for(int i=0; i<3; i++) {
-                // Cek apakah kita sudah balik ke app (misal cek apakah tombol Outdoor/Navigasi ada?)
-                if (driver.findElements(navMulaiLari).size() > 0 || driver.findElements(btnOutdoor).size() > 0) {
-                    break;
-                }
-                
-                // Kalau masih di setting, klik back
-                if (driver.findElements(btnBackSystem).size() > 0) {
-                    click(btnBackSystem);
-                } else {
-                    driver.navigate().back(); // Back bawaan Android
-                }
-                Thread.sleep(1000);
+            // Klik Back untuk kembali ke App (dan auto start)
+            if (driver.findElements(btnBackLocationSettings).size() > 0) {
+                 click(btnBackLocationSettings);
+            } else {
+                 driver.navigate().back();
             }
+            System.out.println("Kembali ke App dari Setting Lokasi");
 
         } catch (Exception e) {
-            System.out.println("Gagal di menu setting: " + e.getMessage());
+            System.out.println("Tidak dialihkan ke pengaturan lokasi (Lokasi Aman)");
+        }
+
+        // Menunggu lari dimulai (tombol STOP muncul)
+        System.out.println("Menunggu lari dimulai (Waiting for Stop button)");
+        WebDriverWait waitLari = new WebDriverWait(driver, Duration.ofSeconds(60));
+        
+        try {
+            waitLari.until(ExpectedConditions.visibilityOfElementLocated(btnStop));
+            System.out.println("Tombol STOP sudah muncul, berarti Lari sudah dimulai.");
+        } catch (Exception e) {
+            takeScreenshot("Gagal_Start_Lari");
+            Assert.fail("Gagal Start Lari: Tombol STOP tidak muncul dalam 60 detik!");
+        }
+        takeScreenshot("Lari_Sedang_Berjalan");
+    }
+
+    @Test(priority = 3)
+    public void testStopDanFinishLari() {
+        System.out.println("TEST 3: Lari -> Stop -> Finish");
+        
+        System.out.println("Simulasi Lari 10 detik");
+        try { Thread.sleep(10000); } catch (Exception e) {}
+
+        System.out.println("Berhenti lari");
+
+        // Klik STOP
+        click(btnStop);
+
+        waitForVisibility(btnFinish); 
+        // Klik FINISH
+        click(btnFinish);
+
+        waitForVisibility(btnBackFromResult);
+        
+        System.out.println("Selesai!");
+        try { Thread.sleep(2000); } catch (Exception e) {}
+
+        takeScreenshot("Hasil_Lari_Selesai");
+        click(btnBackFromResult);
+    }
+
+    // Handle setting OPPO untuk perizinan baterai
+    public void handleOppoSettings() {
+        try { Thread.sleep(2000); } catch (Exception e) {}
+
+        // Klik menu "Penggunaan baterai"
+        if (driver.findElements(menuPenggunaanBaterai).size() > 0) {
+            click(menuPenggunaanBaterai);
+            try { Thread.sleep(1500); } catch (Exception e) {}
+            
+            // Klik toggle
+            if (driver.findElements(toggleLatarBelakang).size() > 0) {
+                click(toggleLatarBelakang);
+                
+                // Konfirmasi popup -> pilih "izinkan"
+                try { Thread.sleep(1000); } catch (Exception e) {}
+                if (driver.findElements(btnIzinkanSystem).size() > 0) {
+                     click(btnIzinkanSystem);
+                }
+            }
+            
+            // Back 2x (balik ke Home)
+            driver.navigate().back(); 
+            try { Thread.sleep(1000); } catch (Exception e) {}
+            driver.navigate().back(); 
+            
+        } else {
+            System.out.println("Menu Penggunaan Baterai tidak ditemukan, kembali saja.");
+            driver.navigate().back(); 
         }
     }
 }
