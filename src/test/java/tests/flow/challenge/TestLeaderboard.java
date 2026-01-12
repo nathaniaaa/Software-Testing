@@ -5,6 +5,7 @@ import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class TestLeaderboard extends BaseTest {
 
@@ -28,12 +29,12 @@ public class TestLeaderboard extends BaseTest {
         try { Thread.sleep(2000); } catch (Exception e) {}
         
         // Klik Challenge di Bottom Navigation
-        click(navChallenge);
+        driver.findElement(navChallenge).click();
         
         try { Thread.sleep(2000); } catch (Exception e) {}
         
         // Validasi: pastikan tombol Leaderboard di atas muncul
-        waitForVisibility(tabLeaderboard);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(tabLeaderboard));
         Assert.assertTrue(driver.findElements(tabLeaderboard).size() > 0, "Menu Challenge gagal terbuka!");
         
         takeScreenshot("Halaman_Challenge_Utama");
@@ -44,7 +45,7 @@ public class TestLeaderboard extends BaseTest {
         System.out.println("TEST 2: Klik Ikon Leaderboard");
 
         // Klik ikon piala (Leaderboard)
-        click(tabLeaderboard);
+        wait.until(ExpectedConditions.elementToBeClickable(tabLeaderboard)).click();
         
         // Jeda loading data leaderboard 
         System.out.println("Menunggu data leaderboard");

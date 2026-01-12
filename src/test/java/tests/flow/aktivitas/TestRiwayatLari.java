@@ -3,6 +3,7 @@ package tests.flow.aktivitas;
 import tests.BaseTest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
@@ -46,14 +47,14 @@ public class TestRiwayatLari extends BaseTest {
     public void testMasukKeRiwayatLariViaAktivitas() {
         System.out.println("--- TEST 1: Navigasi via Tab Aktivitas ---");
         
-        click(navAktivitas);
-        waitForVisibility(headerAktivitas);
+        driver.findElement(navAktivitas).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(headerAktivitas));
         
         try { Thread.sleep(3000); } catch (Exception e) {}
         
         if(driver.findElements(firstActivityCard).size() > 0) {
             System.out.println("Aktivitas ditemukan. Klik card pertama...");
-            click(firstActivityCard);
+            driver.findElement(firstActivityCard).click();
             
             System.out.println("Memuat halaman detail...");
             try { Thread.sleep(4000); } catch (Exception e) {}
@@ -63,8 +64,8 @@ public class TestRiwayatLari extends BaseTest {
             Assert.fail("Gagal: Tidak ada aktivitas lari di list!");
         }
 
-        waitForVisibility(titlePage);
-        String judul = getText(titlePage);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(titlePage));
+        String judul = driver.findElement(titlePage).getText();
         Assert.assertEquals(judul, "Rincian Lari", "Salah halaman!");
         takeScreenshot("Masuk_Rincian_Lari");
     }
@@ -93,17 +94,17 @@ public class TestRiwayatLari extends BaseTest {
         try { Thread.sleep(1500); } catch (Exception e) {}
 
         // 1. VALIDASI PETA MUNCUL
-        waitForVisibility(mapAreaLocator);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(mapAreaLocator));
         Assert.assertTrue(driver.findElements(mapAreaLocator).size() > 0, "ERROR: Peta tidak muncul!");
         System.out.println("Peta terdeteksi.");
 
         // 2. ZOOM BUTTONS
         if(driver.findElements(btnZoomIn).size() > 0) {
-            click(btnZoomIn);
+            driver.findElement(btnZoomIn).click();
             try { Thread.sleep(1000); } catch (Exception e) {} 
         }
         if(driver.findElements(btnZoomOut).size() > 0) {
-            click(btnZoomOut);
+            driver.findElement(btnZoomOut).click();
             try { Thread.sleep(1000); } catch (Exception e) {}
         }
 
@@ -132,7 +133,7 @@ public class TestRiwayatLari extends BaseTest {
         // 5. KLIK KOMPAS (Reset)
         try {
             if(driver.findElements(btnCompass).size() > 0) {
-                click(btnCompass);
+                driver.findElement(btnCompass).click();
                 System.out.println("Kompas diklik.");
             }
         } catch (Exception e) {}
@@ -187,7 +188,7 @@ public class TestRiwayatLari extends BaseTest {
     public void testKembaliKeMenu() {
         System.out.println("--- TEST 5: Kembali ke List Riwayat ---");
         
-        click(btnBack);
+        driver.findElement(btnBack).click();
         try { Thread.sleep(2000); } catch (Exception e) {}
         
         boolean isStillInDetail = driver.findElements(titlePage).size() > 0;

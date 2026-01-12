@@ -5,12 +5,13 @@ import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class TestRiwayatChallenge extends BaseTest {
 
     // Daftar Lokasi
     // Ikon Aktivitas (Bottom Navigation)
-    By iconAktivitas = AppiumBy.xpath("//android.widget.Button[@text=\"Aktivitas Aktivitas\"]");
+    By navAktivitas = AppiumBy.xpath("//android.widget.Button[@text=\"Aktivitas Aktivitas\"]");
 
     // Tab Challenge (Header Atas)
     By tabChallenge = AppiumBy.accessibilityId("Leaderboard Riwayat Challenge");
@@ -33,15 +34,15 @@ public class TestRiwayatChallenge extends BaseTest {
 
         // Klik ikon Aktivitas di Bottom Navigation
         System.out.println("Klik ikon Aktivitas");
-        click(iconAktivitas);
+        driver.findElement(navAktivitas).click();
         try { Thread.sleep(1000); } catch (Exception e) {}
 
         // Klik Riwayat Challenge di header
         System.out.println("Klik Riwayat Challenge");
-        click(tabChallenge);
+        driver.findElement(tabChallenge).click();
 
         // Pastikan card muncul
-        waitForVisibility(cardChallengePertama);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(cardChallengePertama));
         boolean isCardVisible = driver.findElements(cardChallengePertama).size() > 0;
         Assert.assertTrue(isCardVisible, "Gagal: List Riwayat Challenge tidak tampil!");
         
@@ -57,10 +58,10 @@ public class TestRiwayatChallenge extends BaseTest {
 
         // Masuk ke card
         System.out.println("Masuk ke Riwayat Challenge Pertama");
-        click(cardChallengePertama);
+        driver.findElement(cardChallengePertama).click();
 
         // Validasi masuk detail (cek tombol Deskripsi)
-        waitForVisibility(btnDeskripsi);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnDeskripsi));
         
         // Default halaman di Deskripsi -> scroll dulu
         System.out.println("Halaman Deskripsi terbuka, mencoba Scroll ke bawah");
@@ -75,7 +76,7 @@ public class TestRiwayatChallenge extends BaseTest {
 
         // Pindah ke Leaderboard
         System.out.println("Klik Button Leaderboard");
-        click(btnLeaderboard);
+        driver.findElement(btnLeaderboard).click();
         try { Thread.sleep(3000); } catch (Exception e) {}
         
         // Validasi: pastikan tombol deskripsi masih ada (tidak crash)
@@ -83,7 +84,7 @@ public class TestRiwayatChallenge extends BaseTest {
 
         // Balik lagi ke Deskripsi
         System.out.println("Klik button ke Deskripsi");
-        click(btnDeskripsi);
+        driver.findElement(btnDeskripsi).click();
         
         takeScreenshot("DetailChallenge_Interaction");
     }
@@ -94,7 +95,7 @@ public class TestRiwayatChallenge extends BaseTest {
 
         // Tekan Back
         System.out.println("Tekan tombol Back");
-        click(btnBack);
+        driver.findElement(btnBack).click();
 
         // Validasi: Harus balik ke halaman list (card muncul lagi)
         try { Thread.sleep(1000); } catch (Exception e) {}

@@ -5,6 +5,7 @@ import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class TestBottomNav extends BaseTest {
 
@@ -39,8 +40,8 @@ public class TestBottomNav extends BaseTest {
 
         // KE AKTIVITAS
         System.out.println("Klik Aktivitas");
-        click(navAktivitas);
-        waitForVisibility(headerAktivitas);
+        driver.findElement(navAktivitas).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(headerAktivitas));
         System.out.println("Validasi: Header 'Aktifitas Kamu' muncul.");
         takeScreenshot("Nav_Aktivitas");
 
@@ -49,8 +50,8 @@ public class TestBottomNav extends BaseTest {
 
         try { Thread.sleep(2000); } catch (Exception e) {}
 
-        click(navChallenge);
-        waitForVisibility(headerChallenge);
+        driver.findElement(navChallenge).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(headerChallenge));
         System.out.println("Validasi: Header Challenge muncul.");
         takeScreenshot("Nav_Challenge");
 
@@ -59,8 +60,8 @@ public class TestBottomNav extends BaseTest {
 
         try { Thread.sleep(2000); } catch (Exception e) {}
 
-        click(navSaya);
-        waitForVisibility(headerSaya);
+        driver.findElement(navSaya).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(headerSaya));
         System.out.println("Validasi: Header 'Profil Kamu' muncul.");
         takeScreenshot("Nav_Saya");
 
@@ -69,8 +70,8 @@ public class TestBottomNav extends BaseTest {
 
         try { Thread.sleep(2000); } catch (Exception e) {}
 
-        click(navBeranda);
-        waitForVisibility(headerBeranda); 
+        driver.findElement(navBeranda).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(headerBeranda));
         System.out.println("Validasi: Balik ke Beranda (Headline muncul).");
         takeScreenshot("Nav_Beranda_Back");
     }
@@ -81,8 +82,8 @@ public class TestBottomNav extends BaseTest {
         
         try { Thread.sleep(2000); } catch (Exception e) {}
 
-        click(navMulaiLari);
-        waitForVisibility(btnOutdoor);
+        driver.findElement(navMulaiLari).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnOutdoor));
         Assert.assertTrue(driver.findElements(btnOutdoor).size() > 0, "Modal gagal terbuka!");
         
         // TUTUP MODAL
