@@ -107,38 +107,23 @@ public class ActionHelper {
         performSwipe(startX, centerY, endX, centerY);
     }
 
-    // --- HELPER UNTUK PAKSA SCROLL MANUAL ---
-    // --- HELPER UNTUK PAKSA SCROLL MANUAL (REVISI) ---
-    public void swipeUp() {
-        // Ambil ukuran layar
+    /**
+     * [BARU] Swipe Vertical Fleksibel (Input Angka Rasio).
+     * Berguna untuk scroll di area aman (safe zone) agar tidak kena Peta.
+     * @param startYRatio Titik Awal Y (0.0 - 1.0). Contoh: 0.6 (Bawah)
+     * @param endYRatio Titik Akhir Y (0.0 - 1.0). Contoh: 0.3 (Atas)
+     */
+    public void swipeVertical(double startYRatio, double endYRatio) {
         Dimension size = driver.manage().window().getSize();
         int width = size.getWidth();
         int height = size.getHeight();
 
-        // LOGIC BARU: SWIPE DI TENGAH (SAFE ZONE)
-        // Hindari 20% atas (Header) dan 30% bawah (Menu Bar)
-        int startX = width / 2;
-        int startY = (int) (height * 0.60); // Mulai dari 60% layar (tengah agak bawah)
-        int endY = (int) (height * 0.25);   // Geser sampai 25% layar (atas)
-        
-        // Buat pointer input (jari telunjuk)
-        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
-        Sequence swipe = new Sequence(finger, 1);
-        
-        // Gerakkan jari: Tekan -> Geser Cepat -> Lepas
-        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
-        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        
-        // Pause dikit banget biar touch register (jangan lama-lama)
-        swipe.addAction(new Pause(finger, Duration.ofMillis(100))); 
-        
-        // Durasinya dipersingkat jadi 400ms biar jadi "FLING" bukan "DRAG"
-        swipe.addAction(finger.createPointerMove(Duration.ofMillis(400), PointerInput.Origin.viewport(), startX, endY));
-        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        
-        // Eksekusi
-        driver.perform(Collections.singletonList(swipe));
-        System.out.println("Swiping up (Fling Mode: 60% -> 25%)...");
+        int startX = width / 2; // Selalu di tengah X
+        int startY = (int) (height * startYRatio);
+        int endY = (int) (height * endYRatio);
+
+        System.out.println("Swiping Vertical Custom: " + startYRatio + " -> " + endYRatio);
+        performSwipe(startX, startY, startX, endY, 800);
     }
 
     // ========================================================================
@@ -150,27 +135,16 @@ public class ActionHelper {
      * Digunakan jika Anchor belum ketemu.
      */
     public void swipeFromBottom() {
-        Dimension size = driver.manage().window().getSize();
-        int width = size.getWidth();
-        int height = size.getHeight();
-
-        // Mulai dari 85% layar (Bawah) -> Geser ke 40% (Tengah)
-        int startX = width / 2;
-        int startY = (int) (height * 0.85); 
-        int endY = (int) (height * 0.40);
-
         System.out.println("Swiping from BOTTOM (Safe Zone)...");
+        // Start 85% (Bawah banget) -> End 40% (Tengah)
+        swipeVertical(0.85, 0.40);
+    }
 
-        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
-        Sequence swipe = new Sequence(finger, 1);
-        
-        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
-        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        swipe.addAction(new Pause(finger, Duration.ofMillis(200))); 
-        swipe.addAction(finger.createPointerMove(Duration.ofMillis(600), PointerInput.Origin.viewport(), startX, endY));
-        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        
-        driver.perform(Collections.singletonList(swipe));
+    // [REVISI] Menggunakan swipeVertical di area ATAS (Safe Zone)
+    public void swipeUp() {
+        // Start 40% (Agak tengah atas) -> End 15% (Atas banget)
+        // Ini aman karena jari kita tidak akan menyentuh area Peta di bawah.
+        swipeVertical(0.40, 0.15);
     }
 
     /**
