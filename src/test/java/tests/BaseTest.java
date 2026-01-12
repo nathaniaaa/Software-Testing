@@ -66,7 +66,6 @@ public class BaseTest {
     }
 
     public void masukKeMenuAyoLari() {
-        // --- Wait system to set up ---
         try { 
             System.out.println("Menunggu aplikasi stabil...");
             Thread.sleep(5000); 
@@ -78,7 +77,7 @@ public class BaseTest {
             driver.activateApp("com.telkomsel.telkomselcm");
         } catch (Exception e) {}
 
-        // 1. HANDLE ADS (Upgrade Logic)
+        // 1. HANDLE ADS
         handlePotentialAds();
 
         // 2. TAP "MALL" TAB
@@ -86,8 +85,10 @@ public class BaseTest {
         try {
             WebElement mallTab = wait.until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
             mallTab.click();
+            System.out.println("  -> Berhasil klik tab Mall.");
         } catch (Exception e) {
-            System.out.println("Gagal klik Mall Tab. Iklan mungkin menghalangi atau Tab belum load.");
+            System.out.println("  -> Gagal klik Mall Tab (Mungkin tertutup iklan/overlay). Force Tap...");
+            actions.tapByCoordinates(540, 2200);
         }
         
         try { Thread.sleep(3000); } catch (Exception e) {}
@@ -95,13 +96,11 @@ public class BaseTest {
         // 3. MANUAL SCROLL LOOP TO FIND "LARI"
         System.out.println("Mencari menu 'Lari' dengan scroll manual...");
         boolean menuFound = false;
-        int maxScrolls = 3; 
+        int maxScrolls = 5; 
 
         for (int i = 0; i < maxScrolls; i++) {
             try {
-                WebElement lariIcon = driver.findElement(AppiumBy.androidUIAutomator(
-                    "new UiSelector().text(\"Lari\")"
-                ));
+                WebElement lariIcon = driver.findElement(AppiumBy.xpath("//android.widget.TextView[@text='Lari']"));
                 
                 System.out.println("Menu 'Lari' ketemu! Klik...");
                 lariIcon.click();
@@ -111,12 +110,13 @@ public class BaseTest {
             } catch (Exception e) {
                 System.out.println("Menu belum terlihat, scroll ke bawah (" + (i + 1) + "/" + maxScrolls + ")...");
                 actions.scrollVertical(); 
-                try { Thread.sleep(1500); } catch (Exception ex) {} 
+                try { Thread.sleep(2000); } catch (Exception ex) {} 
             }
         }
 
         if (!menuFound) {
-            System.out.println("PERINGATAN: Menu 'Lari' tidak ditemukan.");
+            System.out.println("PERINGATAN: Menu 'Lari' tidak ditemukan. Cek screenshot.");
+            takeScreenshot("LariNotFound");
         }
 
         // 4. CLICK "AYO MULAI LARI"
@@ -137,38 +137,40 @@ public class BaseTest {
         System.out.println("Sukses masuk dashboard Lari.");
     }
 
-    // [FIX LOGIC IKLAN] Lebih Cerdas & Sabar
     public void handlePotentialAds() {
         System.out.println("Checking for Ads...");
         WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-        // --- TYPE A: Iklan dengan Tombol Close (Teks/ID) ---
+        // --- TYPE A: Close Button ---
         try {
-            // Prioritas 1: Cari TEKS "Nanti Saja"
             WebElement textBtn = shortWait.until(ExpectedConditions.presenceOfElementLocated(AD_CLOSE_BUTTON_TEXT));
             textBtn.click();
-            System.out.println("Iklan (Type A) ditutup via Teks.");
+            System.out.println("  -> Iklan Type A ditutup (via Teks).");
         } catch (Exception e1) {
-            // Prioritas 2: Cari ID
             try {
                 WebElement idBtn = shortWait.until(ExpectedConditions.presenceOfElementLocated(AD_CLOSE_BUTTON_ID));
                 idBtn.click();
-                System.out.println("Iklan (Type A) ditutup via ID.");
+                System.out.println("  -> Iklan Type A ditutup (via ID).");
             } catch (Exception e2) {
-                System.out.println("Tidak ada iklan Type A.");
+                System.out.println("  -> Tidak ada iklan Type A.");
             }
         }
 
-        // --- TYPE B: Iklan Overlay (Cek apakah layar terblokir) ---
-        // Jika Mall Tab tidak bisa diklik, berarti ada overlay/iklan yang harus di-tap outside
+        // --- TYPE B: Iklan Overlay (Tap Outside) ---
+        System.out.println("Menunggu sejenak sebelum cek Iklan Type B (Overlay)...");
+        // [FIX] Tambahkan sleep agar iklan sempat muncul (rendering time)
+        try { Thread.sleep(3000); } catch (InterruptedException e) {}
+
         try {
-            new WebDriverWait(driver, Duration.ofSeconds(2))
+            // [FIX] Tambahkan durasi wait dari 2 detik menjadi 5 detik
+            new WebDriverWait(driver, Duration.ofSeconds(5))
                 .until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
-            // Jika berhasil clickable, berarti aman
+            
+            System.out.println("  -> Aman: Layar tidak terblokir (Mall Tab clickable).");
+            
         } catch (Exception e) {
-             System.out.println("Ad detected (Type B). Tapping outside...");
-             // Koordinat aman (biasanya area kosong di atas overlay)
-             actions.tapByCoordinates(540, 150);
+             System.out.println("  -> LAYAR TERBLOKIR! Mencoba tap outside (Type B)...");
+             actions.tapByCoordinates(540, 150); // Tap area aman atas
              try { Thread.sleep(1500); } catch (InterruptedException ex) {}
         }
     }
@@ -176,21 +178,6 @@ public class BaseTest {
     public void tapCenterScreen() {
         Dimension size = driver.manage().window().getSize();
         actions.tapByCoordinates(size.width / 2, size.height / 2);
-    }
-
-    // GLOBAL HELPERS
-    public void click(By locator) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
-    }
-
-    public String getText(By locator) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-        return driver.findElement(locator).getText();
-    }
-
-    public void waitForVisibility(By locator) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
     public void takeScreenshot(String fileName) {
