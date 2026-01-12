@@ -10,7 +10,7 @@ public class TestRiwayatChallenge extends BaseTest {
 
     // Daftar Lokasi
     // Ikon Aktivitas (Bottom Navigation)
-    By iconAktivitas = AppiumBy.xpath("//android.widget.Button[contains(@content-desc, 'Aktivitas') or contains(@text, 'Aktivitas')]");
+    By iconAktivitas = AppiumBy.xpath("//android.widget.Button[@text=\"Aktivitas Aktivitas\"]");
 
     // Tab Challenge (Header Atas)
     By tabChallenge = AppiumBy.accessibilityId("Leaderboard Riwayat Challenge");
