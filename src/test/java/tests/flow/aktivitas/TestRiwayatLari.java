@@ -14,29 +14,37 @@ public class TestRiwayatLari extends BaseTest {
     // DAFTAR LOKASI (LOCATORS)
     // ==========================================
 
-    // 1. Navigation (Bottom Nav)
+    // 1. Navigation & Header
     By navAktivitas = AppiumBy.xpath("//android.widget.TextView[@text='Aktivitas'] | //android.widget.Button[contains(@text, 'Aktivitas')]");
-
-    // 2. Tab Aktivitas Page
     By headerAktivitas = AppiumBy.xpath("//android.widget.TextView[contains(@text, 'Aktifitas Kamu')]");
     
-    // 3. Card Riwayat Lari
+    // 2. Card Riwayat Lari
     By firstActivityCard = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View[2]");
 
-    // 4. Halaman Detail
+    // 3. Halaman Detail
     By titlePage = AppiumBy.xpath("//android.widget.TextView[@text='Rincian Lari']");
     By btnBack = AppiumBy.xpath("//android.widget.Button[1]"); 
     
-    // 5. Element Peta
-    By mapAreaLocator = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View[2]");
+    // Tombol Unduh & Edit
+    By btnUnduh = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[1]/android.widget.Button[2]");
+    By btnEditAktivitas = AppiumBy.xpath("(//android.widget.Image[@text='svg%3e'])[3]");
     
-    By btnZoomIn = AppiumBy.accessibilityId("Zoom in"); 
+    // Modal Edit Nama Aktivitas
+    By inputNamaAktivitas = AppiumBy.className("android.widget.EditText");
+    By btnSimpan = AppiumBy.xpath("//android.widget.Button[@text='Simpan']");
+    
+    // [BARU] Judul Modal (Buat dipencet biar keyboard nutup)
+    By titleModalEdit = AppiumBy.xpath("//android.widget.TextView[contains(@text, 'Ubah Nama')]");
+
+    // 4. Element Peta
+    By mapAreaLocator = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View/android.view.View[2]/android.view.View/android.view.View[1]/android.view.View[1]/android.view.View[1]");
+    By btnZoomIn = AppiumBy.xpath("//android.widget.Button[@content-desc=\"Zoom in\"]"); 
     By btnZoomOut = AppiumBy.accessibilityId("Zoom out");
     By btnInfoMap = AppiumBy.xpath("//android.view.View[@text='Toggle attribution']"); 
     By btnCompass = AppiumBy.accessibilityId("Reset bearing to north");
     
-    // 6. Element Grafik (Anchor Sumbu Y)
-    By textSumbuY = AppiumBy.xpath("//android.widget.TextView[contains(@text, ' m')]"); 
+    // 5. Element Grafik 
+    By grafikAreaLocator = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[2]/android.view.View/android.view.View[2]/android.view.View");
 
 
     // ==========================================
@@ -82,119 +90,203 @@ public class TestRiwayatLari extends BaseTest {
         
         System.out.println("Statistik aman.");
     }
-
+    
     @Test(priority = 3)
+    public void testFiturTambahanHeader() {
+        System.out.println("--- TEST 3: Cek Tombol Unduh & Edit ---");
+        
+        // 1. Cek Tombol Unduh
+        if (driver.findElements(btnUnduh).size() > 0) {
+            System.out.println("Tombol Unduh ada. Klik...");
+            driver.findElement(btnUnduh).click();
+            try { Thread.sleep(2000); } catch (Exception e) {}
+            
+            System.out.println("Menutup dialog unduh (Tap Outside)...");
+            actions.tapAtScreenRatio(0.5, 0.15); 
+            
+            try { Thread.sleep(1000); } catch (Exception e) {}
+        } else {
+            System.out.println("SKIP: Tombol Unduh tidak ditemukan.");
+        }
+        
+        // 2. Cek Tombol Edit & Isi Nama
+        if (driver.findElements(btnEditAktivitas).size() > 0) {
+            System.out.println("Tombol Edit ada. Klik...");
+            driver.findElement(btnEditAktivitas).click();
+            
+            System.out.println("Menunggu modal edit muncul...");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(inputNamaAktivitas));
+            
+            // Isi Nama Baru
+            WebElement input = driver.findElement(inputNamaAktivitas);
+            input.click(); 
+            try { Thread.sleep(500); } catch (Exception e) {}
+            
+            input.clear(); 
+            input.sendKeys("TEST DLU AAA"); // Nama baru
+            try { Thread.sleep(2000); } catch (Exception e) {}
+            System.out.println("Ketik nama baru selesai.");
+            
+            // [TRIK BARU] Klik Judul Modal untuk menutup keyboard & trigger event blur
+            // Ini jauh lebih aman daripada driver.hideKeyboard()
+            try {
+                if(driver.findElements(titleModalEdit).size() > 0) {
+                    System.out.println("Klik judul modal (biar keyboard nutup)...");
+                    driver.findElement(titleModalEdit).click();
+                }
+            } catch (Exception e) {}
+            
+            try { Thread.sleep(2000); } catch (Exception e) {}
+            
+            // Klik Simpan
+            // Kita pakai Wait ElementToBeClickable biar yakin tombolnya siap
+            if (driver.findElements(btnSimpan).size() > 0) {
+                System.out.println("Klik tombol Simpan...");
+                wait.until(ExpectedConditions.elementToBeClickable(btnSimpan)).click();
+                
+                System.out.println("Menunggu proses simpan...");
+                try {
+                    // Tunggu modal hilang (maksimal 10 detik)
+                    wait.until(ExpectedConditions.invisibilityOfElementLocated(inputNamaAktivitas));
+                    System.out.println("Sukses: Modal Edit sudah tertutup.");
+                } catch (Exception e) {
+                    System.out.println("Warning: Modal masih nyangkut, paksa tap luar...");
+                    actions.tapAtScreenRatio(0.5, 0.15);
+                }
+            }
+            
+        } else {
+            System.out.println("SKIP: Tombol Edit tidak ditemukan.");
+        }
+        
+        Assert.assertTrue(driver.findElements(titlePage).size() > 0, "ERROR: Keluar dari halaman detail lari!");
+    }
+
+    @Test(priority = 4)
     public void testInteraksiPeta() {
-        System.out.println("--- TEST 3: Interaksi Peta (Map) ---");
+        System.out.println("--- TEST 4: Interaksi Peta (Map) ---");
 
-        // --- STEP PENTING: SCROLL DULU KE BAWAH ---
-        // Kita scroll dari bagian atas layar biar peta gak kegeser
         System.out.println("Scrolling down to Map...");
-        actions.swipeVertical(0.4, 0.15); // Ini swipe layar ke atas (konten turun)
-        try { Thread.sleep(1500); } catch (Exception e) {}
+        actions.swipeVertical(0.4, 0.15); 
+        try { Thread.sleep(2000); } catch (Exception e) {}
 
-        // 1. VALIDASI PETA MUNCUL
+        // Validasi Peta
         wait.until(ExpectedConditions.visibilityOfElementLocated(mapAreaLocator));
         Assert.assertTrue(driver.findElements(mapAreaLocator).size() > 0, "ERROR: Peta tidak muncul!");
         System.out.println("Peta terdeteksi.");
 
-        // 2. ZOOM BUTTONS
+        // Zoom In
         if(driver.findElements(btnZoomIn).size() > 0) {
+            System.out.println("Klik Zoom In...");
             driver.findElement(btnZoomIn).click();
-            try { Thread.sleep(1000); } catch (Exception e) {} 
-        }
-        if(driver.findElements(btnZoomOut).size() > 0) {
-            driver.findElement(btnZoomOut).click();
-            try { Thread.sleep(1000); } catch (Exception e) {}
+            try { Thread.sleep(2000); } catch (Exception e) {} 
         }
 
-        // 3. MAP GESTURES (PANNING/DRAG)
+        // Zoom Out
+        if(driver.findElements(btnZoomOut).size() > 0) {
+            System.out.println("Klik Zoom Out...");
+            driver.findElement(btnZoomOut).click();
+            try { Thread.sleep(2000); } catch (Exception e) {} 
+        }
+        
+        // Info Map
+        if(driver.findElements(btnInfoMap).size() > 0) {
+            System.out.println("Klik Info Map...");
+            driver.findElement(btnInfoMap).click();
+            try { Thread.sleep(2000); } catch (Exception e) {} 
+            driver.findElement(btnInfoMap).click();
+            try { Thread.sleep(1000); } catch (Exception e) {} 
+        }
+
+        // Panning Map
         System.out.println("Simulasi Geser Peta (Panning)...");
-        // Drag dari tengah ke kanan bawah
         int screenWidth = driver.manage().window().getSize().width;
         int screenHeight = driver.manage().window().getSize().height;
         int centerX = screenWidth / 2;
         int centerY = screenHeight / 2;
         
-        // Geser peta sedikit
         actions.dragMap(centerX, centerY, centerX + 200, centerY + 200);
         try { Thread.sleep(1500); } catch (Exception e) {}
 
-        // 4. ROTASI PETA
+        // Rotate
         System.out.println("Mencoba Memutar Peta...");
         try {
             WebElement mapArea = driver.findElement(mapAreaLocator);
             actions.rotateMap(mapArea); 
             try { Thread.sleep(2000); } catch (Exception e) {} 
-        } catch (Exception e) {
-            System.out.println("Rotasi skip: " + e.getMessage());
-        }
+        } catch (Exception e) {}
 
-        // 5. KLIK KOMPAS (Reset)
+        // Compass
         try {
             if(driver.findElements(btnCompass).size() > 0) {
+                System.out.println("Klik Kompas...");
                 driver.findElement(btnCompass).click();
-                System.out.println("Kompas diklik.");
+                try { Thread.sleep(2000); } catch (Exception e) {} 
             }
         } catch (Exception e) {}
         
         takeScreenshot("Bukti_Interaksi_Peta");
     }
 
-    @Test(priority = 4)
+    @Test(priority = 5)
     public void testScrapingGrafikKetinggian() {
-        System.out.println("--- TEST 4: Interaksi Grafik Ketinggian ---");
+        System.out.println("--- TEST 5: Interaksi Grafik Ketinggian ---");
 
-        System.out.println("Scroll mencari grafik...");
-        // Scroll lagi jaga-jaga kalau grafik masih di bawah
-        actions.swipeUp(); 
-        
-        int maxScroll = 2;
-        WebElement grafikContainer = null;
-        
-        while(maxScroll > 0) {
-            try {
-                grafikContainer = driver.findElement(textSumbuY).findElement(By.xpath(".."));
-                break; 
-            } catch (Exception e) {
-                actions.swipeUp(); // Scroll lagi
-                maxScroll--;
-                try { Thread.sleep(1500); } catch (Exception ex) {}
-            }
-        }
+        if (driver.findElements(grafikAreaLocator).size() > 0) {
+             System.out.println("Grafik ditemukan!");
+             WebElement grafikContainer = driver.findElement(grafikAreaLocator);
 
-        if (grafikContainer == null) {
-            System.out.println("SKIP: Grafik tidak ditemukan.");
-            return;
-        }
+             int startX = grafikContainer.getLocation().getX();
+             int totalWidth = grafikContainer.getSize().getWidth();
+             int centerY = grafikContainer.getLocation().getY() + (grafikContainer.getSize().getHeight() / 2);
+             int endX = startX + totalWidth;
 
-        // Logic Tap Grafik
-        int startX = grafikContainer.getLocation().getX();
-        int endX = startX + grafikContainer.getSize().getWidth();
-        int centerY = grafikContainer.getLocation().getY() + (grafikContainer.getSize().getHeight() / 2);
-        
-        int safeStartX = startX + (int)(grafikContainer.getSize().getWidth() * 0.15); 
-        int[] tapPoints = {safeStartX, (safeStartX+endX)/2, endX - 20};
-        
-        System.out.println("Scanning data grafik...");
-        for (int pointX : tapPoints) {
-            actions.tapByCoordinates(pointX, centerY);
-            try { Thread.sleep(500); } catch (Exception e) {} 
+             // 1. TAP-TAP DATA
+             System.out.println("Tap data grafik...");
+             int point1 = startX + (int)(totalWidth * 0.20); 
+             int point2 = startX + (int)(totalWidth * 0.50); 
+             int point3 = startX + (int)(totalWidth * 0.80); 
+             
+             int[] tapPoints = {point1, point2, point3};
+             
+             for (int pointX : tapPoints) {
+                 actions.tapByCoordinates(pointX, centerY);
+                 try { Thread.sleep(1500); } catch (Exception e) {} 
+             }
+
+             // 2. DRAG HORIZONTAL
+             System.out.println("Drag horizontal di grafik (Scrubbing)...");
+             
+             // Variabel beda nama biar aman
+             int dragStartX = startX + (int)(totalWidth * 0.15); 
+             int dragEndX = startX + (int)(totalWidth * 0.85); 
+             
+             actions.dragMap(dragStartX, centerY, dragEndX, centerY);
+             
+             try { Thread.sleep(1500); } catch (Exception e) {} 
+             
+             takeScreenshot("Hasil_Interaksi_Grafik");
+
+        } else {
+             System.out.println("SKIP: Grafik tidak ditemukan.");
         }
-        takeScreenshot("Hasil_Scraping_Grafik");
     }
     
-    @Test(priority = 5)
+    @Test(priority = 6)
     public void testKembaliKeMenu() {
-        System.out.println("--- TEST 5: Kembali ke List Riwayat ---");
+        System.out.println("--- TEST 6: Kembali ke List Riwayat ---");
         
+        System.out.println("Menunggu sebelum kembali...");
+        try { Thread.sleep(2000); } catch (Exception e) {}
+
         driver.findElement(btnBack).click();
+        
         try { Thread.sleep(2000); } catch (Exception e) {}
         
         boolean isStillInDetail = driver.findElements(titlePage).size() > 0;
         Assert.assertFalse(isStillInDetail, "Gagal kembali: Masih di halaman detail!");
         Assert.assertTrue(driver.findElements(headerAktivitas).size() > 0, "Gagal kembali ke Tab Aktivitas!");
 
-        System.out.println("Berhasil kembali ke menu utama.");
+        System.out.println("Berhasil kembali ke Aktivitas.");
     }
 }
