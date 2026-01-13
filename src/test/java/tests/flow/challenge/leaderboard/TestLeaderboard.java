@@ -1,4 +1,4 @@
-package tests.flow.challenge;
+package tests.flow.challenge.leaderboard;
 
 import tests.BaseTest;
 import org.openqa.selenium.By;
