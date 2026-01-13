@@ -5,6 +5,7 @@ import java.time.Duration;
 import org.openqa.selenium.By; 
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -12,27 +13,26 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
-import tests.BaseTest;
 
-public class TargetTest extends BaseTest {
+public class TargetTest extends BaseCreationTest {
 
     // --- LOCATORS ---
     private final By BTN_ADD_TARGET = AppiumBy.xpath("//*[contains(@text, 'Target Pribadi')]/parent::*//android.widget.ImageView");
-    private final By BTN_RESET_TARGET = AppiumBy.xpath("//*[contains(@content-desc, 'Reset') or contains(@text, 'km')]");
-    
+    // Updated locator to be more specific to the Dashboard element
+    // private final By BTN_RESET_TARGET = AppiumBy.xpath("//*[contains(@content-desc, 'Reset Target') or (contains(@text, 'km') and contains(@text, '/'))]");
+    private final By BTN_RESET_TARGET = AppiumBy.accessibilityId("Reset Target");
+    private final By TARGET_PROGRESS_TEXT = AppiumBy.xpath("//*[contains(@text, 'km') and contains(@text, 'dari')]");
+
+
     // Modal & Form
     private final By TITLE_MODAL = AppiumBy.xpath("//*[@text='Atur Target Pribadi']");
-    private final By BTN_CLOSE = AppiumBy.xpath("//android.widget.ImageView[contains(@resource-id, 'close') or contains(@resource-id, 'ivClose')]");
+    private final By BTN_CLOSE = AppiumBy.xpath("//*[@text='Atur Target Pribadi']/following-sibling::android.widget.ImageView");
+    
     private final By FIELD_INPUT_KM = AppiumBy.className("android.widget.EditText");
-    private final By RADIO_HARIAN = AppiumBy.xpath("//*[contains(@text, 'Harian')]");
     private final By RADIO_MINGGUAN = AppiumBy.xpath("//*[contains(@text, 'Mingguan')]");
     private final By BTN_SUBMIT = AppiumBy.xpath("//*[contains(@text, 'Atur Target')]");
     
-    // Success & Popups
-    private final By BTN_NEXT = AppiumBy.xpath("//*[contains(@text, 'Selanjutnya')]");
-    private final By TXT_SUCCESS = AppiumBy.xpath("//*[contains(@text, 'Berhasil')]");
-    
-    // Locator Popup Konfirmasi (Ya/Tidak)
+    // Popups
     private final By POPUP_CONFIRM = AppiumBy.xpath("//*[contains(@text, 'Yakin') or contains(@text, 'Konfirmasi')]");
     private final By BTN_YA_RESET = AppiumBy.xpath("//*[contains(@text, 'Ya') or contains(@text, 'Reset')]");
 
@@ -48,17 +48,46 @@ public class TargetTest extends BaseTest {
 
         openModal();
         fillForm("5");
-        clickSubmitRobust();
         
+        // 1. Submit
+        clickSubmitRobust(BTN_SUBMIT, 0.5, 0.88);
+        
+        // 2. Wait for loading (Network request) & Handle Success
+        waitForLoading(2000); // Wait for API response
         handleSuccessModal();
         
+        // 3. Wait for Dashboard Refresh
+        System.out.println("   -> Waiting for dashboard to refresh...");
+        waitForLoading(3000); // Give dashboard time to render new number
+
+        // ... inside testSetValidTarget ...
+
+        // 3. Verify Dashboard
+        System.out.println("   -> Verifying '5' is displayed on screen...");
+
         try {
-            Thread.sleep(1000);
-            String dashboardText = driver.findElement(BTN_RESET_TARGET).getText(); 
-            Assert.assertTrue(dashboardText.contains("5"), "Dashboard tidak update ke 5 km");
+            // Look for ANY text element containing "5" and "km" or just the target number
+            // This xpath looks for "5" appearing in text or content-desc anywhere
+            By targetTextLocator = AppiumBy.xpath("//*[contains(@text, 'dari 5') or contains(@content-desc, 'dari 5')]");
+            
+            WebDriverWait verifyWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+            WebElement targetText = verifyWait.until(ExpectedConditions.visibilityOfElementLocated(targetTextLocator));
+            
+            System.out.println("   -> Success: Found text '" + targetText.getText() + "' on dashboard.");
+            
         } catch (Exception e) {
-            Assert.fail("Target 5 km tidak muncul di dashboard.");
+            // Screenshot for proof
+            // actions.takeScreenshot("TargetFailure_5km"); 
+            Assert.fail("Target 5 km visual text not found on dashboard.");
         }
+        
+        // try {
+        //     // Verify dashboard updated
+        //     String dashboardText = driver.findElement(BTN_RESET_TARGET).getText(); 
+        //     Assert.assertTrue(dashboardText.contains("5"), "Dashboard tidak update ke 5 km. Found: " + dashboardText);
+        // } catch (Exception e) {
+        //     Assert.fail("Target 5 km tidak muncul di dashboard.");
+        // }
     }
 
     @Test(priority = 2, description = "2. Update Target (Condition: 0 Progress vs Progress)")
@@ -66,102 +95,111 @@ public class TargetTest extends BaseTest {
         System.out.println("=== TEST 2: Update Target (10 km) ===");
 
         // 1. Klik Reset (Target Lama)
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(BTN_RESET_TARGET)).click();
-            System.out.println("   -> Clicked Reset Button.");
-        } catch (Exception e) {
-            System.out.println("   -> Reset button not found (Mungkin sudah bersih).");
-        }
-
-        // 2. CONDITIONAL POPUP HANDLING (Logic yang Diperbaiki)
-        // Kita gunakan WebDriverWait khusus untuk popup, bukan implicit wait
-        try {
-            System.out.println("   -> Checking for Popup...");
-            // Tunggu maksimal 3 detik untuk tombol "Ya" / "Reset"
-            WebElement btnYa = new org.openqa.selenium.support.ui.WebDriverWait(driver, Duration.ofSeconds(3))
-                    .until(ExpectedConditions.visibilityOfElementLocated(BTN_YA_RESET));
-            
-            // Jika baris di atas tidak error, berarti Popup Muncul
-            btnYa.click();
-            System.out.println("   -> Popup Detected: Clicked 'Ya'.");
-            
-        } catch (Exception e) {
-            // Jika Timeout (3 detik lewat gak ada popup), berarti Progress = 0 (Reset langsung)
-            System.out.println("   -> No Popup detected (Assume 0 Progress/Reset done).");
-        }
-
-        // 3. VALIDASI PENTING: Pastikan Reset Selesai
-        // Jangan lanjut sebelum tombol (+) benar-benar muncul!
-        try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_ADD_TARGET));
-            System.out.println("   -> Target lama hilang, tombol (+) sudah muncul.");
-        } catch (Exception e) {
-            // Kalau (+) gak muncul juga, kita coba paksa klik Reset lagi (Retry logic)
-            // Siapa tau klik pertama tadi gak masuk (miss-click)
-            System.out.println("   -> Retry: Klik reset lagi karena (+) belum muncul...");
-            actions.tapByCoordinates(500, 500); // Tap tengah widget target (sesuaikan koordinat widget reset kamu)
-            try { 
-                 Thread.sleep(1000);
-                 driver.findElement(BTN_YA_RESET).click(); 
-            } catch(Exception ex){}
-        }
+        System.out.println("   -> Klik Reset Target...");
+        cleanUpExistingTarget();
 
         // 4. Create New Target (Value 10)
         openModal(); 
-        
         fillForm("10");
-        clickSubmitRobust();
+        
+        clickSubmitRobust(BTN_SUBMIT, 0.5, 0.88);
+        
+        waitForLoading(2000); // Wait for API
         handleSuccessModal();
 
         // 5. Verify Update
+        System.out.println("   -> Waiting for dashboard to update to 10km...");
+        waitForLoading(3000); // Dashboard refresh delay
+
+        System.out.println("   -> Verifying '10' is displayed on screen...");
+
         try {
-            Thread.sleep(1000);
-            String dashboardText = driver.findElement(BTN_RESET_TARGET).getText();
-            Assert.assertTrue(dashboardText.contains("10"), "Dashboard tidak update ke 10 km");
-            System.out.println("   -> Success: Target updated to 10km.");
-        } catch (Exception e) { Assert.fail("Target 10 km gagal update."); }
+            // Look for ANY text element containing "5" and "km" or just the target number
+            // This xpath looks for "5" appearing in text or content-desc anywhere
+            By targetTextLocator = AppiumBy.xpath("//*[contains(@text, 'dari 10') or contains(@content-desc, 'dari 10')]");
+            
+            WebDriverWait verifyWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+            WebElement targetText = verifyWait.until(ExpectedConditions.visibilityOfElementLocated(targetTextLocator));
+            
+            System.out.println("   -> Success: Found text '" + targetText.getText() + "' on dashboard.");
+            
+        } catch (Exception e) {
+            // Screenshot for proof
+            // actions.takeScreenshot("TargetFailure_5km"); 
+            Assert.fail("Target 10 km visual text not found on dashboard.");
+        }
+        
+    //     try {
+    //         String dashboardText = driver.findElement(BTN_RESET_TARGET).getText();
+    //         Assert.assertTrue(dashboardText.contains("10"), "Dashboard tidak update ke 10 km");
+    //         System.out.println("   -> Success: Target updated to 10km.");
+    //     } catch (Exception e) { Assert.fail("Target 10 km gagal update."); }
     }
 
     // ==========================================
     // B. EXTREME & EDGE CASES (NEGATIVE)
     // ==========================================
 
-    @Test(priority = 3, description = "3, 4, 5. Invalid Numeric Values")
+@Test(priority = 3, description = "3, 4, 5. Invalid Numeric Values")
     public void testInvalidNumericValues() {
         System.out.println("=== TEST 3: Invalid Numeric Values ===");
         
         cleanUpExistingTarget();
         openModal();
 
-        WebElement submitBtn = wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_SUBMIT));
-
-        // Case 3: Zero ("0")
+        // --- Case 3: Zero ("0") ---
+        // Zero is usually allowed to be typed, but disallowed to submit.
+        System.out.println("   [Check] Testing '0'...");
         fillForm("0");
-        if (submitBtn.isEnabled()) {
-            clickSubmitRobust();
-            Assert.assertTrue(driver.findElements(TITLE_MODAL).size() > 0, "Seharusnya tidak bisa submit 0!");
-        }
+        checkAndForceSubmit("0"); // This expects button to be disabled or modal to stay open
 
-        // Case 4: Negative ("-100")
+        // --- Case 4: Negative ("-100") ---
+        System.out.println("   [Check] Testing '-100'...");
+        // 1. Clear previous "0"
+        WebElement input = driver.findElement(FIELD_INPUT_KM);
+        input.clear();
+        
+        // 2. Type "-100"
         fillForm("-100");
-        if(driver.findElement(FIELD_INPUT_KM).getText().contains("-")) {
-             Assert.assertFalse(submitBtn.isEnabled(), "Submit harus mati jika negatif.");
+        
+        // 3. READ what actually got typed
+        String actualText = input.getText(); // Likely returns "100"
+        System.out.println("      -> We typed '-100', App wrote: '" + actualText + "'");
+
+        // 4. LOGIC: If the app stripped the '-', the test PASSES (Safety mechanism works)
+        if (!actualText.contains("-")) {
+            System.out.println("      -> SUCCESS: App auto-sanitized negative input.");
+        } else {
+            // If the '-' IS present, THEN we expect the button to be disabled
+            checkAndForceSubmit("-100");
         }
 
-        // Case 5: Decimal ("5.5")
+        // --- Case 5: Decimal ("5.5") ---
+        System.out.println("   [Check] Testing '5.5'...");
+        input.click();
+        input.clear();
+        
+        // 2. Type "5.5"
         fillForm("5.5");
-        if(driver.findElement(FIELD_INPUT_KM).getText().contains(".")) {
-             Assert.assertFalse(submitBtn.isEnabled(), "Submit harus mati jika desimal.");
+        
+        // 3. READ what actually got typed
+        actualText = input.getText(); // Likely returns "55"
+        System.out.println("      -> We typed '5.5', App wrote: '" + actualText + "'");
+
+        // 4. LOGIC: If the app stripped the '.', the test PASSES
+        if (!actualText.contains(".")) {
+             System.out.println("      -> SUCCESS: App auto-sanitized decimal input.");
+        } else {
+             // If decimal point exists, button must be disabled
+             checkAndForceSubmit("5.5");
         }
         
-        driver.findElement(BTN_CLOSE).click();
+        dismissModal();
     }
-
-@Test(priority = 4, description = "6, 7. Max Limit & Chars")
+    @Test(priority = 4, description = "6, 7. Max Limit & Chars")
     public void testMaxLimitAndChars() {
         System.out.println("=== TEST 4: Max Limit & Chars ===");
         
-        // Pastikan modal terbuka
         if (driver.findElements(TITLE_MODAL).isEmpty()) openModal();
 
         // --- Case 6: Max Int ("999999999") ---
@@ -171,18 +209,16 @@ public class TargetTest extends BaseTest {
         input.clear();
         input.sendKeys("999999999");
         
-        // Hide Keyboard
+        // Hide keyboard
         try { driver.findElement(TITLE_MODAL).click(); } catch (Exception e) {}
         
-        // Action: Coba Submit
-        clickSubmitRobust();
+        clickSubmitRobust(BTN_SUBMIT, 0.5, 0.88);
+        waitForLoading(1000); // Check if app crashes immediately
         
-        // Validasi: App tidak boleh crash & Modal harus tetap terbuka (atau tertutup jika success, tergantung requirement)
-        // Asumsi: Angka sebesar ini mungkin diterima atau ditolak. Yang penting app tidak crash.
-        Assert.assertTrue(driver.findElement(TITLE_MODAL).isDisplayed(), "App Crash atau Modal tertutup tidak terduga!");
+        Assert.assertTrue(driver.findElement(TITLE_MODAL).isDisplayed(), "App Crash atau Modal tertutup!");
         System.out.println("   -> Max Int check passed (No Crash).");
 
-        // --- Case 7: Special Characters ("@#$ABCD") ---
+        // --- Case 7: Special Characters ---
         System.out.println("   [Check] Testing Special Chars...");
         input.click();
         input.clear();
@@ -190,10 +226,8 @@ public class TargetTest extends BaseTest {
         
         try { driver.findElement(TITLE_MODAL).click(); } catch (Exception e) {}
         
-        // Action: Paksa Submit
-        clickSubmitRobust();
+        clickSubmitRobust(BTN_SUBMIT, 0.5, 0.88);
         
-        // Validasi: Modal HARUS tetap terbuka (Reject)
         try {
             Thread.sleep(500);
             Assert.assertTrue(driver.findElement(TITLE_MODAL).isDisplayed(), 
@@ -203,7 +237,7 @@ public class TargetTest extends BaseTest {
             Assert.fail("Modal tertutup/Crash saat input karakter aneh.");
         }
         
-        // Cleanup dilakukan oleh @AfterMethod
+        dismissModal();
     }
 
     @Test(priority = 5, description = "8. Empty Field")
@@ -215,32 +249,34 @@ public class TargetTest extends BaseTest {
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(FIELD_INPUT_KM));
         input.click();
         
-        // --- Smart Clear (Seperti sebelumnya) ---
+        // --- Smart Clear ---
         input.sendKeys("1"); 
         try { Thread.sleep(200); } catch(Exception e){}
         ((AndroidDriver) driver).pressKey(new KeyEvent(AndroidKey.DEL));
         
-        // Focus Shuffle
         try { driver.findElement(TITLE_MODAL).click(); } catch(Exception e) {}
         
-        // --- LOGIC BARU: ACTION BASED ---
         System.out.println("   [Check] Clicking Submit on Empty Field...");
-        clickSubmitRobust();
         
-        // Validasi: Modal HARUS tetap terbuka
-        // Jika tertutup, berarti bug (sistem membuat target kosong/0)
+        WebElement btn = driver.findElement(BTN_SUBMIT);
+        if(btn.isEnabled()) {
+            System.out.println("   [Warning] Submit button is Enabled on Empty Field! (UI Issue)");
+        }
+
+        clickSubmitRobust(BTN_SUBMIT, 0.5, 0.88);
+        
         try {
-            Thread.sleep(1000);
+            waitForLoading(1000); // Wait to see if modal closes
             Assert.assertTrue(driver.findElement(TITLE_MODAL).isDisplayed(), 
                 "FAIL: Modal tertutup! Sistem mengizinkan target kosong.");
             System.out.println("   -> Empty check passed (System rejected empty submission).");
         } catch (Exception e) {
             Assert.fail("Modal tertutup saat field kosong (Bug Critical).");
         }
-        
-        // Cleanup dilakukan oleh @AfterMethod
+
+        dismissModal();
     }
-    
+
     // ==========================================
     // C. UI / INTERACTION
     // ==========================================
@@ -249,25 +285,29 @@ public class TargetTest extends BaseTest {
     public void testCancelDismiss() {
         System.out.println("=== TEST 6: Cancel/Dismiss ===");
         
-        // Setup clean state
         cleanUpExistingTarget();
         openModal();
         fillForm("5");
-        clickSubmitRobust();
+        
+        clickSubmitRobust(BTN_SUBMIT, 0.5, 0.88);
         handleSuccessModal();
 
-        // Try to change but Cancel
+        // Cancel Reset
         try { driver.findElement(BTN_RESET_TARGET).click(); } catch(Exception e) {}
-        // Handle popup if exists (Conditional cleanup)
         try { 
-             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
+             waitForLoading(1000);
              if(driver.findElements(POPUP_CONFIRM).size() > 0) driver.findElement(BTN_YA_RESET).click();
-        } catch(Exception e) {} finally { driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20)); }
+        } catch(Exception e) {} 
         
+        waitForLoading(2000); // Wait for reset to finish
+
+        cleanUpExistingTarget();
+
         openModal();
-        fillForm("100"); // Type 100
-        driver.findElement(BTN_CLOSE).click(); // Click Close
-        
+        fillForm("100"); 
+
+        dismissModal(); 
+
         // Verify dashboard NOT 100
         try {
             Thread.sleep(1000);
@@ -281,92 +321,188 @@ public class TargetTest extends BaseTest {
     @Test(priority = 7, description = "10. Backgrounding")
     public void testBackgrounding() {
         System.out.println("=== TEST 7: Backgrounding ===");
-        openModal();
+        
+        cleanUpExistingTarget();
+        if (driver.findElements(TITLE_MODAL).isEmpty()) openModal();
         fillForm("50");
 
+        System.out.println("   -> Going to background...");
         ((AndroidDriver) driver).runAppInBackground(Duration.ofSeconds(3));
+        waitForLoading(1000); // Wait for app to resume UI
         
         try {
-            Thread.sleep(1000);
             Assert.assertTrue(driver.findElement(TITLE_MODAL).isDisplayed());
         } catch (Exception e) {
             Assert.fail("Modal tertutup setelah backgrounding.");
         }
-        driver.findElement(BTN_CLOSE).click();
+
+        dismissModal();
     }
 
 
-    // --- HELPERS ---
+    // --- HELPERS (TARGET SPECIFIC) ---
 
-    public void clickSubmitRobust() {
-        try {
-            System.out.println("   -> Attempting Robust Submit...");
-            WebElement btn = wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_SUBMIT));
-            if (btn.isEnabled()) {
-                // Hardcoded Coordinate (540, 2120 based on inspector)
-                actions.tapByCoordinates(540, 2120);
-            }
-        } catch (Exception e) { System.out.println("   -> Button interaction failed."); }
+    // Simple Helper for Stability Pauses
+    public void waitForLoading(int millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException e) {}
     }
 
     public void fillForm(String value) {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(FIELD_INPUT_KM));
-        input.click();
-        input.clear();
-        input.sendKeys(value);
-        driver.findElement(RADIO_MINGGUAN).click(); // Focus Shuffle
-        try { Thread.sleep(500); } catch (Exception e) {}
+        fillInputField(FIELD_INPUT_KM, value);
+
+        // Wait for keyboard to fully retract (Crucial for small screens)
+        waitForLoading(2000);
+
+        try {
+            driver.findElement(RADIO_MINGGUAN).click(); 
+        } catch (Exception e) {
+            System.out.println("   -> Radio click retry...");
+            driver.findElement(RADIO_MINGGUAN).click(); 
+        }
+        waitForLoading(500);
+    }
+
+    private void checkAndForceSubmit(String testCaseLabel) {
+        try {
+            WebElement btn = driver.findElement(BTN_SUBMIT);
+            if (btn.isEnabled()) {
+                System.out.println("   [Warning] Button ENABLED for " + testCaseLabel);
+            } else {
+                System.out.println("   [Info] Button DISABLED for " + testCaseLabel);
+            }
+
+            clickSubmitRobust(BTN_SUBMIT, 0.5, 0.88);
+            
+            // Wait briefly to ensure no crash happened immediately
+            waitForLoading(500);
+            Assert.assertTrue(driver.findElements(TITLE_MODAL).size() > 0, "Seharusnya tidak bisa submit: " + testCaseLabel);
+            
+        } catch (Exception e) {
+            System.out.println("   -> Error checking submit: " + e.getMessage());
+        }
+    }
+
+    private void dismissModal() {
+        try {
+            System.out.println("   -> Closing modal via Percentage Tap...");
+            // tapByPercentage(0.92, 0.45); 
+            tapByPercentage(0.83, 0.21);
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(TITLE_MODAL));
+        } catch (Exception e) {
+            System.out.println("   -> Warning: Could not close modal.");
+        }
     }
 
     public void openModal() {
         try {
             wait.until(ExpectedConditions.elementToBeClickable(BTN_ADD_TARGET)).click();
+            // Wait for modal animation to finish
             wait.until(ExpectedConditions.visibilityOfElementLocated(TITLE_MODAL));
+            waitForLoading(500); // Extra safety for animation
         } catch (Exception e) {
-            actions.tapByCoordinates(900, 450); // Fallback coordinate for (+) button
+            System.out.println("   -> Standard click failed. Using Fallback Ratio Tap...");
+            tapByPercentage(0.83, 0.21); 
+            
+            // Wait for modal after tap
+            try {
+                wait.until(ExpectedConditions.visibilityOfElementLocated(TITLE_MODAL));
+            } catch (Exception ex) {
+                System.out.println("   -> Failed to open modal even with fallback.");
+            }
+            // actions.tapByCoordinates(900, 450); 
         }
     }
+
+    // public void cleanUpExistingTarget() {
+    //     System.out.println("   -> Checking for existing target...");
+
+    //     try {
+    //         // 1. POSITIVE CHECK: Wait up to 3 seconds for the RESET button to appear.
+    //         // If the app is loading, this will wait until it finishes.
+    //         // If the dashboard is clean, this will time out (fail) after 3s.
+    //         WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(3));
+            
+    //         // We look for the RESET target, not the invisibility of Add
+    //         WebElement resetButton = shortWait.until(ExpectedConditions.visibilityOfElementLocated(BTN_RESET_TARGET));
+
+    //         // 2. If line above passes, Target DEFINITELY exists.
+    //         System.out.println("   -> Found Reset Button. Cleaning up...");
+            
+    //         try {
+    //             resetButton.click();
+    //         } catch (Exception clickErr) {
+    //             // Fallback for Samsung A14
+    //             System.out.println("   -> Click failed. Using Ratio Tap...");
+    //             tapByPercentage(0.79, 0.27); // Corrected Y-Ratio for Target
+    //         }
+
+    //         // 3. Handle Popup
+    //         try {
+    //             WebElement btnYa = wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_YA_RESET));
+    //             btnYa.click();
+    //             System.out.println("   -> Reset Confirmed. Waiting for refresh...");
+    //             waitForLoading(3000); 
+    //         } catch (Exception e) {
+    //             System.out.println("   -> Popup missed or there is no popup.");
+    //         }
+
+    //     } catch (Exception e) {
+    //         // 4. If the wait times out, it means Reset Button never appeared.
+    //         // This confirms the dashboard is clean.
+    //         System.out.println("   -> No target found (Clean Dashboard).");
+    //     }
+    // }
 
     public void cleanUpExistingTarget() {
-        System.out.println("   -> Checking for existing target to clean up...");
-        try {
-            // 1. Cek apakah tombol Reset ada (artinya target aktif)
-            // Gunakan findElements agar tidak error/throw exception jika tidak ada
-            if (driver.findElements(BTN_RESET_TARGET).size() > 0) {
-                System.out.println("   -> Target found. Resetting...");
-                driver.findElement(BTN_RESET_TARGET).click();
-                
-                // 2. Handle Popup Konfirmasi (Jika ada progress)
-                try {
-                    // Tunggu sebentar siapa tau popup muncul
-                    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
-                    if (driver.findElements(BTN_YA_RESET).size() > 0) {
-                        driver.findElement(BTN_YA_RESET).click();
-                        System.out.println("   -> Confirmed reset (Popup handled).");
-                    }
-                } catch (Exception e) {
-                    // Ignore jika tidak ada popup
-                } finally {
-                    // Balikin timeout ke normal
-                    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
-                }
+        System.out.println("   -> Checking for existing target to cleanup...");
 
-                // 3. WAJIB: Tunggu sampai tombol (+) muncul kembali
-                // Ini memastikan dashboard sudah bersih sebelum lanjut test
-                wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_ADD_TARGET));
-                System.out.println("   -> Dashboard clean. Ready for Test 1.");
-            } else {
-                System.out.println("   -> No existing target found. Good to go.");
+        try {
+            boolean textFound =
+                driver.findElements(TARGET_PROGRESS_TEXT).size() > 0;
+
+            boolean buttonFound =
+                driver.findElements(BTN_RESET_TARGET).size() > 0;
+
+            // OR LOGIC (THIS IS WHAT YOU ASKED)
+            if (!textFound && !buttonFound) {
+                throw new Exception("No target indicators found");
             }
+
+            System.out.println("   -> Found Reset Target button. Clicking...");
+
+            try {
+                wait.until(ExpectedConditions.elementToBeClickable(BTN_RESET_TARGET)).click();
+            } catch (Exception clickErr) {
+                System.out.println("   -> Standard click failed. Using Ratio Tap (0.79, 0.27)...");
+                // tapByPercentage(0.79, 0.27);
+                tapByTextPosition("Reset Target");
+            }
+
+            // POPUP HANDLING — UNCHANGED
+            try {
+                WebElement btnYa =
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_YA_RESET));
+                btnYa.click();
+
+                System.out.println("   -> Confirming Reset. Waiting for refresh...");
+                waitForLoading(2500);
+            } catch (Exception e) {
+                System.out.println("   -> Warning: 'Ya' popup didn't appear or was missed.");
+            }
+
         } catch (Exception e) {
-            System.out.println("   -> Warning: Cleanup failed or stuck. Trying to continue...");
+            System.out.println("   -> No existing target found (Dashboard is clean).");
         }
     }
 
-    public void handleSuccessModal() {
-        try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(TXT_SUCCESS));
-            driver.findElement(BTN_NEXT).click();
-        } catch (Exception e) {}
+
+    protected void clickSubmitRobust(By locator, double xRatio, double yRatio) {
+         try {
+            System.out.println("   -> Attempting Robust Submit (Ratio: " + yRatio + ")...");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+            tapByPercentage(xRatio, yRatio);
+        } catch (Exception e) {
+            System.out.println("   -> Robust submit interaction failed: " + e.getMessage());
+        }
     }
 }
