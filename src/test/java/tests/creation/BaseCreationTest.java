@@ -12,13 +12,13 @@ public class BaseCreationTest extends BaseTest {
     protected final By BTN_NEXT_GENERIC = io.appium.java_client.AppiumBy.xpath("//*[contains(@text, 'Selanjutnya') or contains(@text, 'Lanjut')]");
     protected final By TXT_SUCCESS_GENERIC = io.appium.java_client.AppiumBy.xpath("//*[contains(@text, 'Berhasil')]");
 
-    // --- REUSABLE ACTIONS ---
+    // --- REUSABLE ACTIONS (ORIGINAL - DO NOT CHANGE) ---
 
     /**
      * Robust Submit Action.
      * 1. Waits for the button to be visible.
      * 2. Checks if enabled.
-     * 3. Taps the specific X,Y coordinates provided (to bypass overlap/interception issues).
+     * 3. Taps the specific X,Y coordinates provided.
      */
     protected void clickSubmitRobust(By locator, int x, int y) {
         try {
@@ -27,7 +27,6 @@ public class BaseCreationTest extends BaseTest {
             
             if (btn.isEnabled()) {
                 System.out.println("   -> Element enabled. Tapping coordinates: " + x + ", " + y);
-                // Use the ActionHelper inherited from BaseTest
                 actions.tapByCoordinates(x, y);
             } else {
                 System.out.println("   -> Button is disabled/not ready.");
@@ -38,7 +37,7 @@ public class BaseCreationTest extends BaseTest {
     }
 
     /**
-     * Overload: Calculates center coordinates automatically if you don't want to hardcode X/Y.
+     * Overload: Calculates center coordinates automatically.
      */
     protected void clickSubmitRobust(By locator) {
         try {
@@ -60,7 +59,6 @@ public class BaseCreationTest extends BaseTest {
             input.click();
             input.clear();
             input.sendKeys(text);
-            // try { driver.hideKeyboard(); } catch (Exception e) {}
         } catch (Exception e) {
             System.out.println("   -> Failed to fill input: " + locator);
         }
@@ -77,25 +75,58 @@ public class BaseCreationTest extends BaseTest {
 
     /**
      * Taps a point based on percentage of screen width/height.
-     * @param xPct Percentage of width (0.0 to 1.0) Example: 0.92 for 92%
-     * @param yPct Percentage of height (0.0 to 1.0) Example: 0.50 for 50%
      */
     protected void tapByPercentage(double xPct, double yPct) {
         try {
-            // Get current screen dimensions
             org.openqa.selenium.Dimension size = driver.manage().window().getSize();
-            
-            // Calculate coordinates
             int pointX = (int) (size.getWidth() * xPct);
             int pointY = (int) (size.getHeight() * yPct);
-            
             System.out.println("   -> Tapping by % (" + xPct + ", " + yPct + ") => Coordinates: " + pointX + ", " + pointY);
-            
-            // Perform Tap
             actions.tapByCoordinates(pointX, pointY);
-            
         } catch (Exception e) {
             System.out.println("   -> Failed to tap by percentage: " + e.getMessage());
         }
     }
+
+    // --- NEW METHODS FOR CHALLENGE TEST (Added safely) ---
+
+    /**
+     * Finds text on screen, gets its position, and taps the center pixel.
+     * Bypasses 'clickable=false' or layout blocking issues.
+     */
+    protected void tapByTextPosition(String visibleText) {
+        try {
+            System.out.println("   -> [Sniper] Searching for text: '" + visibleText + "'...");
+            By locator = io.appium.java_client.AppiumBy.xpath("//*[contains(@text, '" + visibleText + "') or contains(@content-desc, '" + visibleText + "')]");
+            
+            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+            int centerX = element.getLocation().getX() + (element.getSize().getWidth() / 2);
+            int centerY = element.getLocation().getY() + (element.getSize().getHeight() / 2);
+            
+            System.out.println("   -> Found at [" + centerX + "," + centerY + "]. Tapping...");
+            actions.tapByCoordinates(centerX, centerY);
+        } catch (Exception e) {
+            System.out.println("   -> Failed to tap text '" + visibleText + "': " + e.getMessage());
+        }
+    }
+
+    /**
+     * Calculates center of an element by locator and taps it blindly.
+     * Used for icon-only buttons (like FABs) where text search won't work.
+     */
+    protected void tapElementCenter(By locator) {
+        try {
+            System.out.println("   -> [Sniper] Calculating center for locator...");
+            WebElement btn = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+            int centerX = btn.getLocation().getX() + (btn.getSize().getWidth() / 2);
+            int centerY = btn.getLocation().getY() + (btn.getSize().getHeight() / 2);
+            
+            System.out.println("   -> Tapping coordinates: " + centerX + ", " + centerY);
+            actions.tapByCoordinates(centerX, centerY);
+        } catch (Exception e) {
+            System.out.println("   -> Failed to tap element center: " + e.getMessage());
+            throw new RuntimeException("Tap failed"); // Throw so fallback can catch it
+        }
+    }
+
 }

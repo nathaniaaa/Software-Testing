@@ -335,4 +335,30 @@ public class ActionHelper {
         
         driver.perform(Collections.singletonList(tap));
     }
+
+        /**
+     * Checks if an element exists without crashing the test.
+     * Use this for assertions or optional elements (like Ads).
+     * @param locator The Selenium/Appium locator (By.id, By.xpath, etc.)
+     * @param timeoutSeconds How long to check before giving up (e.g., 1 or 5)
+     * @return true if found, false if not found
+     */
+    public boolean isElementPresent(org.openqa.selenium.By locator, int timeoutSeconds) {
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(timeoutSeconds))
+                .until(org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated(locator));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Waits for an element to be visible and returns it.
+     * Use this instead of "driver.findElement" when you need to be safe.
+     */
+    public org.openqa.selenium.WebElement waitForElement(org.openqa.selenium.By locator) {
+        return new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(20))
+            .until(org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated(locator));
+    }
 }
