@@ -127,21 +127,26 @@ public class ActionHelper {
     }
 
     /**
-     * Swipe Horizontal Fleksibel (Input Angka Rasio).
-     * @param startXRatio Titik Awal X (0.0 - 1.0). Contoh: 0.8 (Kanan)
-     * @param endXRatio Titik Akhir X (0.0 - 1.0). Contoh: 0.2 (Kiri)
+     * Swipe Horizontal dengan Ketinggian (Y) yang bisa diatur.
+     * @param startXRatio Mulai X (0.9 = Kanan)
+     * @param endXRatio Selesai X (0.1 = Kiri)
+     * @param yRatio Posisi Ketinggian Swipe (0.0 atas - 1.0 bawah).
+     * Untuk Card Challenge biasanya sekitar 0.2 atau 0.3
      */
-    public void swipeHorizontal(double startXRatio, double endXRatio) {
+    public void swipeHorizontal(double startXRatio, double endXRatio, double yRatio) {
         Dimension size = driver.manage().window().getSize();
         int width = size.getWidth();
         int height = size.getHeight();
 
-        int centerY = height / 2; // Geser di tengah-tengah layar secara vertikal
         int startX = (int) (width * startXRatio);
         int endX = (int) (width * endXRatio);
+        
+        // Y ditentukan oleh yRatio (bukan lagi fix di tengah)
+        int anchorY = (int) (height * yRatio); 
 
-        System.out.println("Swiping Horizontal Custom: " + startXRatio + " -> " + endXRatio);
-        performSwipe(startX, centerY, endX, centerY, 1000);
+        System.out.println("Swiping Horizontal: X(" + startXRatio + "->" + endXRatio + ") di tinggi Y=" + yRatio);
+        
+        performSwipe(startX, anchorY, endX, anchorY, 1000);
     }
 
     // ========================================================================

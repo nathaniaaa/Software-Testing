@@ -24,9 +24,9 @@ public class TestChallengeSaya extends BaseTest {
 
     // 3. List Card (Di Halaman Lihat Semua)
     // Box 1 (Pelari FOMO)
-    By cardPelariFomo = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[2]");
+    By cardPelariFomo = AppiumBy.xpath("//android.widget.TextView[@text=\"Pelari FOMO\"]");
     // Box 2 (Yuk Lari Sehat)
-    By cardYukLariSehat = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[3]");
+    By cardYukLariSehat = AppiumBy.xpath("//android.widget.TextView[@text=\"YUUUUK LARI SEHAT\"]");
 
     // 4. Detail Page Elements (Pelari FOMO & Yuk Lari Sehat)
     // Tab Deskripsi & Leaderboard (Pakai contains resource-id biar aman)
@@ -52,61 +52,81 @@ public class TestChallengeSaya extends BaseTest {
         System.out.println("Klik Menu Challenge...");
         driver.findElement(navChallenge).click();
         
-        // Tunggu judul "Challenge Saya" muncul
         wait.until(ExpectedConditions.visibilityOfElementLocated(titleChallengeSaya));
-        
-        // 2. SWIPE HORIZONTAL (Simulasi geser kartu di dashboard)
+
+        // 2. SWIPE HORIZONTAL
         System.out.println("Swipe Horizontal di area Challenge Saya...");
         try {
-            // Kita swipe di area tengah agak atas layar (estimasi posisi card)
-            // Swipe dari Kanan (0.8) ke Kiri (0.2)
-            actions.swipeHorizontal(0.8, 0.2); 
-            Thread.sleep(1000);
+            // TIPS TUNING ANGKA:
+            // Parameter: (Start X, End X, Posisi Y)
             
-            // Swipe balik (Kiri ke Kanan)
-            actions.swipeHorizontal(0.2, 0.8);
-            Thread.sleep(1000);
-        } catch (Exception e) {}
+            // Coba 1: Swipe di ketinggian 0.25 (Agak atas, tempat biasanya card berada)
+            // Dari Kanan (0.85) tarik ke Kiri (0.15)
+            actions.swipeHorizontal(0.85, 0.15, 0.37); 
+            Thread.sleep(4000);
+            
+            // Coba 2: Kalau belum kegeser, mungkin card-nya agak bawahan dikit?
+            // Coba swipe di ketinggian 0.35
+            // actions.swipeHorizontal(0.85, 0.15, 0.35);
+
+            // Balikin lagi (Swipe Kiri ke Kanan) biar card awal muncul lagi
+            actions.swipeHorizontal(0.15, 0.85, 0.37);
+            Thread.sleep(4000);
+            
+        } catch (Exception e) {
+            System.out.println("Gagal Swipe: " + e.getMessage());
+        }
 
         // 3. Klik "Lihat Semua"
         System.out.println("Klik 'Lihat Semua'...");
         driver.findElement(btnLihatSemua).click();
         
-        // Validasi masuk list
         try { Thread.sleep(2000); } catch (Exception e) {}
-        // Cek apakah card pertama muncul
-        Assert.assertTrue(driver.findElements(cardPelariFomo).size() > 0, "Gagal masuk halaman List Challenge Saya!");
+        
+        // Validasi: Cek teks Pelari FOMO ada di layar (belum diklik)
+        By textPelariFomo = AppiumBy.xpath("//android.widget.TextView[@text='Pelari FOMO']");
+        Assert.assertTrue(driver.findElements(textPelariFomo).size() > 0, "Gagal masuk halaman List Challenge Saya!");
     }
 
     @Test(priority = 2)
     public void testDetailPelariFomo() {
         System.out.println("--- TEST 2: Cek Detail Pelari FOMO (Scroll Leaderboard) ---");
 
-        // 1. Pilih Card 1 (Pelari FOMO)
+        // 1. Pilih Card 1
+        System.out.println("Mencari Card Pelari FOMO...");
+        // Wait agar card benar-benar siap diklik (handle loading/animasi list)
+        wait.until(ExpectedConditions.elementToBeClickable(cardPelariFomo));
+        
         System.out.println("Klik Card Pelari FOMO...");
         driver.findElement(cardPelariFomo).click();
         
-        // Tunggu masuk detail
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
         
-        // 2. Cek Tab Deskripsi (Default)
+        // 2. Cek Tab Deskripsi & Scroll
         System.out.println("Cek Tab Deskripsi...");
-        driver.findElement(tabDeskripsi).click(); // Klik aja biar yakin
-        try { Thread.sleep(1000); } catch (Exception e) {}
+        driver.findElement(tabDeskripsi).click(); 
+        try { Thread.sleep(3000); } catch (Exception e) {}
+
+        System.out.println("Scroll Turun Deskripsi...");
+        actions.swipeVertical(0.7, 0.4);
+        try { Thread.sleep(2000); } catch (Exception e) {}
+
+        System.out.println("Scroll Naik Deskripsi...");
+        actions.swipeVertical(0.4, 0.7);
+        try { Thread.sleep(2000); } catch (Exception e) {}
 
         // 3. Pindah Leaderboard & Scroll
         System.out.println("Pindah ke Leaderboard...");
         driver.findElement(tabLeaderboard).click();
-        try { Thread.sleep(3000); } catch (Exception e) {} // Tunggu loading data
+        try { Thread.sleep(3000); } catch (Exception e) {} 
         
-        // SCROLL LEADERBOARD (Turun & Naik)
         System.out.println("Scroll Turun Leaderboard...");
-        actions.swipeVertical(0.7, 0.3);
+        actions.swipeVertical(0.7, 0.4);
         try { Thread.sleep(2000); } catch (Exception e) {}
         
         System.out.println("Scroll Naik Leaderboard...");
-        actions.swipeVertical(0.3, 0.7);
-        try { Thread.sleep(1000); } catch (Exception e) {}
+        actions.swipeVertical(0.4, 0.7);
+        try { Thread.sleep(2000); } catch (Exception e) {}
 
         // 4. Back ke List
         System.out.println("Kembali ke List...");
@@ -118,23 +138,22 @@ public class TestChallengeSaya extends BaseTest {
     public void testDetailYukLariSehat() {
         System.out.println("--- TEST 3: Cek Detail Yuk Lari Sehat (No Scroll) ---");
 
-        // 1. Pilih Card 2 (Yuk Lari Sehat)
-        // Cek dulu apakah card 2 ada
         if (driver.findElements(cardYukLariSehat).size() > 0) {
             System.out.println("Klik Card Yuk Lari Sehat...");
             driver.findElement(cardYukLariSehat).click();
             
             wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
 
-            // 2. Cek Tab Leaderboard (Tanpa Scroll)
-            // Sesuai info: "LEADERBOARD GBS DI SCROLL"
+            System.out.println("Scroll Turun Deskripsi...");
+            actions.swipeVertical(0.7, 0.4);
+            try { Thread.sleep(2000); } catch (Exception e) {}
+
             System.out.println("Pindah ke Leaderboard (Cek isi saja)...");
             driver.findElement(tabLeaderboard).click();
-            try { Thread.sleep(2000); } catch (Exception e) {}
+            try { Thread.sleep(3000); } catch (Exception e) {}
             
             System.out.println("Leaderboard terlihat (Skip scrolling).");
 
-            // 3. Back ke List
             System.out.println("Kembali ke List...");
             driver.findElement(btnBackDetail).click();
             try { Thread.sleep(2000); } catch (Exception e) {}
@@ -148,19 +167,14 @@ public class TestChallengeSaya extends BaseTest {
     public void testKembaliKeMenuUtama() {
         System.out.println("--- TEST 4: Kembali ke Menu Utama Challenge ---");
 
-        // Klik Back dari halaman List "Lihat Semua"
-        // Menggunakan locator ikon back di header list
         if (driver.findElements(btnBackList).size() > 0) {
              driver.findElement(btnBackList).click();
         } else {
-             // Fallback kalau locator 'joined' gak ketemu, pakai tombol back Android biasa
              System.out.println("Tombol back custom ga ketemu, pakai Back System...");
              driver.navigate().back();
         }
 
         try { Thread.sleep(2000); } catch (Exception e) {}
-        
-        // Validasi sudah di menu utama (Tombol Lihat Semua muncul lagi)
         Assert.assertTrue(driver.findElements(btnLihatSemua).size() > 0, "Gagal kembali ke Menu Utama Challenge!");
         System.out.println("Selesai.");
     }

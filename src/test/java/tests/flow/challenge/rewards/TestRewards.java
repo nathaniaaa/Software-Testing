@@ -76,7 +76,7 @@ public class TestRewards extends BaseTest {
         }
 
         // Validasi akhir: harusnya balik ke halaman Rewards (tombol Riwayat muncul lagi)
-        sleep(1000);
+        sleep(3000);
         Assert.assertTrue(driver.findElements(btnRiwayatReward).size() > 0, "Gagal kembali ke halaman Rewards!");
         System.out.println("Berhasil kembali.");
     }
