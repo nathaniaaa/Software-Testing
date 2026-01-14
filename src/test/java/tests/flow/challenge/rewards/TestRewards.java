@@ -67,17 +67,21 @@ public class TestRewards extends BaseTest {
         sleep(2000); 
         System.out.println("Klik Back");
         
+        // Cek apakah tombol back ada
         if (driver.findElements(btnBack).size() > 0) {
-            driver.findElement(btnBack);
+            driver.findElement(btnBack).click();
         } else {
             // Fallback: pakai bawaan system jika tombol back gak ada
             System.out.println("Tombol Back UI tidak ada, pakai Back System.");
             driver.navigate().back();
         }
 
-        // Validasi akhir: harusnya balik ke halaman Rewards (tombol Riwayat muncul lagi)
-        sleep(3000);
-        Assert.assertTrue(driver.findElements(btnRiwayatReward).size() > 0, "Gagal kembali ke halaman Rewards!");
+        // Validasi: harusnya balik ke halaman Rewards (tombol Riwayat muncul lagi)
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
+        } catch (Exception e) {}
+
+        Assert.assertTrue(driver.findElements(btnRiwayatReward).size() > 0, "Gagal kembali ke halaman Rewards! Masih di halaman Riwayat.");
         System.out.println("Berhasil kembali.");
     }
 
