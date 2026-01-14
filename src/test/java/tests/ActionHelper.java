@@ -214,6 +214,62 @@ public class ActionHelper {
         }
     }
 
+        /**
+     * Scrolls to the very top of the screen using Android Native command.
+     * It will swipe down up to 5 times to reach the top.
+     */
+    public void scrollToTop() {
+        System.out.println("   -> Scrolling to TOP...");
+        try {
+            // "scrollToBeginning(5)" means: Try scrolling up to 5 times to reach the start.
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollToBeginning(5)"
+            ));
+        } catch (Exception e) {
+            System.out.println("WARN: Native scroll to top failed. Trying manual swipe...");
+            // Fallback: Manually swipe down from top of screen to bottom 3 times
+            manualScrollToTop();
+        }
+    }
+
+    /**
+     * Manually swipes the screen from Top-Center to Bottom-Center
+     * (This pulls the page content DOWN, moving the view to the TOP).
+     */
+    public void manualScrollToTop() {
+        int startX = driver.manage().window().getSize().getWidth() / 2;
+        int startY = (int) (driver.manage().window().getSize().getHeight() * 0.2); // Start near top (20%)
+        int endY = (int) (driver.manage().window().getSize().getHeight() * 0.8);   // Drag to bottom (80%)
+
+        // Perform the swipe 3 times
+        for (int i = 0; i < 3; i++) {
+            org.openqa.selenium.interactions.PointerInput finger = 
+                new org.openqa.selenium.interactions.PointerInput(
+                    org.openqa.selenium.interactions.PointerInput.Kind.TOUCH, "finger");
+                    
+            org.openqa.selenium.interactions.Sequence swipe = 
+                new org.openqa.selenium.interactions.Sequence(finger, 1);
+
+            // Move finger to Top (20%)
+            swipe.addAction(finger.createPointerMove(java.time.Duration.ZERO, 
+                org.openqa.selenium.interactions.PointerInput.Origin.viewport(), startX, startY));
+            
+            // Touch Down
+            swipe.addAction(finger.createPointerDown(
+                org.openqa.selenium.interactions.PointerInput.MouseButton.LEFT.asArg()));
+            
+            // Move finger to Bottom (80%) - This pulls the page down
+            swipe.addAction(finger.createPointerMove(java.time.Duration.ofMillis(600), 
+                org.openqa.selenium.interactions.PointerInput.Origin.viewport(), startX, endY));
+            
+            // Lift Finger
+            swipe.addAction(finger.createPointerUp(
+                org.openqa.selenium.interactions.PointerInput.MouseButton.LEFT.asArg()));
+
+            driver.perform(java.util.Collections.singletonList(swipe));
+        }
+    }
+
     // ========================================================================
     // 3. ZOOM GESTURES (MULTI-TOUCH)
     // ========================================================================
@@ -379,4 +435,6 @@ public class ActionHelper {
         return new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(20))
             .until(org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated(locator));
     }
+
+
 }
