@@ -126,6 +126,24 @@ public class ActionHelper {
         performSwipe(startX, startY, startX, endY, 800);
     }
 
+    /**
+     * Swipe Horizontal Fleksibel (Input Angka Rasio).
+     * @param startXRatio Titik Awal X (0.0 - 1.0). Contoh: 0.8 (Kanan)
+     * @param endXRatio Titik Akhir X (0.0 - 1.0). Contoh: 0.2 (Kiri)
+     */
+    public void swipeHorizontal(double startXRatio, double endXRatio) {
+        Dimension size = driver.manage().window().getSize();
+        int width = size.getWidth();
+        int height = size.getHeight();
+
+        int centerY = height / 2; // Geser di tengah-tengah layar secara vertikal
+        int startX = (int) (width * startXRatio);
+        int endX = (int) (width * endXRatio);
+
+        System.out.println("Swiping Horizontal Custom: " + startXRatio + " -> " + endXRatio);
+        performSwipe(startX, centerY, endX, centerY, 1000);
+    }
+
     // ========================================================================
     // 4. SWIPE LANJUTAN (SOLUSI ANTI CAROUSEL)
     // ========================================================================
