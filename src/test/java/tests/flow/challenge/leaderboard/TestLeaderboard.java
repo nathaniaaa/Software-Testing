@@ -58,9 +58,13 @@ public class TestLeaderboard extends BaseTest {
     public void testScrollLeaderboard() {
         System.out.println("TEST 3: Scroll Daftar Leaderboard");
 
-        // Scroll ke bawah pelan-pelan (Swipe 1)
-        System.out.println("Scroll ke bawah");
-        actions.swipeFromBottom(); 
+        // Scroll ke bawah dan atas 
+        System.out.println("Scroll Turun");
+        actions.swipeVertical(0.7, 0.5);
+        try { Thread.sleep(2000); } catch (Exception e) {}
+        
+        System.out.println("Scroll Naik");
+        actions.swipeVertical(0.5, 0.7);
         try { Thread.sleep(2000); } catch (Exception e) {}
         
         takeScreenshot("Leaderboard_Scrolled");
