@@ -67,7 +67,7 @@ public class TestRiwayatChallenge extends BaseTest {
         System.out.println("Halaman Deskripsi terbuka, mencoba Scroll ke bawah");
         try {
             // Scroll ke bawah untuk baca deskripsi
-            actions.scrollVertical(); 
+            actions.swipeVertical(0.7, 0.3); 
             Thread.sleep(3000);
 
         } catch (Exception e) {

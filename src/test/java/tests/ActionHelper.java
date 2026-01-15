@@ -98,15 +98,6 @@ public class ActionHelper {
         performSwipe(anchorX, startY, anchorX, endY, 800);
     }
 
-    public void scrollHorizontal() {
-        System.out.println("Scrolling Right to Left...");
-        Dimension size = driver.manage().window().getSize();
-        int startX = (int) (size.width * 0.8);
-        int endX = (int) (size.width * 0.2);
-        int centerY = size.height / 2;
-        performSwipe(startX, centerY, endX, centerY);
-    }
-
     /**
      * [BARU] Swipe Vertical Fleksibel (Input Angka Rasio).
      * Berguna untuk scroll di area aman (safe zone) agar tidak kena Peta.
@@ -147,58 +138,6 @@ public class ActionHelper {
         System.out.println("Swiping Horizontal: X(" + startXRatio + "->" + endXRatio + ") di tinggi Y=" + yRatio);
         
         performSwipe(startX, anchorY, endX, anchorY, 1000);
-    }
-
-    // ========================================================================
-    // 4. SWIPE LANJUTAN (SOLUSI ANTI CAROUSEL)
-    // ========================================================================
-
-    /**
-     * Swipe dari bagian paling bawah layar (Safe Zone).
-     * Digunakan jika Anchor belum ketemu.
-     */
-    public void swipeFromBottom() {
-        System.out.println("Swiping from BOTTOM (Safe Zone)...");
-        // Start 85% (Bawah banget) -> End 40% (Tengah)
-        swipeVertical(0.85, 0.40);
-    }
-
-    // [REVISI] Menggunakan swipeVertical di area ATAS (Safe Zone)
-    public void swipeUp() {
-        // Start 40% (Agak tengah atas) -> End 15% (Atas banget)
-        // Ini aman karena jari kita tidak akan menyentuh area Peta di bawah.
-        swipeVertical(0.40, 0.15);
-    }
-
-    /**
-     * Swipe dengan bertumpu pada elemen statis (Anchor).
-     * Solusi paling ampuh untuk halaman yang penuh slider horizontal.
-     */
-    public void swipeFromElement(WebElement element) {
-        Point location = element.getLocation();
-        Dimension size = element.getSize();
-        
-        int startX = location.getX() + (size.getWidth() / 2);
-        int startY = location.getY() + (size.getHeight() / 2);
-        
-        int endY = startY - 500; 
-        if (endY < 100) endY = 200;
-
-        System.out.println("Swiping from anchor element at: " + startX + "," + startY);
-
-        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
-        Sequence swipe = new Sequence(finger, 1);
-        
-        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
-        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        swipe.addAction(new Pause(finger, Duration.ofMillis(200))); 
-        
-        // --- UBAH DISINI: DARI 600 JADI 1200 (BIAR LEBIH HALUS & GAK CRASH) ---
-        swipe.addAction(finger.createPointerMove(Duration.ofMillis(1200), PointerInput.Origin.viewport(), startX, endY));
-        
-        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        
-        driver.perform(Collections.singletonList(swipe));
     }
     
     // Drag/Pan Peta (Geser Peta pelan-pelan, bukan swipe cepat)
@@ -292,10 +231,6 @@ public class ActionHelper {
     // ========================================================================
     // PRIVATE HELPERS (W3C LOGIC)
     // ========================================================================
-
-    private void performSwipe(int startX, int startY, int endX, int endY) {
-        performSwipe(startX, startY, endX, endY, 800); // Default speed 800ms
-    }
 
     private void performSwipe(int startX, int startY, int endX, int endY, int durationMs) {
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
