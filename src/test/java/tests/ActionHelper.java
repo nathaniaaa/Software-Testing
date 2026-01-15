@@ -219,6 +219,19 @@ public class ActionHelper {
         }
     }
 
+    public void scrollToExactText(String visibleText) {
+        System.out.println("Smart Scrolling to (EXACT): " + visibleText);
+        try {
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
+                // CHANGE HERE: use .text() instead of .textContains()
+                ".scrollIntoView(new UiSelector().text(\"" + visibleText + "\").instance(0))"
+            ));
+        } catch (Exception e) {
+            Assert.fail("Failed to scroll to exact text: " + visibleText);
+        }
+    }
+
         /**
      * Scrolls to the very top of the screen using Android Native command.
      * It will swipe down up to 5 times to reach the top.
