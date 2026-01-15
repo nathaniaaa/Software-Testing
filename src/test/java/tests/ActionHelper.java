@@ -31,6 +31,15 @@ public class ActionHelper {
         // This is the missing part: Initialize 'wait' with a 10-second timeout
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     };
+
+    public void waitForLoading(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     // ========================================================================
     // 1. TAP & CLICK ACTIONS (PENTING BUAT GRAFIK & BUTTON)
     // ========================================================================

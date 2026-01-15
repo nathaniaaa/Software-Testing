@@ -52,17 +52,21 @@ public class CreationActionHelper extends ActionHelper{
     }
 
     /**
-     * Overload: Allows manual coordinate override for submit
+     * Overload: Allows Robust Submit using Screen Ratios (Percentages)
+     * Example: clickSubmitRobust(BTN, 0.5, 0.88);
      */
-    public void clickSubmitRobust(By locator, int x, int y) {
+    public void clickSubmitRobust(By locator, double xRatio, double yRatio) {
         try {
+            System.out.println("   -> Attempting Robust Submit (Ratio)...");
             WebElement btn = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+            
             if (btn.isEnabled()) {
-                System.out.println("   -> Element enabled. Tapping manual coordinates: " + x + ", " + y);
-                tapByCoordinates(x, y);
+                System.out.println("   -> Element enabled. Tapping ratio: " + xRatio + ", " + yRatio);
+                // Call the method that handles ratios!
+                tapAtScreenRatio(xRatio, yRatio);
             }
         } catch (Exception e) {
-            System.out.println("   -> Robust submit (manual coords) failed.");
+            System.out.println("   -> Robust submit (ratio) failed.");
         }
     }
 
@@ -72,7 +76,7 @@ public class CreationActionHelper extends ActionHelper{
             input.click();
             input.clear();
             input.sendKeys(text);
-            try { driver.hideKeyboard(); } catch (Exception ignored) {}
+            // try { driver.hideKeyboard(); } catch (Exception ignored) {}
         } catch (Exception e) {
             System.out.println("   -> Failed to fill input: " + locator);
         }
