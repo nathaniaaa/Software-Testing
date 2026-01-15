@@ -4,25 +4,33 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
+import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
 public class ActionHelper {
+    // 1. Declare the variables here
+    protected  AndroidDriver driver; 
+    protected  WebDriverWait wait; 
 
-    private AndroidDriver driver;
-
+    // 2. Initialize them in the Constructor
     public ActionHelper(AndroidDriver driver) {
         this.driver = driver;
-    }
-
+        
+        // This is the missing part: Initialize 'wait' with a 10-second timeout
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    };
     // ========================================================================
     // 1. TAP & CLICK ACTIONS (PENTING BUAT GRAFIK & BUTTON)
     // ========================================================================
@@ -32,16 +40,18 @@ public class ActionHelper {
      * SANGAT PENTING untuk kasus CHART/GRAFIK MyTelkomsel.
      */
     public void tapByCoordinates(int x, int y) {
-        System.out.println("Tapping at: " + x + ", " + y);
-        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
-        Sequence tap = new Sequence(finger, 1);
-        
-        tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
-        tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        tap.addAction(new Pause(finger, Duration.ofMillis(100))); // Jeda dikit biar stabil
-        tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        
-        driver.perform(Collections.singletonList(tap));
+        try {
+            System.out.println("   -> Tapping at: " + x + ", " + y);
+            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            Sequence tap = new Sequence(finger, 1);
+            tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+            tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            tap.addAction(new Pause(finger, Duration.ofMillis(100)));
+            tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+            driver.perform(Collections.singletonList(tap));
+        } catch (Exception e) {
+            System.err.println("   -> Failed to tap by coordinates: " + e.getMessage());
+        }
     }
 
     public void doubleTap(WebElement element) {
@@ -83,6 +93,116 @@ public class ActionHelper {
         longPress.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
 
         driver.perform(Collections.singletonList(longPress));
+    }
+       /**
+     * Tap layar berdasarkan RASIO (Persentase).
+     * Contoh: xRatio 0.5 (Tengah), yRatio 0.2 (Atas).
+     */
+    public void tapAtScreenRatio(double xRatio, double yRatio) {
+        try {
+            // 1. Boundary Check: Ensure ratios are valid (0.0 to 1.0) to prevent coordinate errors
+            if (xRatio < 0 || xRatio > 1 || yRatio < 0 || yRatio > 1) {
+                throw new IllegalArgumentException("Ratios must be between 0.0 and 1.0. Received: x=" + xRatio + ", y=" + yRatio);
+            }
+
+            // 2. Calculation
+            Dimension size = driver.manage().window().getSize();
+            int x = (int) (size.width * xRatio);
+            int y = (int) (size.height * yRatio);
+
+            System.out.println("  -> Tapping at Ratio: " + xRatio + ", " + yRatio + " (Pixel: " + x + ", " + y + ")");
+
+            // 3. Define W3C Action
+            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            Sequence tap = new Sequence(finger, 1);
+            
+            // Move to coordinates -> Press Down -> Wait 100ms -> Lift Up
+            tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+            tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            tap.addAction(new Pause(finger, Duration.ofMillis(100))); 
+            tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            // 4. Perform Action
+            driver.perform(Collections.singletonList(tap));
+
+        } catch (Exception e) {
+            // 5. Error Handling
+            System.err.println("  -> Failed to tap at ratio (" + xRatio + ", " + yRatio + "): " + e.getMessage());
+            // e.printStackTrace(); // Uncomment if you need the full stack trace for debugging
+        }
+    }
+
+    /**
+     * Finds text on screen, gets its position, and taps the center pixel.
+     * Bypasses 'clickable=false' or layout blocking issues.
+     */
+    public void tapByTextPosition(String visibleText) {
+        try {
+            System.out.println("   -> [Sniper] Searching for text: '" + visibleText + "'...");
+            
+            // XPath is okay for generic use, but keep in mind '//*' can be slow
+            By locator = AppiumBy.xpath("//*[contains(@text, '" + visibleText + "') or contains(@content-desc, '" + visibleText + "')]");
+            
+            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+
+            // OPTIMIZATION: Use getRect() to save network calls
+            Rectangle rect = element.getRect();
+            int centerX = rect.x + (rect.width / 2);
+            int centerY = rect.y + (rect.height / 2);
+            
+            System.out.println("   -> Found at [" + centerX + "," + centerY + "]. Tapping...");
+            
+            // Ensure this calls your modern W3C implementation
+            tapByCoordinates(centerX, centerY); 
+
+        } catch (Exception e) {
+            System.err.println("   -> Failed to tap text '" + visibleText + "': " + e.getMessage());
+        }
+    }
+
+    protected void tapByExactText(String exactText) {
+        try {
+            System.out.println("   -> [Sniper Exact] Searching for exact text: '" + exactText + "'...");
+
+            // 1. Locator Strategy
+            // Note: strict equality (@text='...') is good, but consider 'normalize-space()' if whitespace varies.
+            By locator = io.appium.java_client.AppiumBy.xpath("//*[@text='" + exactText + "' or @content-desc='" + exactText + "']");
+
+            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+
+            // 2. Optimization: use getRect() (1 server call) instead of getLocation+getSize (4 calls)
+            Rectangle rect = element.getRect();
+            int centerX = rect.x + (rect.width / 2);
+            int centerY = rect.y + (rect.height / 2);
+
+            System.out.println("   -> Found exact match at [" + centerX + "," + centerY + "]. Tapping...");
+
+            // 3. W3C Action (Replaces actions.tapByCoordinates)
+            tapByCoordinates(centerX, centerY);
+
+        } catch (Exception e) {
+            System.err.println("   -> Failed to tap exact text '" + exactText + "': " + e.getMessage());
+        }
+    }
+
+    protected void tapElementCenter(WebElement element) {
+        try {
+            // Optimization: Use getRect() (1 call) instead of Location + Size (4 calls)
+            Rectangle rect = element.getRect();
+            int centerX = rect.x + (rect.width / 2);
+            int centerY = rect.y + (rect.height / 2);
+
+            System.out.println("   -> Tapping center: " + centerX + ", " + centerY);
+            tapByCoordinates(centerX, centerY);
+        } catch (Exception e) {
+            System.err.println("   -> Failed to tap element center: " + e.getMessage());
+        }
+    }
+
+    // Overloaded method to tap by locator
+    protected void tapElementCenter(By locator) {
+        WebElement el = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        tapElementCenter(el); // Reuses the logic above
     }
 
     // ========================================================================
@@ -163,7 +283,7 @@ public class ActionHelper {
         try {
             driver.findElement(AppiumBy.androidUIAutomator(
                 "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
-                // CHANGE HERE: use .text() instead of .textContains()
+                // Use .text() instead of .textContains()
                 ".scrollIntoView(new UiSelector().text(\"" + visibleText + "\").instance(0))"
             ));
         } catch (Exception e) {
@@ -340,27 +460,6 @@ public class ActionHelper {
         sequence2.addAction(finger2.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
 
         driver.perform(Arrays.asList(sequence1, sequence2));
-    }
-
-    /**
-     * Tap layar berdasarkan RASIO (Persentase).
-     * Contoh: xRatio 0.5 (Tengah), yRatio 0.2 (Atas).
-     */
-    public void tapAtScreenRatio(double xRatio, double yRatio) {
-        Dimension size = driver.manage().window().getSize();
-        int x = (int) (size.width * xRatio);
-        int y = (int) (size.height * yRatio);
-
-        System.out.println("Tapping at Ratio: " + xRatio + ", " + yRatio + " (Pixel: " + x + ", " + y + ")");
-
-        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
-        Sequence tap = new Sequence(finger, 1);
-        tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
-        tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        tap.addAction(new Pause(finger, Duration.ofMillis(100)));
-        tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        
-        driver.perform(Collections.singletonList(tap));
     }
 
         /**
