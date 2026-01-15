@@ -6,11 +6,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
 
-public class TestHomeShortcuts extends BaseTest {
-
-    // ==========================================
-    // LOCATORS
-    // ==========================================
+public class TestShortcuts extends BaseTest {
 
     // 1. BOTTOM NAVIGATION (Untuk Step 8 & 13)
     // Locator tombol Beranda di menu bawah
