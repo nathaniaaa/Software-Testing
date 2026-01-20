@@ -22,7 +22,7 @@ public class CreationActionHelper extends ActionHelper{
     // --- COMMON LOCATORS ---
     private final By BTN_NEXT_GENERIC = AppiumBy.xpath("//*[contains(@text, 'Selanjutnya') or contains(@text, 'Lanjut')]");
     private final By TXT_SUCCESS_GENERIC = AppiumBy.xpath("//*[contains(@text, 'Berhasil')]");
-
+    protected String inputXpathTemplate = "//*[@text='%s']/following-sibling::android.widget.EditText";
 
     // --- BUSINESS LOGIC & STRATEGIES ---
 
@@ -112,6 +112,7 @@ public class CreationActionHelper extends ActionHelper{
         } catch (Exception e) {
             // 3. Sniper Fallback
             System.out.println("   -> Standard clicks failed. Engaging Sniper for: " + text);
+            // tapByTextPosition(text);
             tapByTextPosition(text);
         }
     }
@@ -153,15 +154,34 @@ public class CreationActionHelper extends ActionHelper{
                 AppiumBy.xpath("//*[contains(@text, '" + labelText + "') or contains(@content-desc, '" + labelText + "')]")
             ));
 
+            // Get screen density factor (rough approximation) or use relative size
+            int labelHeight = label.getSize().getHeight();      
+            int dynamicOffset = (int) (driver.manage().window().getSize().getHeight() * 0.02);
             int targetX = label.getLocation().getX() + (label.getSize().getWidth() / 2);
-            int targetY = label.getLocation().getY() + label.getSize().getHeight() + 120; // Offset logic
-
+            int targetY = label.getLocation().getY() + labelHeight + dynamicOffset + (labelHeight / 2);
+            
             System.out.println("   -> Tapping offset at Y[" + targetY + "]");
             tapByCoordinates(targetX, targetY);
             
             Thread.sleep(1000); // Wait for UI reaction
         } catch (Exception e) {
             System.out.println("   -> Sniper Click failed for '" + labelText + "': " + e.getMessage());
+        }
+    }
+
+        /**
+     * Specific method for Profile Page where inputs are Siblings of the Label
+     */
+    protected void fillInputByLabelSibling(String labelText, String valueToType) {
+        try {
+            String xpath = String.format("//*[@text='%s']/following-sibling::android.widget.EditText", labelText);
+            WebElement input = driver.findElement(AppiumBy.xpath(xpath));
+            input.click();
+            input.clear();
+            input.sendKeys(valueToType);
+            try { driver.hideKeyboard(); } catch (Exception e) {}
+        } catch (Exception e) {
+            System.out.println("   -> Input '" + labelText + "' not found.");
         }
     }
 
@@ -172,9 +192,12 @@ public class CreationActionHelper extends ActionHelper{
                 AppiumBy.xpath("//*[contains(@text, '" + labelText + "') or contains(@content-desc, '" + labelText + "')]")
             ));
 
+            // Get screen density factor (rough approximation) or use relative size
+            int labelHeight = label.getSize().getHeight();      
+            int dynamicOffset = (int) (driver.manage().window().getSize().getHeight() * 0.02);
             int targetX = label.getLocation().getX() + (label.getSize().getWidth() / 2);
-            int targetY = label.getLocation().getY() + label.getSize().getHeight() + 120; // Offset logic
-
+            int targetY = label.getLocation().getY() + labelHeight + dynamicOffset + (labelHeight / 2);
+            
             System.out.println("   -> Tapping offset at [" + targetY + "]");
             tapByCoordinates(targetX, targetY);
 
@@ -196,5 +219,46 @@ public class CreationActionHelper extends ActionHelper{
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US);
         return date.format(formatter);
     }
+
+    public String fillInputAndReadBack(String label, String valueToType) {
+        try {
+            String xpath = String.format(inputXpathTemplate, label);
+            WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.xpath(xpath)));
+            
+            input.click();
+            input.clear();
+            input.sendKeys(valueToType);
+            
+            // Critical: Hide keyboard so the App triggers its "onBlur" or "Formatting" logic
+            try { driver.hideKeyboard(); } catch (Exception ignored) {}
+            Thread.sleep(1000); // Give app 1s to auto-sanitize
+            
+            return input.getText(); // Return what is ACTUALLY in the box
+        } catch (Exception e) {
+            System.out.println("Failed to interact with input: " + label);
+            return "";
+        }
+    }
+
+    /**
+     * READS the value of an input field without modifying it.
+     * Use this for verifying saved data.
+     */
+    public String getInputValue(String label) {
+        try {
+            // Re-use your existing xpath template
+            String xpath = String.format("//*[@text='%s']/following-sibling::android.widget.EditText", label);
+            
+            WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.xpath(xpath)));
+            
+            // JUST return text. Do not Click. Do not Clear.
+            return input.getText(); 
+        } catch (Exception e) {
+            System.out.println("WARN: Could not read value for label: " + label);
+            return "";
+        }
+    }
+
+
 
 }
