@@ -48,36 +48,6 @@ public class ProfileActionHelper extends CreationActionHelper {
         }
     }
 
-    public void fillPersonalData(String name, String height, String weight) {
-        System.out.println("Step: Editing Text Fields...");
-        // Wait for page to load
-        waitForElement(AppiumBy.xpath("//*[contains(@text, 'Nama')]"));
-
-        fillInputByLabelSibling("Nama", name);
-        fillInputByLabelSibling("Tinggi Badan", height);
-        fillInputByLabelSibling("Berat Badan", weight);
-    }
-
-    public String fillInputAndReadBack(String label, String valueToType) {
-        try {
-            String xpath = String.format("//*[@text='%s']/following-sibling::android.widget.EditText", label);
-            WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.xpath(xpath)));
-            
-            input.click();
-            input.clear();
-            input.sendKeys(valueToType);
-            
-            // Hide keyboard to trigger sanitization/validation
-            try { driver.hideKeyboard(); } catch (Exception ignored) {}
-            Thread.sleep(1000); 
-            
-            return input.getText(); // Return what is ACTUALLY in the box
-        } catch (Exception e) {
-            System.out.println("Failed to interact with input: " + label);
-            return "";
-        }
-    }
-
     public void uploadProfilePhoto(String source) {
         System.out.println("Step: Uploading Photo via " + source + "...");
         try {
@@ -151,7 +121,7 @@ public class ProfileActionHelper extends CreationActionHelper {
      * 3. Uses "1998" to find the Year Button and "Aug" to find the Month Button.
      * 4. Selects the new date.
      */
-    public void updateDateOfBirthSmart(String targetYear, String targetMonth, String targetDay) {
+    public boolean updateDateOfBirthSmart(String targetYear, String targetMonth, String targetDay) {
         System.out.println("Step: Smart Date Update...");
 
         // 1. READ & PARSE
@@ -174,7 +144,7 @@ public class ProfileActionHelper extends CreationActionHelper {
             waitForElement(AppiumBy.xpath("//*[contains(@text, '" + currentYear + "')]"));
         } catch (Exception e) {
             System.out.println("WARN: Date picker did not open!");
-            return;
+            return false;
         }
 
         // 3. CHANGE YEAR
@@ -188,7 +158,7 @@ public class ProfileActionHelper extends CreationActionHelper {
                 System.out.println("   -> [SUCCESS] Year '" + targetYear + "' was NOT found.");
                 System.out.println("   -> Closing picker safely...");
                 driver.navigate().back(); 
-                return; // Stop execution here if year isn't found
+                return false; // Stop execution here if year isn't found
             }
         }
 
@@ -235,7 +205,10 @@ public class ProfileActionHelper extends CreationActionHelper {
         } catch (Exception e) {
             System.out.println("WARN: Failed during Month/Day selection. Closing picker.");
             driver.navigate().back();
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -247,7 +220,7 @@ public class ProfileActionHelper extends CreationActionHelper {
 
         try {
             int monthNum = Integer.parseInt(monthRaw);
-            String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+            String[] months = {"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"};
             if (monthNum >= 1 && monthNum <= 12) {
                 return months[monthNum - 1];
             }
@@ -257,7 +230,7 @@ public class ProfileActionHelper extends CreationActionHelper {
         return monthRaw;
     }
 
-/**
+    /**
      * Helper: Safely parses "15/08/1998" into ["15", "08", "1998"]
      */
     private String[] getCurrentDateFromUi() {
@@ -293,29 +266,6 @@ public class ProfileActionHelper extends CreationActionHelper {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    //  * Determines if input is valid by checking TWO things:
-    //  * 1. Is the "Save" button enabled? (Primary Check)
-    //  * 2. Are there explicit RED error messages visible? (Secondary Check)
-    //  */
-    public boolean isInputValid(String labelText, String textToType) {
-        System.out.println("   -> [Validate] Testing input: '" + textToType + "'");
-        fillInputByLabelSibling(labelText, textToType);
-        try { driver.hideKeyboard(); } catch (Exception ignored) {}
-        try { Thread.sleep(1000); } catch (InterruptedException e) {}
-
-        // STRATEGY A: Check Button State
-        try {
-            WebElement saveBtn = driver.findElement(BTN_SAVE);
-            if (!saveBtn.isEnabled()) return false; 
-        } catch (Exception e) {}
-
-        // STRATEGY B: Check Error Text
-        String errorXpath = "//*[contains(@text, 'minimal') or contains(@text, 'tidak valid') or contains(@text, 'wajib diisi')]";
-        if (isElementPresent(AppiumBy.xpath(errorXpath), 1)) return false;
-
-        return true;
     }
 
     /**
