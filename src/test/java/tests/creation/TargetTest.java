@@ -156,7 +156,7 @@ public class TargetTest extends BaseTest {
         System.out.println("   [Check] Testing Special Chars...");
         targetPage.fillForm("@#$ABCD");
         
-        try { driver.findElement(targetPage.TIWTLE_MODAL).click(); } catch (Exception e) {}
+        try { driver.findElement(targetPage.TITLE_MODAL).click(); } catch (Exception e) {}
         
         targetPage.submitForm();
         
