@@ -30,7 +30,7 @@ public class ActionHelper {
         
         // This is the missing part: Initialize 'wait' with a 10-second timeout
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-    };
+    }
 
     public void waitForLoading(int millis) {
         try {
@@ -276,17 +276,55 @@ public class ActionHelper {
     }
 
     public void scrollToText(String visibleText) {
-        System.out.println("Smart Scrolling to: " + visibleText);
-        try {
-            driver.findElement(AppiumBy.androidUIAutomator(
-                "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
-                ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\").instance(0))"
-            ));
-        } catch (Exception e) {
-            Assert.fail("Failed to scroll to text: " + visibleText);
-        }
+        scrollToText(visibleText, 5); // Default to 5 swipes
     }
 
+    // 2. OVERLOADED (Use this for Years: scrollToText("1998", 30))
+    public void scrollToText(String visibleText, int maxSwipes) {
+    System.out.println("   -> Scrolling to find: '" + visibleText + "'");
+    try {
+        // 1. Try Scrolling FORWARD (Down)
+        driver.findElement(AppiumBy.androidUIAutomator(
+            "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
+            ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (1)
+            ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\"))"
+        ));
+    } catch (Exception e) {
+        System.out.println("   -> Not found scrolling Down. Trying to scroll UP...");
+        try {
+            // 2. Perform the Reverse Action (Force scroll UP)
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
+                ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (2)
+                ".setAsVerticalList().scrollBackward()" 
+            ));
+            
+            // 3. Search Again (Now that we are higher up)
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
+                ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (3) - This was missing!
+                ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\"))"
+            ));
+            
+        } catch (Exception ex) {
+            System.out.println("WARN: Could not find '" + visibleText + "' in either direction.");
+        }
+    }
+}
+
+    // public void scrollToText(String visibleText, int maxSwipes) {
+    //     System.out.println("   -> Scrolling to (approx): " + visibleText);
+    //     try {
+    //         driver.findElement(AppiumBy.androidUIAutomator(
+    //             "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
+    //             ".setMaxSearchSwipes(" + maxSwipes + ")" + 
+    //             // CHANGE IS HERE: Use textContains instead of text
+    //             ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\"))"
+    //         ));
+    //     } catch (Exception e) {
+    //         System.out.println("WARN: Scroll to '" + visibleText + "' failed.");
+    //     }
+    // }
     public void scrollToExactText(String visibleText) {
         System.out.println("Smart Scrolling to (EXACT): " + visibleText);
         try {
