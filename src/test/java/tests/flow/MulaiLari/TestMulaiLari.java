@@ -1,6 +1,9 @@
 package tests.flow.MulaiLari;
 
 import tests.BaseTest;
+import tests.utils.TestListener;
+import com.aventstack.extentreports.MediaEntityBuilder;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
@@ -39,7 +42,6 @@ public class TestMulaiLari extends BaseTest {
     
     By btnBackFromResult = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[1]/android.widget.Button[1]"); 
 
-
     // Test Cases
     @Test(priority = 1)
     public void testBukaHalamanMulaiLari() {
@@ -47,7 +49,11 @@ public class TestMulaiLari extends BaseTest {
         
         driver.findElement(navMulaiLari).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnOutdoor));
+        
         Assert.assertTrue(driver.findElements(btnOutdoor).size() > 0, "Bottom Navigation Mulai Lari gagal dibuka!");
+        
+        TestListener.getTest().pass("Berhasil membuka halaman Mulai Lari (Modal Outdoor muncul).", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -65,6 +71,10 @@ public class TestMulaiLari extends BaseTest {
             
             // JIKA MUNCUL -> pergi ke setting baterai
             System.out.println("Button Perizinan Muncul -> Masuk ke Setting Baterai");
+            
+            TestListener.getTest().info("Pop-up Perizinan Baterai muncul.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
             try { Thread.sleep(1000); } catch (Exception e) {}
             driver.findElement(btnPergiKePengaturan).click();
             
@@ -105,6 +115,9 @@ public class TestMulaiLari extends BaseTest {
             
             System.out.println("Dialihkan ke Pengaturan Lokasi -> nyalakan toggle");
             
+            TestListener.getTest().info("Dialihkan ke halaman Pengaturan Lokasi System.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+            
             // Cek status toggle, kalau mati (false) baru diklik
             WebElement switchElement = driver.findElement(toggleLokasiSwitch);
 
@@ -115,6 +128,10 @@ public class TestMulaiLari extends BaseTest {
                 switchElement.click();
                 System.out.println("Toggle Lokasi dinyalakan");
                 try { Thread.sleep(1500); } catch (Exception e) {}
+                
+                // SS: Setelah toggle dinyalakan
+                TestListener.getTest().pass("Berhasil menyalakan Toggle Lokasi.", 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
             } else {
                  System.out.println("Toggle Lokasi ternyata sudah nyala");
             }
@@ -138,11 +155,18 @@ public class TestMulaiLari extends BaseTest {
         try {
             waitLari.until(ExpectedConditions.visibilityOfElementLocated(btnStop));
             System.out.println("Tombol STOP sudah muncul, berarti Lari sudah dimulai.");
+            
+            Assert.assertTrue(driver.findElement(btnStop).isDisplayed(), "Tombol Stop tidak muncul, lari gagal start.");
+
+            TestListener.getTest().pass("Lari berhasil dimulai (Countdown selesai, masuk halaman lari).", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         } catch (Exception e) {
-            takeScreenshot("Gagal_Start_Lari");
+            TestListener.getTest().fail("Gagal Start Lari: Tombol STOP tidak muncul dalam 60 detik!", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+            
             Assert.fail("Gagal Start Lari: Tombol STOP tidak muncul dalam 60 detik!");
         }
-        takeScreenshot("Lari_Sedang_Berjalan");
     }
 
     @Test(priority = 3)
@@ -166,7 +190,11 @@ public class TestMulaiLari extends BaseTest {
         System.out.println("Selesai!");
         try { Thread.sleep(2000); } catch (Exception e) {}
 
-        takeScreenshot("Hasil_Lari_Selesai");
+        Assert.assertTrue(driver.findElement(btnBackFromResult).isDisplayed(), "Gagal menampilkan halaman hasil lari.");
+
+        TestListener.getTest().pass("Berhasil menyelesaikan lari dan melihat hasil.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         driver.findElement(btnBackFromResult).click();
     }
 
@@ -176,6 +204,11 @@ public class TestMulaiLari extends BaseTest {
 
         // Klik menu "Penggunaan baterai"
         if (driver.findElements(menuPenggunaanBaterai).size() > 0) {
+            
+            // SS: Sebelum masuk menu detail
+            TestListener.getTest().info("Masuk ke Setting App Info -> Pilih Menu Penggunaan Baterai.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
             driver.findElement(menuPenggunaanBaterai).click();
             try { Thread.sleep(1500); } catch (Exception e) {}
             
@@ -186,8 +219,15 @@ public class TestMulaiLari extends BaseTest {
                 // Konfirmasi popup -> pilih "izinkan"
                 try { Thread.sleep(1000); } catch (Exception e) {}
                 if (driver.findElements(btnIzinkanSystem).size() > 0) {
-                     driver.findElement(btnIzinkanSystem).click();
+                      
+                      TestListener.getTest().info("Konfirmasi Izin Latar Belakang (System Dialog).", 
+                          MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+                      driver.findElement(btnIzinkanSystem).click();
                 }
+
+                TestListener.getTest().pass("Izin Baterai Latar Belakang berhasil diaktifkan.", 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
             }
             
             // Back 2x (balik ke Home)

@@ -1,7 +1,11 @@
 package tests.flow.saya;
 
 import tests.BaseTest;
+import tests.utils.TestListener; 
+import com.aventstack.extentreports.MediaEntityBuilder; 
+
 import org.openqa.selenium.By;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import io.appium.java_client.AppiumBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -43,18 +47,32 @@ public class TestBadgesSyaratPrivasi extends BaseTest {
         driver.findElement(navSaya).click();
         waitTime();
 
+        Assert.assertTrue(driver.findElement(textLihatSemuaBadges).isDisplayed(), "Gagal masuk ke halaman Profil (Saya).");
+        
+        TestListener.getTest().pass("Berhasil masuk ke halaman Profil.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Klik Lihat Semua di Badges
         System.out.println("Klik 'Lihat Semua' di Badges");
         driver.findElement(textLihatSemuaBadges).click();
         waitTime();
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnBackBadges));
         System.out.println("Validasi: Button Back muncul.");
-        takeScreenshot("Saya_Badges_Show");
+        
+        Assert.assertTrue(driver.findElement(btnBackBadges).isDisplayed(), "Gagal masuk ke halaman Badges.");
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Badges.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Kembali ke Profil
         System.out.println("Kembali ke Profil dari Badges");
         driver.findElement(btnBackBadges).click();
         waitTime();
+
+        Assert.assertTrue(driver.findElement(textLihatSemuaBadges).isDisplayed(), "Gagal kembali ke Profil dari Badges.");
+        
+        TestListener.getTest().pass("Berhasil kembali ke halaman Profil.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -66,13 +84,20 @@ public class TestBadgesSyaratPrivasi extends BaseTest {
         actions.swipeVertical(0.7, 0.4);
         waitTime();
 
+        TestListener.getTest().pass("Berhasil scroll ke bawah cari menu Syarat & Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Klik Card Syarat & Privasi
         System.out.println("Klik Card Syarat & Privasi");
         driver.findElement(cardSyaratPrivasi).click();
         waitTime();
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnBackSyaratPrivasi));
         System.out.println("Validasi: Button Back muncul di halaman Syarat & Privasi.");
-        takeScreenshot("Saya_SyaratPrivasi_Show");
+
+        Assert.assertTrue(driver.findElement(linkSyaratKetentuan).isDisplayed(), "Gagal masuk ke menu Syarat & Privasi.");
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Syarat & Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Klik Link Syarat dan Ketentuan
         System.out.println("Klik Link Syarat dan Ketentuan");
@@ -80,16 +105,21 @@ public class TestBadgesSyaratPrivasi extends BaseTest {
         waitTime();
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnBackSyaratKetentuan));
         System.out.println("Validasi: Halaman Syarat dan Ketentuan muncul.");
-        takeScreenshot("Saya_SyaratKetentuan_Show");
 
-        // // Scroll
-        // actions.swipeVertical(0.9, 0.1);
-        // waitTime();
+        Assert.assertTrue(driver.findElement(btnBackSyaratKetentuan).isDisplayed(), "Gagal masuk ke detail Syarat & Ketentuan.");
+
+        TestListener.getTest().pass("Berhasil masuk ke detail Syarat & Ketentuan.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Kembali dari Syarat dan Ketentuan
         System.out.println("Kembali dari Syarat dan Ketentuan");
         driver.findElement(btnBackSyaratKetentuan).click();
         waitTime();
+
+        Assert.assertTrue(driver.findElement(linkKebijakanPrivasi).isDisplayed(), "Gagal kembali ke menu Syarat & Privasi dari detail Syarat.");
+
+        TestListener.getTest().pass("Berhasil kembali ke menu Syarat & Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Klik Link Kebijakan Privasi
         System.out.println("Klik Link Kebijakan Privasi");
@@ -97,23 +127,32 @@ public class TestBadgesSyaratPrivasi extends BaseTest {
         waitTime();
         wait.until(ExpectedConditions.visibilityOfElementLocated(searchKebijakanPrivasi));
         System.out.println("Validasi: Halaman Kebijakan Privasi muncul.");
-        takeScreenshot("Saya_KebijakanPrivasi_Show");
 
-        // // Scroll
-        // actions.swipeVertical(0.9, 0.1);
-        // waitTime();
+        Assert.assertTrue(driver.findElement(searchKebijakanPrivasi).isDisplayed(), "Gagal masuk ke detail Kebijakan Privasi.");
+
+        TestListener.getTest().pass("Berhasil masuk ke detail Kebijakan Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Kembali dari Kebijakan Privasi
         System.out.println("Kembali dari Kebijakan Privasi");
         driver.navigate().back();
         waitTime();
 
+        Assert.assertTrue(driver.findElement(linkSyaratKetentuan).isDisplayed(), "Gagal kembali ke menu Syarat & Privasi dari detail Kebijakan.");
+
+        TestListener.getTest().pass("Berhasil kembali ke menu Syarat & Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Kembali ke Profil dari Syarat & Privasi
         System.out.println("Kembali ke Profil dari Syarat & Privasi");
         driver.findElement(btnBackSyaratPrivasi).click();
         waitTime();
-    }
 
+        Assert.assertTrue(driver.findElement(cardSyaratPrivasi).isDisplayed(), "Gagal kembali ke halaman Profil utama.");
+
+        TestListener.getTest().pass("Berhasil kembali ke halaman Profil utama.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+    }
 
     // Helper 
     public void waitTime() {

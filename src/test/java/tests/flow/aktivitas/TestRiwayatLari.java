@@ -55,10 +55,16 @@ public class TestRiwayatLari extends BaseTest {
     @Test(priority = 1)
     public void testMasukKeRiwayatLariViaAktivitas() {
         System.out.println("TEST 1: Navigasi via Tab Aktivitas");
+
+        TestListener.getTest().pass("Tampilan awal ada di Beranda.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         // Klik ikon Aktivitas di Bottom Navigation
         driver.findElement(navAktivitas).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(headerAktivitas));
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Aktivitas.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         try { Thread.sleep(3000); } catch (Exception e) {}
         
@@ -93,10 +99,12 @@ public class TestRiwayatLari extends BaseTest {
         Assert.assertTrue(isWaktuAda, "Data Waktu/Durasi tidak tampil!");
         
         System.out.println("Statistik aman.");
+        TestListener.getTest().pass("Statistik Jarak & Waktu tampil dengan benar.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
     
     @Test(priority = 3)
-    public void testFiturTambahanHeader() {
+    public void testFiturUnduhEdit() {
         System.out.println("TEST 3: Cek Tombol Unduh & Edit");
         
         // Cek Tombol Unduh
@@ -120,6 +128,9 @@ public class TestRiwayatLari extends BaseTest {
             
             System.out.println("Menunggu modal edit muncul");
             wait.until(ExpectedConditions.visibilityOfElementLocated(inputNamaAktivitas));
+
+            TestListener.getTest().pass("Nama Aktivitas Sebelum di Edit.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
             
             // Isi Nama Baru
             WebElement input = driver.findElement(inputNamaAktivitas);
@@ -127,7 +138,7 @@ public class TestRiwayatLari extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("TEST DLU OKIW"); // Nama baru
+            input.sendKeys("TEST DLU XIXIXIXXI"); // Nama baru
             try { Thread.sleep(2000); } catch (Exception e) {}
             System.out.println("Ketik nama baru selesai.");
             
@@ -144,15 +155,15 @@ public class TestRiwayatLari extends BaseTest {
             if (driver.findElements(btnSimpan).size() > 0) {
                 System.out.println("Klik tombol Simpan");
                 wait.until(ExpectedConditions.elementToBeClickable(btnSimpan)).click();
-
-                TestListener.getTest().pass("Berhasil edit nama aktivitas.", 
-                    MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
                 
                 System.out.println("Menunggu proses simpan");
                 try {
                     // Tunggu modal hilang 
                     wait.until(ExpectedConditions.invisibilityOfElementLocated(inputNamaAktivitas));
                     System.out.println("Sukses: Modal Edit sudah tertutup.");
+                    
+                    TestListener.getTest().pass("Berhasil edit nama aktivitas.", 
+                        MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
                 } catch (Exception e) {
                     System.out.println("Warning: Modal masih nyangkut, paksa tap luar");
                     actions.tapAtScreenRatio(0.5, 0.15);
@@ -178,6 +189,9 @@ public class TestRiwayatLari extends BaseTest {
         wait.until(ExpectedConditions.visibilityOfElementLocated(mapAreaLocator));
         Assert.assertTrue(driver.findElements(mapAreaLocator).size() > 0, "ERROR: Peta tidak muncul!");
         System.out.println("Peta terdeteksi.");
+
+        TestListener.getTest().pass("Container Peta sudah muncul.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Zoom In
         if(driver.findElements(btnZoomIn).size() > 0) {

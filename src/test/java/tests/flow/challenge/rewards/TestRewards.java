@@ -1,6 +1,9 @@
 package tests.flow.challenge.rewards; 
 
 import tests.BaseTest;
+import tests.utils.TestListener; 
+import com.aventstack.extentreports.MediaEntityBuilder; 
+
 import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -23,7 +26,6 @@ public class TestRewards extends BaseTest {
     // Back
     By btnBack = AppiumBy.xpath("//android.widget.Button");
 
-
     // Test Cases
     @Test(priority = 1)
     public void testMasukMenuChallenge() {
@@ -37,9 +39,12 @@ public class TestRewards extends BaseTest {
         
         // Validasi: Pastikan tombol Rewards muncul sebagai tanda halaman challenge terbuka
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabRewards));
+        
+        // Assertion: Cek elemen ada
         Assert.assertTrue(driver.findElements(tabRewards).size() > 0, "Gagal masuk halaman Challenge!");
         
-        takeScreenshot("Halaman_Challenge_Terbuka");
+        TestListener.getTest().pass("Halaman Challenge Terbuka (Tab Rewards terlihat).", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -51,9 +56,15 @@ public class TestRewards extends BaseTest {
         System.out.println("Klik Tab Rewards");
         wait.until(ExpectedConditions.elementToBeClickable(tabRewards)).click();
 
+        TestListener.getTest().pass("Masuk ke Tab Rewards.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Klik Button Riwayat Rewards
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
         
+        // Assertion: Pastikan tombol Riwayat ada sebelum diklik
+        Assert.assertTrue(driver.findElement(btnRiwayatReward).isDisplayed(), "Tombol Riwayat Rewards tidak ditemukan.");
+
         sleep(1500); 
         System.out.println("Klik Riwayat Rewards");
         driver.findElement(btnRiwayatReward).click();
@@ -61,7 +72,12 @@ public class TestRewards extends BaseTest {
         // Validasi Halaman Riwayat
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnBack));
         System.out.println("Masuk ke halaman Riwayat Rewards.");
-        takeScreenshot("Halaman_Riwayat_Rewards");
+        
+        // Assertion: Pastikan masuk halaman detail (ada tombol back)
+        Assert.assertTrue(driver.findElement(btnBack).isDisplayed(), "Gagal masuk halaman Riwayat Rewards.");
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Riwayat Rewards.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Klik BACK
         sleep(2000); 
@@ -83,6 +99,9 @@ public class TestRewards extends BaseTest {
 
         Assert.assertTrue(driver.findElements(btnRiwayatReward).size() > 0, "Gagal kembali ke halaman Rewards! Masih di halaman Riwayat.");
         System.out.println("Berhasil kembali.");
+
+        TestListener.getTest().pass("Berhasil kembali ke halaman Rewards.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     public void sleep(int millis) {

@@ -1,9 +1,14 @@
 package tests.flow.beranda;
 
 import tests.BaseTest;
+import tests.utils.TestListener;
+
 import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.aventstack.extentreports.MediaEntityBuilder;
+
 import io.appium.java_client.AppiumBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -36,14 +41,21 @@ public class TestBottomNav extends BaseTest {
     // Test Cases
     @Test(priority = 1)
     public void testPindahSemuaMenu() {
+
         System.out.println("TEST 1: Cek Navigasi Menu Bawah");
+
+        TestListener.getTest().pass("Tampilan awal ada di Beranda.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // KE AKTIVITAS
         System.out.println("Klik Aktivitas");
         driver.findElement(navAktivitas).click();
+
         wait.until(ExpectedConditions.visibilityOfElementLocated(headerAktivitas));
         System.out.println("Validasi: Header 'Aktifitas Kamu' muncul.");
-        takeScreenshot("Nav_Aktivitas");
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Aktivitas.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // KE CHALLENGE
         System.out.println("Klik Challenge");
@@ -53,7 +65,9 @@ public class TestBottomNav extends BaseTest {
         driver.findElement(navChallenge).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(headerChallenge));
         System.out.println("Validasi: Header Challenge muncul.");
-        takeScreenshot("Nav_Challenge");
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // KE SAYA (PROFIL)
         System.out.println("Klik Saya");
@@ -63,7 +77,9 @@ public class TestBottomNav extends BaseTest {
         driver.findElement(navSaya).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(headerSaya));
         System.out.println("Validasi: Header 'Profil Kamu' muncul.");
-        takeScreenshot("Nav_Saya");
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Profil Kamu (Saya).", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // BALIK KE BERANDA
         System.out.println("Klik Beranda");
@@ -73,7 +89,9 @@ public class TestBottomNav extends BaseTest {
         driver.findElement(navBeranda).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(headerBeranda));
         System.out.println("Validasi: Balik ke Beranda (Headline muncul).");
-        takeScreenshot("Nav_Beranda_Back");
+        
+        TestListener.getTest().pass("Berhasil kembali ke halaman Beranda.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -85,6 +103,9 @@ public class TestBottomNav extends BaseTest {
         driver.findElement(navMulaiLari).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnOutdoor));
         Assert.assertTrue(driver.findElements(btnOutdoor).size() > 0, "Modal gagal terbuka!");
+
+        TestListener.getTest().pass("Modal 'Mulai Lari' berhasil terbuka (Muncul opsi Outdoor).", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         // TUTUP MODAL
         System.out.println("Menutup modal");
@@ -95,5 +116,8 @@ public class TestBottomNav extends BaseTest {
         
         try { Thread.sleep(1000); } catch (Exception e) {}
         Assert.assertTrue(driver.findElements(btnOutdoor).size() == 0, "Modal gagal tertutup!");
+
+        TestListener.getTest().pass("Modal 'Mulai Lari' berhasil tertutup.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 }
