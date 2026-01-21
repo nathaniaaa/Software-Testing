@@ -37,7 +37,7 @@ public class BaseTest {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("2ab55c03") 
+                .setUdid("R9CW1010R2P")
                 .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
                 .setAppPackage("com.telkomsel.telkomselcm") 
@@ -55,7 +55,7 @@ public class BaseTest {
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         actions = new ActionHelper(driver);
 
-        masukKeMenuAyoLari();
+        // masukKeMenuAyoLari();
     }
 
     @AfterClass
@@ -88,7 +88,8 @@ public class BaseTest {
             System.out.println("  -> Berhasil klik tab Mall.");
         } catch (Exception e) {
             System.out.println("  -> Gagal klik Mall Tab (Mungkin tertutup iklan/overlay). Force Tap...");
-            actions.tapByCoordinates(540, 2200);
+            // actions.tapByCoordinates(540, 2200);
+            actions.tapAtScreenRatio(0.5, 0.9);
         }
         
         try { Thread.sleep(3000); } catch (Exception e) {}
@@ -170,8 +171,9 @@ public class BaseTest {
             
         } catch (Exception e) {
              System.out.println("  -> LAYAR TERBLOKIR! Mencoba tap outside (Type B)...");
-             actions.tapByCoordinates(540, 150); // Tap area aman atas
-             try { Thread.sleep(1500); } catch (InterruptedException ex) {}
+            //  actions.tapByCoordinates(540, 150); // Tap area aman atas
+            actions.tapAtScreenRatio(0.5, 0.15); 
+            try { Thread.sleep(1500); } catch (InterruptedException ex) {}
         }
     }
 
@@ -189,5 +191,9 @@ public class BaseTest {
         } catch (Exception e) {
             System.out.println("Gagal screenshot: " + e.getMessage());
         }
+    }
+
+    public String getScreenshotBase64() {
+        return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
     }
 }
