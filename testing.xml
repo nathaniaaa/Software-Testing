@@ -7,7 +7,7 @@
     
     <test name="Test Riwayat Challenge">
         <classes>
-            <class name="tests.flow.aktivitas.TestRiwayatChallenge" />
+            <class name="tests.flow.aktivitas.TestRiwayatLari" />
         </classes>
     </test>
 </suite>

@@ -1,11 +1,16 @@
 package tests.flow.aktivitas;
 
 import tests.BaseTest;
+import tests.utils.TestListener;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.aventstack.extentreports.MediaEntityBuilder;
+
 import io.appium.java_client.AppiumBy;
 
 public class TestRiwayatLari extends BaseTest {
@@ -65,14 +70,16 @@ public class TestRiwayatLari extends BaseTest {
             try { Thread.sleep(4000); } catch (Exception e) {}
         } else {
             System.out.println("ERROR: Tidak ada aktivitas lari di list!");
-            takeScreenshot("Gagal_Cari_Aktivitas"); 
+            TestListener.getTest().pass("Gagal Mencari List Aktivitas Lari.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build()); 
             Assert.fail("Gagal: Tidak ada aktivitas lari di list!");
         }
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(titlePage));
         String judul = driver.findElement(titlePage).getText();
         Assert.assertEquals(judul, "Rincian Lari", "Salah halaman!");
-        takeScreenshot("Masuk_Rincian_Lari");
+        TestListener.getTest().pass("Berhasil masuk ke halaman Rincian Lari.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -120,7 +127,7 @@ public class TestRiwayatLari extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("TEST DLU AAA"); // Nama baru
+            input.sendKeys("TEST DLU OKIW"); // Nama baru
             try { Thread.sleep(2000); } catch (Exception e) {}
             System.out.println("Ketik nama baru selesai.");
             
@@ -137,6 +144,9 @@ public class TestRiwayatLari extends BaseTest {
             if (driver.findElements(btnSimpan).size() > 0) {
                 System.out.println("Klik tombol Simpan");
                 wait.until(ExpectedConditions.elementToBeClickable(btnSimpan)).click();
+
+                TestListener.getTest().pass("Berhasil edit nama aktivitas.", 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
                 
                 System.out.println("Menunggu proses simpan");
                 try {
@@ -219,7 +229,8 @@ public class TestRiwayatLari extends BaseTest {
             }
         } catch (Exception e) {}
         
-        takeScreenshot("Bukti_Interaksi_Peta");
+        TestListener.getTest().pass("Interaksi Peta berhasil.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 5)
@@ -233,7 +244,7 @@ public class TestRiwayatLari extends BaseTest {
              int startX = grafikContainer.getLocation().getX();
              int totalWidth = grafikContainer.getSize().getWidth();
              int centerY = grafikContainer.getLocation().getY() + (grafikContainer.getSize().getHeight() / 2);
-             int endX = startX + totalWidth;
+             //  int endX = startX + totalWidth;
 
              // Tap tap Grafik
              System.out.println("Tap data grafik");
@@ -258,7 +269,8 @@ public class TestRiwayatLari extends BaseTest {
              
              try { Thread.sleep(1500); } catch (Exception e) {} 
              
-             takeScreenshot("Hasil_Interaksi_Grafik");
+             TestListener.getTest().pass("Interaksi Grafik Ketinggian berhasil.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         } else {
              System.out.println("SKIP: Grafik tidak ditemukan.");
@@ -281,5 +293,7 @@ public class TestRiwayatLari extends BaseTest {
         Assert.assertTrue(driver.findElements(headerAktivitas).size() > 0, "Gagal kembali ke Tab Aktivitas!");
 
         System.out.println("Berhasil kembali ke Aktivitas.");
+        TestListener.getTest().pass("Berhasil kembali ke Halaman Aktivitas. Siklus Test Selesai.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 }
