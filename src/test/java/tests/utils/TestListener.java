@@ -7,7 +7,7 @@ import com.aventstack.extentreports.Status;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-import tests.BaseTest; // Import BaseTest
+import tests.BaseTest;
 
 public class TestListener implements ITestListener {
 
@@ -16,53 +16,91 @@ public class TestListener implements ITestListener {
 
     @Override
     public void onTestStart(ITestResult result) {
-        // 1. Get the Test Description
+        // 1. Ambil Deskripsi
         String methodName = result.getMethod().getDescription();
-        if (methodName == null) methodName = result.getMethod().getMethodName();
+        
+        // [FIX PENTING] Cek Null DAN Cek Kosong ("")
+        if (methodName == null || methodName.isEmpty()) {
+            methodName = result.getMethod().getMethodName();
+        }
 
-        // 2. Get the Class Name (e.g., "TargetTest")
-        String className = result.getTestClass().getRealClass().getSimpleName();
+        // [BAN SEREP] Kalau masih kosong juga (jarang terjadi), kasih nama default biar GAK CRASH
+        if (methodName == null || methodName.isEmpty()) {
+            methodName = "Test Tanpa Nama";
+        }
 
-        // 3. Create the test and assign the Category
-        ExtentTest extentTest = extent.createTest(methodName)
-                                    .assignCategory(className); // <--- THIS ADDS THE TAG
+        // 2. Ambil Nama Class dengan aman
+        String className = "Unknown Class";
+        try {
+            className = result.getTestClass().getRealClass().getSimpleName();
+        } catch (Exception e) {}
 
-        test.set(extentTest);
+        // 3. Buat Test di Report
+        try {
+            ExtentTest extentTest = extent.createTest(methodName)
+                                          .assignCategory(className);
+            test.set(extentTest);
+        } catch (Exception e) {
+            System.out.println("Gagal membuat report: " + e.getMessage());
+        }
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        test.get().log(Status.PASS, "Test Passed");
+        if (test.get() != null) {
+            test.get().log(Status.PASS, "Test Passed");
+        }
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        // 1. Log the error message
-        test.get().fail(result.getThrowable());
+        // [FIX] Safety check: Kalau test gagal sebelum mulai (misal di @BeforeClass), init dulu
+        if (test.get() == null) {
+            onTestStart(result);
+        }
 
-        // 2. Capture Screenshot automatically
-        try {
-            // We get the driver instance from the running test class
-            Object currentClass = result.getInstance();
-            BaseTest baseTest = (BaseTest) currentClass;
+        if (test.get() != null) {
+            // 1. Log error message
+            test.get().fail(result.getThrowable());
 
-            String screenshotCode = baseTest.getScreenshotBase64();
+            // 2. Capture Screenshot automatically
+            try {
+                Object currentClass = result.getInstance();
+                
+                // [FIX] Cek tipe class biar aman (instanceof)
+                if (currentClass instanceof BaseTest) {
+                    BaseTest baseTest = (BaseTest) currentClass;
+                    String screenshotCode = baseTest.getScreenshotBase64();
 
-            if (screenshotCode != null) {
-                test.get().fail("Screenshot of Failure:",
-                    MediaEntityBuilder.createScreenCaptureFromBase64String(screenshotCode).build());
+                    if (screenshotCode != null) {
+                        test.get().fail("Bukti Screenshot:",
+                            MediaEntityBuilder.createScreenCaptureFromBase64String(screenshotCode).build());
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Gagal attach screenshot: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.out.println("Error attaching screenshot to report: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onTestSkipped(ITestResult result) {
+        // [FIX] Handle kalau test di-skip (biasanya karena error di setup)
+        if (test.get() == null) {
+            onTestStart(result);
+        }
+        if (test.get() != null) {
+            test.get().log(Status.SKIP, "Test Skipped: " + result.getThrowable());
         }
     }
 
     @Override
     public void onFinish(ITestContext context) {
-        // Write the file to disk
-        extent.flush();
+        if (extent != null) {
+            extent.flush();
+        }
     }
-
+    
     public static ExtentTest getTest() {
         return test.get();
     }

@@ -1,9 +1,14 @@
 package tests.flow.aktivitas;
 
 import tests.BaseTest;
+import tests.utils.TestListener;
+
 import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.aventstack.extentreports.MediaEntityBuilder;
+
 import io.appium.java_client.AppiumBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -45,9 +50,9 @@ public class TestRiwayatChallenge extends BaseTest {
         wait.until(ExpectedConditions.visibilityOfElementLocated(cardChallengePertama));
         boolean isCardVisible = driver.findElements(cardChallengePertama).size() > 0;
         Assert.assertTrue(isCardVisible, "Gagal: List Riwayat Challenge tidak tampil!");
-        
-        System.out.println("Berhasil masuk ke tab Riwayat Challenge.");
-        takeScreenshot("ListRiwayatChallenge_Show");
+
+        TestListener.getTest().pass("Berhasil Masuk ke Tab Riwayat Challenge, berikut Halaman List Riwayat Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -86,7 +91,8 @@ public class TestRiwayatChallenge extends BaseTest {
         System.out.println("Klik button ke Deskripsi");
         driver.findElement(btnDeskripsi).click();
         
-        takeScreenshot("DetailChallenge_Interaction");
+        TestListener.getTest().pass("Test interaksi pada halaman detail Riwayat Challenge berhasil.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 3)
@@ -104,5 +110,7 @@ public class TestRiwayatChallenge extends BaseTest {
         Assert.assertTrue(isListVisible, "Gagal kembali ke List Riwayat Challenge!");
         
         System.out.println("Siklus Test Selesai.");
+        TestListener.getTest().pass("Berhasil kembali ke List Riwayat Challenge. Siklus Test Selesai.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 }
