@@ -1,6 +1,7 @@
 package tests.creation;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -61,6 +62,14 @@ public class TargetActionHelper extends CreationActionHelper {
         }
     }
 
+    public boolean isModalVisible() {
+        try {
+            return driver.findElement(TITLE_MODAL).isDisplayed();
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
+
     public void fillForm(String value) {
         // Reuse 'fillInputField' from CreationActionHelper!
         fillInputField(FIELD_INPUT_KM, value);
@@ -77,8 +86,7 @@ public class TargetActionHelper extends CreationActionHelper {
 
     public void submitForm() {
         // Reuse 'clickSubmitRobust' from CreationActionHelper!
-        clickSubmitRobust(BTN_SUBMIT_TARGET, 0.5, 0.88);
-         
+        clickSubmitRobust(BTN_SUBMIT_TARGET, 0.5, 0.88);  
     }
 
     public void cleanUpExistingTarget() {
