@@ -1,6 +1,9 @@
 package tests.flow.challenge.challenges;
 
 import tests.BaseTest;
+import tests.utils.TestListener; 
+import com.aventstack.extentreports.MediaEntityBuilder; 
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
@@ -46,6 +49,12 @@ public class TestChallengeSaya extends BaseTest {
         
         wait.until(ExpectedConditions.visibilityOfElementLocated(titleChallengeSaya));
 
+        // Validasi: Masuk halaman Challenge utama
+        Assert.assertTrue(driver.findElements(titleChallengeSaya).size() > 0, "Gagal masuk menu Challenge utama!");
+        
+        TestListener.getTest().pass("Berhasil masuk menu Challenge utama.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Swipe Horizontal
         System.out.println("Swipe Horizontal di area Challenge Saya");
         try {
@@ -53,8 +62,14 @@ public class TestChallengeSaya extends BaseTest {
             actions.swipeHorizontal(0.85, 0.15, 0.37); 
             Thread.sleep(4000);
             
+            TestListener.getTest().info("Swipe Card List Challenge Saya ke kiri.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
             actions.swipeHorizontal(0.15, 0.85, 0.37);
             Thread.sleep(4000);
+
+            TestListener.getTest().info("Swipe Card List Challenge Saya ke kanan.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
             
         } catch (Exception e) {
             System.out.println("Gagal Swipe: " + e.getMessage());
@@ -69,6 +84,9 @@ public class TestChallengeSaya extends BaseTest {
         // Validasi: Cek teks Pelari FOMO ada di layar (belum diklik)
         By textPelariFomo = AppiumBy.xpath("//android.widget.TextView[@text='Pelari FOMO']");
         Assert.assertTrue(driver.findElements(textPelariFomo).size() > 0, "Gagal masuk halaman List Challenge Saya!");
+        
+        TestListener.getTest().pass("Berhasil masuk halaman List 'Lihat Semua' Challenge Saya.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -85,6 +103,12 @@ public class TestChallengeSaya extends BaseTest {
         
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
         
+        // Validasi: Masuk detail page
+        Assert.assertTrue(driver.findElement(tabDeskripsi).isDisplayed(), "Gagal masuk detail Pelari FOMO.");
+
+        TestListener.getTest().pass("Masuk Detail Challenge: Pelari FOMO - Scroll Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Cek Tab Deskripsi & Scroll
         System.out.println("Cek Tab Deskripsi");
         driver.findElement(tabDeskripsi).click(); 
@@ -93,6 +117,9 @@ public class TestChallengeSaya extends BaseTest {
         System.out.println("Scroll Turun Deskripsi");
         actions.swipeVertical(0.7, 0.4);
         try { Thread.sleep(2000); } catch (Exception e) {}
+
+        TestListener.getTest().pass("Scroll ke bawah di Tab Deskripsi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());        
 
         System.out.println("Scroll Naik Deskripsi");
         actions.swipeVertical(0.4, 0.7);
@@ -103,9 +130,15 @@ public class TestChallengeSaya extends BaseTest {
         driver.findElement(tabLeaderboard).click();
         try { Thread.sleep(3000); } catch (Exception e) {} 
         
+        TestListener.getTest().info("Pindah ke Tab Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         System.out.println("Scroll Turun Leaderboard");
         actions.swipeVertical(0.7, 0.4);
         try { Thread.sleep(2000); } catch (Exception e) {}
+
+        TestListener.getTest().pass("Scroll ke bawah di Tab Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         System.out.println("Scroll Naik Leaderboard");
         actions.swipeVertical(0.4, 0.7);
@@ -115,11 +148,17 @@ public class TestChallengeSaya extends BaseTest {
         System.out.println("Kembali ke List");
         driver.findElement(btnBackDetail).click();
         try { Thread.sleep(2000); } catch (Exception e) {}
+        
+        // Validasi: Balik ke list
+        Assert.assertTrue(driver.findElements(cardPelariFomo).size() > 0, "Gagal kembali ke list challenge.");
+        
+        TestListener.getTest().pass("Berhasil kembali ke list challenge saya.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 3)
     public void testDetailYukLariSehat() {
-        System.out.println("TEST 3: Cek Detail Yuk Lari Sehat");
+        System.out.println("TEST 3: Cek Detail Yuk Lari Sehat (Tidak Scroll Leaderboard)");
 
         if (driver.findElements(cardYukLariSehat).size() > 0) {
             System.out.println("Klik Card Yuk Lari Sehat");
@@ -127,22 +166,33 @@ public class TestChallengeSaya extends BaseTest {
             
             wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
 
+            TestListener.getTest().pass("Masuk Detail Challenge: Yuk Lari Sehat - Tidak Scroll Leaderboard.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
             System.out.println("Scroll Turun Deskripsi");
             actions.swipeVertical(0.7, 0.4);
             try { Thread.sleep(2000); } catch (Exception e) {}
+
+            TestListener.getTest().pass("Scroll ke bawah di Tab Deskripsi.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
             System.out.println("Pindah ke Leaderboard (Cek isi saja)");
             driver.findElement(tabLeaderboard).click();
             try { Thread.sleep(3000); } catch (Exception e) {}
             
-            System.out.println("Leaderboard terlihat (Skip scrolling).");
+            TestListener.getTest().info("Pindah ke Tab Leaderboard.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
             System.out.println("Kembali ke List");
             driver.findElement(btnBackDetail).click();
             try { Thread.sleep(2000); } catch (Exception e) {}
+
+            TestListener.getTest().pass("Berhasil kembali ke list challenge saya.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
             
         } else {
             System.out.println("SKIP: Card Yuk Lari Sehat tidak ditemukan.");
+            TestListener.getTest().warning("Card Yuk Lari Sehat tidak ditemukan di list.");
         }
     }
 
@@ -158,7 +208,12 @@ public class TestChallengeSaya extends BaseTest {
         }
 
         try { Thread.sleep(2000); } catch (Exception e) {}
+        
         Assert.assertTrue(driver.findElements(btnLihatSemua).size() > 0, "Gagal kembali ke Menu Utama Challenge!");
+        
+        TestListener.getTest().pass("Berhasil kembali ke Menu Utama Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         System.out.println("Selesai.");
     }
 }

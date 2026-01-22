@@ -1,6 +1,9 @@
 package tests.flow.challenge.challenges;
 
 import tests.BaseTest;
+import tests.utils.TestListener; 
+import com.aventstack.extentreports.MediaEntityBuilder; 
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
@@ -40,7 +43,7 @@ public class TestPublicChallenge extends BaseTest {
     By btnBackListPublic = AppiumBy.xpath("//android.view.View[@content-desc='challenges']");
     By btnBackListSaya = AppiumBy.xpath("//android.view.View[@content-desc='joined']");
 
-        // Test Cases
+    // Test Cases
     @Test(priority = 1)
     public void testJoinPublicChallenge() {
         System.out.println("TEST 1: Join 'Fun for health' dari Public");
@@ -49,10 +52,19 @@ public class TestPublicChallenge extends BaseTest {
         driver.findElement(navChallenge).click();
         try { Thread.sleep(3000); } catch (Exception e) {} 
 
+        // Validasi: Masuk halaman challenge
+        Assert.assertTrue(driver.findElements(btnLihatSemuaPublic).size() > 0, "Gagal masuk menu Challenge");
+        
+        TestListener.getTest().pass("Berhasil masuk menu Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Scroll ke Bawah cari section Public
         System.out.println("Scroll mencari section Public Challenge");
         actions.swipeVertical(0.8, 0.5); 
         try { Thread.sleep(2000); } catch (Exception e) {} 
+
+        TestListener.getTest().pass("Section Public Challenge ditemukan (scrolling).", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Klik "Lihat Semua" punya Public
         System.out.println("Klik Lihat Semua (Public)");
@@ -63,20 +75,35 @@ public class TestPublicChallenge extends BaseTest {
         }
         try { Thread.sleep(3000); } catch (Exception e) {} 
 
+        TestListener.getTest().info("Masuk ke list Public Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Cari Card "Fun for health" (Scroll To Text)
         System.out.println("Mencari card 'Fun for health'");
         actions.scrollToText("Fun for health"); 
         try { Thread.sleep(3000); } catch (Exception e) {} 
+
+        TestListener.getTest().pass("Scroll ke card 'Fun for health'.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         // Klik Card
         wait.until(ExpectedConditions.elementToBeClickable(cardFunHealth)).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
         try { Thread.sleep(3000); } catch (Exception e) {}
 
+        // Validasi: Masuk detail
+        Assert.assertTrue(driver.findElement(tabDeskripsi).isDisplayed(), "Gagal masuk detail challenge!");
+
+        TestListener.getTest().pass("Berhasil masuk detail 'Fun for health'.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Cek Tab Deskripsi
         System.out.println("Cek Deskripsi -> Scroll Turun");
         actions.swipeVertical(0.7, 0.5);
         try { Thread.sleep(2000); } catch (Exception e) {}
+
+        TestListener.getTest().pass("Scroll ke bawah di Tab Deskripsi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         actions.swipeVertical(0.5, 0.7);
         try { Thread.sleep(2000); } catch (Exception e) {}
@@ -90,18 +117,30 @@ public class TestPublicChallenge extends BaseTest {
         actions.swipeVertical(0.7, 0.5);
         try { Thread.sleep(2000); } catch (Exception e) {}
 
+        TestListener.getTest().pass("Scroll ke bawah di Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // JOIN CHALLENGE (2 Langkah)
         // Klik 'Join Challenge'
         System.out.println("Klik tombol 'Join Challenge'");
         wait.until(ExpectedConditions.elementToBeClickable(btnJoinChallenge)).click();
         try { Thread.sleep(2000); } catch (Exception e) {} 
 
+        TestListener.getTest().pass("Berhasil klik Join Challenge -> muncul tombol Bergabung Sekarang.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Klik 'Bergabung Sekarang'
         System.out.println("Klik tombol 'Bergabung Sekarang'");
         wait.until(ExpectedConditions.elementToBeClickable(btnBergabung)).click();
+
+        TestListener.getTest().pass("Berhasil klik tombol 'Bergabung Sekarang' -> sudah bergabung.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         System.out.println("Berhasil Join! Menunggu proses");
         try { Thread.sleep(4000); } catch (Exception e) {} 
+
+        TestListener.getTest().pass("Berhasil Join Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Back 2x
         System.out.println("Back ke List Public");
@@ -115,6 +154,9 @@ public class TestPublicChallenge extends BaseTest {
             driver.navigate().back();
         }
         try { Thread.sleep(3000); } catch (Exception e) {}
+
+        TestListener.getTest().pass("Berhasil kembali ke halaman Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -128,6 +170,9 @@ public class TestPublicChallenge extends BaseTest {
         driver.findElement(btnLihatSemuaSaya).click();
         try { Thread.sleep(3000); } catch (Exception e) {} 
 
+        TestListener.getTest().info("Masuk ke list Challenge Saya.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Cari & Validasi "Fun for health" ada di list
         System.out.println("Mencari 'Fun for health' di list");
         try { Thread.sleep(2000); } catch (Exception e) {}
@@ -135,15 +180,24 @@ public class TestPublicChallenge extends BaseTest {
         Assert.assertTrue(driver.findElements(cardFunHealth).size() > 0, 
             "GAGAL: Challenge 'Fun for health' tidak masuk ke Challenge Saya!");
         
+        TestListener.getTest().pass("Validasi: Challenge 'Fun for health' ditemukan di list Saya.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Klik Card & Cek Detail lagi
         driver.findElement(cardFunHealth).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
         try { Thread.sleep(3000); } catch (Exception e) {}
 
+        TestListener.getTest().pass("Berhasil masuk halaman detail 'Fun for health'", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Cek Tab Deskripsi
         System.out.println("Cek Deskripsi -> Scroll Turun");
         actions.swipeVertical(0.7, 0.5);
         try { Thread.sleep(2000); } catch (Exception e) {}
+
+        TestListener.getTest().pass("Scroll ke bawah di Tab Deskripsi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         actions.swipeVertical(0.5, 0.7);
         try { Thread.sleep(2000); } catch (Exception e) {}
@@ -156,6 +210,9 @@ public class TestPublicChallenge extends BaseTest {
         System.out.println("Scroll Turun Leaderboard");
         actions.swipeVertical(0.7, 0.5);
         try { Thread.sleep(2000); } catch (Exception e) {}
+
+        TestListener.getTest().pass("Scroll ke bawah di Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         // Keluar Challenge (Leave)
         System.out.println("Proses Keluar Challenge");
@@ -163,12 +220,18 @@ public class TestPublicChallenge extends BaseTest {
         // Klik 'Keluar Challenge'
         wait.until(ExpectedConditions.elementToBeClickable(btnKeluarChallenge)).click();
         try { Thread.sleep(2000); } catch (Exception e) {} // Tunggu popup konfirmasi
+
+        TestListener.getTest().pass("Berhasil klik 'Keluar Challenge' -> Muncul konfirmasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         // Klik 'Ya, Lanjutkan'
         wait.until(ExpectedConditions.elementToBeClickable(btnKonfirmasiKeluar)).click();
         
         System.out.println("Berhasil keluar, tunggu loading");
         try { Thread.sleep(4000); } catch (Exception e) {} // Tunggu proses API selesai
+
+        TestListener.getTest().pass("Berhasil Keluar/Leave Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Back 1x
         System.out.println("Back ke List Saya");
@@ -178,17 +241,20 @@ public class TestPublicChallenge extends BaseTest {
         try { Thread.sleep(3000); } catch (Exception e) {}
 
         // Validasi Hilang
-        System.out.println("Validasi Challenge sudah hilang");
+        System.out.println("Validasi Challenge 'Fun for health' sudah hilang");
         
         boolean isCardPresent = driver.findElements(cardFunHealth).size() > 0;
         if (isCardPresent) {
-            System.out.println("Card masih terlihat, coba refresh");
+            System.out.println("Card 'Fun for health' masih terlihat, coba refresh");
             actions.swipeVertical(0.3, 0.8);
             try { Thread.sleep(3000); } catch (Exception e) {}
             isCardPresent = driver.findElements(cardFunHealth).size() > 0;
         }
 
-        Assert.assertFalse(isCardPresent, "GAGAL: Challenge masih ada di list padahal sudah keluar!");
+        Assert.assertFalse(isCardPresent, "GAGAL: Challenge 'Fun for health' masih ada di list padahal sudah keluar!");
         System.out.println("SUKSES: Challenge bersih.");
+        
+        TestListener.getTest().pass("Validasi: Challenge 'Fun for health' sudah hilang dari list.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 }

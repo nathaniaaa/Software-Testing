@@ -1,6 +1,9 @@
 package tests.flow.challenge.challenges;
 
 import tests.BaseTest;
+import tests.utils.TestListener; 
+import com.aventstack.extentreports.MediaEntityBuilder; 
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
@@ -32,9 +35,12 @@ public class TestRewardBulan extends BaseTest {
     public void testMasukDetailReward() {
         System.out.println("TEST 1: Navigasi ke Detail Reward Januari");
 
-        // Kli Challenge (Bottom Nav)
+        // Klik Challenge (Bottom Nav)
         System.out.println("Klik Menu Challenge (Bottom Nav)");
         driver.findElement(navChallenge).click();
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         // Klik "Lihat Detail"
         System.out.println("Mencari tombol 'Lihat Detail'");
@@ -44,14 +50,20 @@ public class TestRewardBulan extends BaseTest {
             System.out.println("Berhasil klik Lihat Detail.");
         } catch (Exception e) {
             System.out.println("Gagal klik Lihat Detail: " + e.getMessage());
+            
+            TestListener.getTest().fail("Tombol Lihat Detail tidak ditemukan.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+            
             Assert.fail("Tombol Lihat Detail tidak ditemukan.");
         }
 
         // Validasi: Pastikan masuk ke halaman detail
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabChallenge));
+        
         Assert.assertTrue(driver.findElements(tabChallenge).size() > 0, "Gagal masuk halaman detail reward!");
         
-        takeScreenshot("Detail_Reward_Januari_Terbuka");
+        TestListener.getTest().pass("Berhasil masuk ke halaman Detail Reward Bulan Januari.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2)
@@ -68,6 +80,9 @@ public class TestRewardBulan extends BaseTest {
         actions.swipeVertical(0.7, 0.3); 
         try { Thread.sleep(2000); } catch (Exception e) {}
 
+        TestListener.getTest().pass("Scroll ke bawah di Halaman Reward Januari (Tab Challenge).", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Cek & Klik Tombol Klaim
         System.out.println("Mengecek tombol Klaim");
         if (driver.findElements(btnKlaim).size() > 0) {
@@ -76,13 +91,19 @@ public class TestRewardBulan extends BaseTest {
             
             try { Thread.sleep(3000); } catch (Exception e) {}
             
+            TestListener.getTest().info("Klik tombol Klaim.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
             // Tap area aman 
             System.out.println("Tutup popup klaim (Tap Outside)");
             actions.tapAtScreenRatio(0.5, 0.2);
             try { Thread.sleep(1000); } catch (Exception e) {}
+
+            TestListener.getTest().pass("Berhasil close popup klaim.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
             
         } else if (driver.findElements(btnSelesai).size() > 0) {
-            System.out.println("Status: Reward sudah diklaim (Tombol Selesai).");
+            System.out.println("Status: Reward sudah diklaim.");
             driver.findElement(btnSelesai).click();
             try { Thread.sleep(2000); } catch (Exception e) {}
         } else {
@@ -106,17 +127,26 @@ public class TestRewardBulan extends BaseTest {
         
         try { Thread.sleep(3000); } catch (Exception e) {} 
         
-        takeScreenshot("Reward_Tab_Leaderboard");
+        TestListener.getTest().pass("Berhasil pindah ke Tab Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Scroll Turun Leaderboard
         System.out.println("Scroll ke bawah Leaderboard");
         actions.swipeVertical(0.7, 0.3); 
         try { Thread.sleep(2000); } catch (Exception e) {}
+
+        TestListener.getTest().pass("Scroll ke bawah di Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         // Scroll Naik Leaderboard
         System.out.println("Scroll kembali ke atas Leaderboard");
         actions.swipeVertical(0.3, 0.7); 
         try { Thread.sleep(1500); } catch (Exception e) {}
+        
+        Assert.assertTrue(driver.findElements(tabLeaderboard).size() > 0, "Aplikasi crash atau keluar dari halaman detail.");
+        
+        TestListener.getTest().pass("Scroll kembali ke atas di Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 3)
@@ -132,5 +162,8 @@ public class TestRewardBulan extends BaseTest {
         
         Assert.assertTrue(isBackSuccess, "Gagal kembali ke halaman List Rewards!");
         System.out.println("Berhasil kembali ke list.");
+        
+        TestListener.getTest().pass("Berhasil kembali ke halaman List Rewards utama.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 }

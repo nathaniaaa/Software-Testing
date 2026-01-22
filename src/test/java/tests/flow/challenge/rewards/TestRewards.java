@@ -40,7 +40,6 @@ public class TestRewards extends BaseTest {
         // Validasi: Pastikan tombol Rewards muncul sebagai tanda halaman challenge terbuka
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabRewards));
         
-        // Assertion: Cek elemen ada
         Assert.assertTrue(driver.findElements(tabRewards).size() > 0, "Gagal masuk halaman Challenge!");
         
         TestListener.getTest().pass("Halaman Challenge Terbuka (Tab Rewards terlihat).", 
@@ -56,13 +55,12 @@ public class TestRewards extends BaseTest {
         System.out.println("Klik Tab Rewards");
         wait.until(ExpectedConditions.elementToBeClickable(tabRewards)).click();
 
-        TestListener.getTest().pass("Masuk ke Tab Rewards.", 
+        TestListener.getTest().pass("Berhasil Masuk ke Halaman Rewards. (Klik Tab Rewards)", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Klik Button Riwayat Rewards
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
         
-        // Assertion: Pastikan tombol Riwayat ada sebelum diklik
         Assert.assertTrue(driver.findElement(btnRiwayatReward).isDisplayed(), "Tombol Riwayat Rewards tidak ditemukan.");
 
         sleep(1500); 
@@ -73,7 +71,6 @@ public class TestRewards extends BaseTest {
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnBack));
         System.out.println("Masuk ke halaman Riwayat Rewards.");
         
-        // Assertion: Pastikan masuk halaman detail (ada tombol back)
         Assert.assertTrue(driver.findElement(btnBack).isDisplayed(), "Gagal masuk halaman Riwayat Rewards.");
 
         TestListener.getTest().pass("Berhasil masuk ke halaman Riwayat Rewards.", 

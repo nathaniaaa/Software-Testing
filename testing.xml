@@ -7,7 +7,7 @@
     
     <test name="Test Riwayat Challenge">
         <classes>
-            <class name="tests.flow.challenge.rewards.TestRewards" />
+            <class name="tests.flow.challenge.challenges.TestChallengeSaya" />
         </classes>
     </test>
 </suite>
