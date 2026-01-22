@@ -3,49 +3,56 @@ package tests.creation;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-
+import java.time.Duration;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class ProfileActionHelper extends CreationActionHelper {
 
-    // ========================================================================
-    // 1. LOCATORS
-    // ========================================================================
+    // LOCATORS
     private final By TAB_SAYA = AppiumBy.accessibilityId("Saya\nTab 5 of 5");
     private final By BTN_EDIT_PROFIL = AppiumBy.accessibilityId("Duration"); // Based on your code
     private final By BTN_SUCCESS_OKE = AppiumBy.xpath("//*[contains(@text, 'Oke')]");
     private final By BTN_SAVE = AppiumBy.xpath("//*[contains(@text, 'Simpan')]");
+    
     // Specific Locator for the Date Input field specifically in Profile// The "trigger" is the box displaying the date, sibling to the Label
     private final By INPUT_DATE_DISPLAY = AppiumBy.xpath("//*[contains(@text, 'Tanggal Lahir')]/following-sibling::android.widget.Button");
-    // ========================================================================
-    // 2. CONSTRUCTOR
-    // ========================================================================
+    private final By TITLE_EDIT_PROFILE = AppiumBy.xpath("//*[contains(@text, 'Edit Profil')]");
+    
+    // CONSTRUCTOR
     public ProfileActionHelper(AndroidDriver driver) {
         super(driver); // Inherits all the "Robust Submit" and "Sniper" tools
     }
 
-    // ========================================================================
-    // 3. PAGE ACTIONS
-    // ========================================================================
-
-    public void navigateToEditProfile() {
-        System.out.println("Step: Navigate to Edit Page...");
+    // PAGE ACTIONS
+    public void navigateToProfileTab() {
+        System.out.println("Step: Clicking 'Saya' Tab...");
         try {
             // Try standard navigation
             wait.until(ExpectedConditions.visibilityOfElementLocated(TAB_SAYA)).click();
         } catch (Exception e) {
             // Fallback
             tapByTextPosition("Saya");
-            // tapByExactText("Saya");
         }
+        
+        // Optional: Wait for the profile page header to load
+        waitForLoading(1000); 
+    }
 
+    public void enterEditMode() {
+        System.out.println("Step: Clicking 'Edit Profil' Button...");
         try {
             wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_EDIT_PROFIL)).click();
         } catch (Exception e) {
-            // Coordinate fallback from your original test
+            // Coordinate fallback
             tapAtScreenRatio(0.56, 0.20);
         }
+        
+        // Optional: Wait for form to open
+        waitForLoading(1000);
     }
 
     public void uploadProfilePhoto(String source) {
@@ -112,24 +119,15 @@ public class ProfileActionHelper extends CreationActionHelper {
         wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_EDIT_PROFIL));
     }
 
-    // ... [Previous Navigation Methods: navigateToEditProfile, etc.] ...
-
-    /**
-     * SMART DATE PICKER STRATEGY
-     * 1. Reads the current date displayed on the form (e.g., "15 Aug 1998").
-     * 2. Opens the picker.
-     * 3. Uses "1998" to find the Year Button and "Aug" to find the Month Button.
-     * 4. Selects the new date.
-     */
-    public boolean updateDateOfBirthSmart(String targetYear, String targetMonth, String targetDay) {
-        System.out.println("Step: Smart Date Update...");
+    public boolean updateDateOfBirth(String targetYear, String targetMonth, String targetDay) {
+        System.out.println("Step: Date Update...");
 
         // 1. READ & PARSE
         String[] currentDateParts = getCurrentDateFromUi();
         String currentDay = currentDateParts[0]; // e.g., "15" or "05"
         String currentYear = currentDateParts[2];   
         String currentMonthName = getMonthNameFromNumber(currentDateParts[1]); 
-
+        String targetMonthName = getMonthNameFromNumber(targetMonth); // e.g., "08" or "8"
         System.out.println("   -> Current UI Date: " + currentDay + " " + currentMonthName + " " + currentYear);
 
         // 2. OPEN PICKER
@@ -141,7 +139,7 @@ public class ProfileActionHelper extends CreationActionHelper {
         
         // Wait for Picker
         try {
-            waitForElement(AppiumBy.xpath("//*[contains(@text, '" + currentYear + "')]"));
+            waitForElement(AppiumBy.xpath("//*[contains(@text, '" + currentMonthName + "')]"));
         } catch (Exception e) {
             System.out.println("WARN: Date picker did not open!");
             return false;
@@ -151,13 +149,25 @@ public class ProfileActionHelper extends CreationActionHelper {
         if (!currentYear.equals(targetYear)) {
             System.out.println("   -> Attempting to switch year to: " + targetYear);
             try {
-                tapByExactText(currentYear); 
-                scrollToText(targetYear, 5); 
-                driver.findElement(AppiumBy.xpath("//*[contains(@text, '" + targetYear + "')]")).click();
+                scrollToText(targetYear, 7); 
+                driver.manage().timeouts().implicitlyWait(Duration.ofMillis(500));
+                
+                try {
+                    driver.findElement(AppiumBy.androidUIAutomator(
+                        "new UiSelector().text(\"" + targetYear + "\")"));
+                } finally {
+                    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+                }
+                tapByExactText(targetYear);   
             } catch (Exception e) {
                 System.out.println("   -> [SUCCESS] Year '" + targetYear + "' was NOT found.");
                 System.out.println("   -> Closing picker safely...");
                 driver.navigate().back(); 
+                try {    
+                    driver.findElement(INPUT_DATE_DISPLAY).click();
+                } catch (Exception er) {
+                    clickByLabelOffset("Tanggal Lahir");
+                }
                 return false; // Stop execution here if year isn't found
             }
         }
@@ -165,10 +175,10 @@ public class ProfileActionHelper extends CreationActionHelper {
         // 4. CHANGE MONTH & DAY
         try {
             // A. Handle Month
-            if (!currentMonthName.startsWith(targetMonth.substring(0, 3))) {
+            if (!currentMonthName.startsWith(targetMonthName.substring(0, 3))) {
                 tapByExactText(currentMonthName);
-                scrollToText(targetMonth);
-                tapByExactText(targetMonth);
+                scrollToText(targetMonthName);
+                tapByExactText(targetMonthName);
             }
 
             // B. Handle Day (Logic Added Here)
@@ -190,17 +200,35 @@ public class ProfileActionHelper extends CreationActionHelper {
 
             if (needToClickDay) {
                 System.out.println("   -> Selecting Day: " + targetDay);
-                tapButtonByTextOrId(targetDay, targetDay);
+                try {
+                // 1. Convert input strings to integers
+                int y = Integer.parseInt(targetYear);
+                int m = Integer.parseInt(targetMonth); 
+                int d = Integer.parseInt(targetDay);
+
+                // 2. Generate the exact Content-Description
+                // Example: "Friday, November 5th, 2010"
+                String accessibilityId = generateDateContentDesc(y, m, d);
+                System.out.println("   -> Generated Accessibility ID: " + accessibilityId);
+
+                // 3. Click using Accessibility ID (Robust)
+                tapByAccessibilityId(accessibilityId);
+            } catch (Exception e) {
+                System.out.println("   -> [Fallback] Accessibility click failed. Trying Text.");
+                // Fallback to old text method if the calculation fails
+                tapByExactText(targetDay);
+            }
             } else {
                 System.out.println("   -> Day '" + targetDay + "' is already selected. Skipping click.");
             }
 
-            // 5. CONFIRM
-            if (isElementPresent(AppiumBy.id("android:id/button1"), 2)) {
-                 driver.findElement(AppiumBy.id("android:id/button1")).click();
-            } else {
-                 driver.findElement(INPUT_DATE_DISPLAY).click();
+            // 5. CONFIRM, CLOSE PICKER
+            try {    
+                driver.findElement(INPUT_DATE_DISPLAY).click();
+            } catch (Exception e) {
+                clickByLabelOffset("Tanggal Lahir");
             }
+            System.out.println("   -> Date selection completed: " + targetDay + " " + targetMonth + " " + targetYear);
 
         } catch (Exception e) {
             System.out.println("WARN: Failed during Month/Day selection. Closing picker.");
@@ -209,6 +237,39 @@ public class ProfileActionHelper extends CreationActionHelper {
         }
 
         return true;
+    }
+
+    private String generateDateContentDesc(int year, int month, int day) {
+        try {
+            LocalDate date = LocalDate.of(year, month, day);
+            
+            // 1. Format "Friday, November 5" (Using US Locale for English names)
+            // If your app is fully Indonesian (e.g., "Jumat, November..."), change Locale.US to new Locale("id", "ID")
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.US);
+            String basePart = date.format(formatter);
+            
+            // 2. Add Suffix (st, nd, rd, th)
+            String suffix = getDaySuffix(day);
+            
+            // 3. Combine: "Friday, November 5" + "th" + ", 2010"
+            return basePart + suffix + ", " + year;
+        } catch (Exception e) {
+            System.out.println("Date Error: " + e.getMessage());
+            return "";
+        }
+    }
+
+    // Helper to get st, nd, rd, th
+    private String getDaySuffix(int day) {
+        if (day >= 11 && day <= 13) {
+            return "th";
+        }
+        switch (day % 10) {
+            case 1:  return "st";
+            case 2:  return "nd";
+            case 3:  return "rd";
+            default: return "th";
+        }
     }
 
     /**
@@ -220,7 +281,7 @@ public class ProfileActionHelper extends CreationActionHelper {
 
         try {
             int monthNum = Integer.parseInt(monthRaw);
-            String[] months = {"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"};
+            String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
             if (monthNum >= 1 && monthNum <= 12) {
                 return months[monthNum - 1];
             }
@@ -253,10 +314,19 @@ public class ProfileActionHelper extends CreationActionHelper {
     }
 
     public boolean isOnEditProfilePage() {
-    // Check for a unique element on the Edit Page (e.g., the "Edit Profil" title or Name field)
-    // Using a short timeout (1-2 seconds) so it doesn't wait long if not found
-        return isElementPresent(AppiumBy.xpath("//*[contains(@text, 'Edit Profil')]"), 2);
-    }
+        try {
+            // Set implicit wait to 0 so we don't wait 10 seconds just to say "No"
+            driver.manage().timeouts().implicitlyWait(Duration.ofMillis(500));
+            boolean isDisplayed = driver.findElement(TITLE_EDIT_PROFILE).isDisplayed();
+            // Restore implicit wait (assuming default is 10s or 15s)
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+            return isDisplayed;
+        } catch (Exception e) {
+            // Restore implicit wait here too!
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+            return false; // Return FALSE instead of crashing
+        }
+}
 
     public boolean isSaveButtonEnabled() {
         try {
