@@ -37,6 +37,9 @@ public class TestRiwayatChallenge extends BaseTest {
     public void testNavigasiKeListChallenge() {
         System.out.println("TEST 1: Navigasi ke List Riwayat Challenge");
 
+        TestListener.getTest().pass("Tampilan awal ada di Beranda.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Klik ikon Aktivitas di Bottom Navigation
         System.out.println("Klik ikon Aktivitas");
         driver.findElement(navAktivitas).click();
@@ -51,7 +54,7 @@ public class TestRiwayatChallenge extends BaseTest {
         boolean isCardVisible = driver.findElements(cardChallengePertama).size() > 0;
         Assert.assertTrue(isCardVisible, "Gagal: List Riwayat Challenge tidak tampil!");
 
-        TestListener.getTest().pass("Berhasil Masuk ke Tab Riwayat Challenge, berikut Halaman List Riwayat Challenge.", 
+        TestListener.getTest().pass("Berhasil Masuk ke Tab Riwayat Challenge.", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
@@ -67,6 +70,9 @@ public class TestRiwayatChallenge extends BaseTest {
 
         // Validasi masuk detail (cek tombol Deskripsi)
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnDeskripsi));
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman detail Riwayat Challenge.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         // Default halaman di Deskripsi -> scroll dulu
         System.out.println("Halaman Deskripsi terbuka, mencoba Scroll ke bawah");
@@ -75,6 +81,8 @@ public class TestRiwayatChallenge extends BaseTest {
             actions.swipeVertical(0.7, 0.3); 
             Thread.sleep(3000);
 
+            TestListener.getTest().pass("Berhasil scroll halaman Deskripsi.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         } catch (Exception e) {
             System.out.println("Gagal scroll: " + e.getMessage());
         }
@@ -87,11 +95,14 @@ public class TestRiwayatChallenge extends BaseTest {
         // Validasi: pastikan tombol deskripsi masih ada (tidak crash)
         Assert.assertTrue(driver.findElements(btnDeskripsi).size() > 0, "Tab Leaderboard gagal dimuat");
 
+        TestListener.getTest().pass("Berhasil masuk ke Tab Leaderboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         // Balik lagi ke Deskripsi
         System.out.println("Klik button ke Deskripsi");
         driver.findElement(btnDeskripsi).click();
         
-        TestListener.getTest().pass("Test interaksi pada halaman detail Riwayat Challenge berhasil.", 
+        TestListener.getTest().pass("Kembali lagi ke Tab Deskripsi. Test interaksi pada halaman detail Riwayat Challenge berhasil.", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
