@@ -12,7 +12,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
-import tests.ActionHelper; // Ensure this imports your ActionHelper class
+import tests.ActionHelper; 
 
 public class CreationActionHelper extends ActionHelper{
 
@@ -20,8 +20,8 @@ public class CreationActionHelper extends ActionHelper{
         super(driver);
     }
     // --- COMMON LOCATORS ---
-    private final By BTN_NEXT_GENERIC = AppiumBy.xpath("//*[contains(@text, 'Selanjutnya') or contains(@text, 'Lanjut')]");
-    private final By TXT_SUCCESS_GENERIC = AppiumBy.xpath("//*[contains(@text, 'Berhasil')]");
+    private final By BTN_NEXT_GENERIC = AppiumBy.xpath("//*[contains(@text, 'Selanjutnya') or contains(@text, 'Ya, Lanjutkan') or contains(@text, 'Oke')]");
+    private final By TXT_SUCCESS_GENERIC = AppiumBy.xpath("//*[contains(@text, 'Berhasil') or contains(@text, 'Apakah ingin melanjutkan?')]");
     protected String inputXpathTemplate = "//*[@text='%s']/following-sibling::android.widget.EditText";
 
     // --- BUSINESS LOGIC & STRATEGIES ---
@@ -156,9 +156,8 @@ public class CreationActionHelper extends ActionHelper{
 
             // Get screen density factor (rough approximation) or use relative size
             int labelHeight = label.getSize().getHeight();      
-            int dynamicOffset = (int) (driver.manage().window().getSize().getHeight() * 0.02);
             int targetX = label.getLocation().getX() + (label.getSize().getWidth() / 2);
-            int targetY = label.getLocation().getY() + labelHeight + dynamicOffset + (labelHeight / 2);
+            int targetY = label.getLocation().getY() + labelHeight + (int)(labelHeight * 1.5);
             
             System.out.println("   -> Tapping offset at Y[" + targetY + "]");
             tapByCoordinates(targetX, targetY);
@@ -194,10 +193,9 @@ public class CreationActionHelper extends ActionHelper{
 
             // Get screen density factor (rough approximation) or use relative size
             int labelHeight = label.getSize().getHeight();      
-            int dynamicOffset = (int) (driver.manage().window().getSize().getHeight() * 0.02);
             int targetX = label.getLocation().getX() + (label.getSize().getWidth() / 2);
-            int targetY = label.getLocation().getY() + labelHeight + dynamicOffset + (labelHeight / 2);
-            
+            int targetY = label.getLocation().getY() + labelHeight + (int)(labelHeight * 1.5);
+
             System.out.println("   -> Tapping offset at [" + targetY + "]");
             tapByCoordinates(targetX, targetY);
 

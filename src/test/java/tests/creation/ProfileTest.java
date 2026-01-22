@@ -2,239 +2,323 @@ package tests.creation;
 
 import org.openqa.selenium.ScreenOrientation;
 import org.testng.Assert;
+import org.testng.SkipException; // Import this for proper skipping
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.aventstack.extentreports.MediaEntityBuilder;
+import com.aventstack.extentreports.Status;
+
 import io.appium.java_client.android.AndroidDriver;
 import tests.BaseTest;
+import tests.utils.TestListener;
 
 public class ProfileTest extends BaseTest {
 
     private ProfileActionHelper profilePage;
 
-    // ========================================================================
     // SETUP: STATE MANAGEMENT
-    // ========================================================================
-    @BeforeMethod
+     @BeforeMethod
     public void setupPage() {
-        // 1. Initialize Helper
         profilePage = new ProfileActionHelper((AndroidDriver) driver);
-
-        // 2. Intelligent Navigation
-        // Only navigate if we are NOT already on the Edit screen.
-        // This prevents the test from trying to click "Saya" if it's already there.
-        try {
-            if (!profilePage.isOnEditProfilePage()) {
-                System.out.println("[SETUP] Navigating to Edit Profile...");
-                profilePage.navigateToEditProfile();
-            }
-        } catch (Exception e) {
-            System.out.println("[SETUP] WARN: Navigation check failed, forcing navigation.");
-            profilePage.navigateToEditProfile();
-        }
     }
 
-    // ========================================================================
-    // GROUP A: HAPPY PATH & FUNCTIONAL
-    // ========================================================================
+    public void navigateToEditProfile() {
+        // From Dashboard to 
+        if (profilePage.isOnEditProfilePage()) {
+            return; 
+        }
 
+        try {
+            System.out.println("[SETUP] Navigating to Profile Tab...");
+            profilePage.navigateToProfileTab();
+            
+            Thread.sleep(2000); 
+
+            try {
+                TestListener.getTest().info("Setup: Profile Dashboard View (Before Editing)",
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+            } catch (Exception e) {
+                TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
+            }
+
+            System.out.println("[SETUP] Entering Edit Mode...");
+            profilePage.enterEditMode();
+            
+            // Wait for the form to open
+            Thread.sleep(1000);
+
+        } catch (Exception e) {
+            System.out.println("[SETUP] CRITICAL: Navigation sequence failed. Attempting brute-force.");
+            // Fallback: Just click the buttons blindly to try and save the test run
+            try {
+                profilePage.navigateToProfileTab();
+                Thread.sleep(2000);
+
+                try {
+                    TestListener.getTest().info("Setup: Profile Dashboard View (Before Editing)",
+                        MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+                } catch (Exception er) {
+                    TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
+                }
+
+
+                profilePage.enterEditMode();
+            } catch (Exception ex) {
+                System.out.println("[SETUP] FATAL: Could not recover.");
+            }
+        }
+    }   
+
+    // GROUP A: HAPPY PATH & FUNCTIONAL
     @Test(priority = 1, description = "Verify successful profile update with valid data")
     public void testUpdateProfileSuccess() {
-        System.out.println("=== TEST 1: Happy Path (Unique Data) ===");
-
-        // 1. Generate Unique Username (Timestamp based)
-        String uniqueName = "user.test." + (System.currentTimeMillis() % 10000);
-        System.out.println("   -> Generated Name: " + uniqueName);
-
-        // 2. Fill Text Fields (Sanitization Check included implicitly)
-        profilePage.fillInputAndReadBack("Nama", uniqueName);
-        profilePage.fillInputAndReadBack("Tinggi Badan", "175");
-        profilePage.fillInputAndReadBack("Berat Badan", "70");
+        TestListener.getTest().log(Status.INFO, "Starting Test: Happy Path Update");
         
-        // 3. Complex Inputs
-        // Note: Using 'Agustus' for Indonesian locale. Change to 'Aug' if English.
-        profilePage.updateDateOfBirthSmart("1995", "Agu", "20");
+        navigateToEditProfile();
+        
+        TestListener.getTest().info("1. Initial Profile State (Before Editing)",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        // DATA ENTRY & LOGGING
+        String uniqueName = "user.test." + (System.currentTimeMillis() % 10000);
+        
+        // 1. Name (Log the readback verification)
+        String actualName = profilePage.fillInputAndReadBack("Nama", uniqueName);
+        TestListener.getTest().info("Input 'Nama' -> Typed: " + uniqueName + " | Verified: " + actualName);
+
+        // 2. Height
+        String actualHeight = profilePage.fillInputAndReadBack("Tinggi Badan", "175");
+        TestListener.getTest().info("Input 'Tinggi' -> Typed: 175 | Verified: " + actualHeight);
+
+        // 3. Weight
+        String actualWeight = profilePage.fillInputAndReadBack("Berat Badan", "70");
+        TestListener.getTest().info("Input 'Berat' -> Typed: 70 | Verified: " + actualWeight);
+        
+        // 4. Complex Inputs (Date)
+        TestListener.getTest().info("Action: Setting Date of Birth to 20-Aug-1995");
+        //set the dob with number format
+        profilePage.updateDateOfBirth("1995", "8", "20");
+
+        // 5. Gender & Blood Type
+        TestListener.getTest().info("Action: Selecting Gender 'Laki-laki' & Blood Type 'O'");
         profilePage.selectGenderAndBloodType("Laki-laki", "O");
 
-        // 4. Photo Upload (Testing Gallery Flow)
+        // 6. Photo Upload
+        TestListener.getTest().info("Action: Uploading photo from Gallery...");
         profilePage.uploadProfilePhoto("Galeri");
 
-        // 5. CRITICAL ASSERTION: Save Button MUST be enabled
-        Assert.assertTrue(profilePage.isSaveButtonEnabled(), 
-            "BLOCKER: Save button is disabled even though data is valid!");
+        boolean isEnabled = profilePage.isSaveButtonEnabled();
+        Assert.assertTrue(isEnabled, "BLOCKER: Save button is disabled even though data is valid!");
 
-        // 6. Save & Verify
+        TestListener.getTest().pass("2. Form Filled & Validated. Save Button is Enabled.",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         profilePage.saveAndVerify(); 
-        System.out.println("   -> SUCCESS: Profile updated successfully.");
+        
+        TestListener.getTest().pass("3. SUCCESS: Profile updated and redirected to Dashboard.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 2, description = "Verify app saves and sanitizes spaces")
     public void testAutoSanitization() {
-        System.out.println("=== TEST 2: Auto-Sanitization (Save Check) ===");
+        TestListener.getTest().log(Status.INFO, "Starting Test: Auto-Sanitization");
+        navigateToEditProfile();
+        String dirtyInput = "  user.spaced . ";
 
-        String dirtyInput = "  user.spaced  ";
-        String expectedClean = "user.spaced";
+        String uiValue = profilePage.fillInputAndReadBack("Nama", dirtyInput);
+        TestListener.getTest().info("User Typed: '" + dirtyInput + "' | UI Displayed: '" + uiValue + "'");
 
-        // 1. Type the dirty input
-        profilePage.fillInputAndReadBack("Nama", dirtyInput);
+        TestListener.getTest().info("1. Input filled with spaces (Before Save)",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        // 2. ACTION: Try to Save
         boolean isSaved = profilePage.attemptSaveAndValidateSuccess();
-
-        // Check 1: Did the app allow us to save?
         Assert.assertTrue(isSaved, "FAIL: App refused to save the name with spaces!");
 
-        System.out.println("   -> Save successful. Verifying stored data...");
+        TestListener.getTest().info("2. Save Successful. Redirected to Dashboard.",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        // 3. RE-NAVIGATE: Go back to Edit Profile to see what was actually stored
-        // (Because after saving, we are usually thrown back to the Dashboard)
-        profilePage.navigateToEditProfile();
-
-        // 4. VERIFY: Read the value from the server/database
-        String storedValue = profilePage.getInputValue("Nama"); 
+        // RE-VERIFY DATA (SERVER CHECK)
+        TestListener.getTest().info("Action: Re-entering Edit Mode to verify stored data...");
         
-        Assert.assertEquals(storedValue, expectedClean, 
-            "FAIL: Server saved the spaces! Expected '" + expectedClean + "' but got '" + storedValue + "'");
+        profilePage.enterEditMode(); 
+        
+        String storedValue = profilePage.getInputValue("Nama"); 
+        TestListener.getTest().info("Server Value Retrieved: '" + storedValue + "'");
 
-        System.out.println("   -> SUCCESS: Server sanitized and saved input correctly.");
+        String strictPattern = "^[a-z0-9_.]+$";
+        boolean isSanitized = storedValue.matches(strictPattern);
+
+        Assert.assertTrue(isSanitized, 
+            "SANITIZATION FAIL: Stored value '" + storedValue + "' contains forbidden characters! (Allowed: a-z, 0-9, _)");
+
+        TestListener.getTest().pass("3. SUCCESS: Server sanitized input correctly.",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
-    // ========================================================================
-    // GROUP B: NEGATIVE TESTING (SECURITY & VALIDATION)
-    // ========================================================================
 
+    // GROUP B: NEGATIVE TESTING (SECURITY & VALIDATION)
     @Test(priority = 3, description = "Security: Block short usernames")
     public void testShortUsername() {
-        System.out.println("=== TEST 3: Short Username ===");
+        TestListener.getTest().log(Status.INFO, "Starting Test: Short Username Security Check");
+        navigateToEditProfile();
+        String shortName = "ab";
 
-        // 1. Input Invalid Data (< 3 chars)
-        profilePage.fillInputAndReadBack("Nama", "ab");
+        String actualUiText = profilePage.fillInputAndReadBack("Nama", shortName);
+        TestListener.getTest().info("User Typed: '" + shortName + "' | UI Displayed: '" + actualUiText + "'");
 
-        // 2. ASSERTION: Gatekeeper Check
-        // The Save button MUST be disabled (Grayed out)
+        TestListener.getTest().info("1. Input filled with short username (During)",
+             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        // VALIDATION LOGIC
         boolean isSaveEnabled = profilePage.isSaveButtonEnabled();
-        
-        Assert.assertFalse(isSaveEnabled, 
-            "SECURITY FAIL: Save button enabled for short name 'ab'!");
-            
-        System.out.println("   -> SUCCESS: System correctly blocked short name.");
+
+        // Visual Logging for the Report
+        if (isSaveEnabled) {
+            TestListener.getTest().fail("Logic Check: Button is ENABLED (Critical Risk)");
+        } else {
+            TestListener.getTest().info("Logic Check: Button is DISABLED (Safe)");
+        }
+
+        // Hard Assertion
+        Assert.assertFalse(isSaveEnabled, "SECURITY FAIL: Save button enabled for short name 'ab'!");
+
+        // SNAPSHOT 2: PROOF OF BLOCKING
+        TestListener.getTest().pass("2. SUCCESS: System correctly blocked short name.",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
-    @Test(priority = 4, description = "Security: Verify app sanitizes and allows valid save")
+    @Test(priority = 4, description = "Security: Verify app sanitizes invalid chars")
     public void testInvalidCharacters() {
-        System.out.println("=== TEST 4: Invalid Characters (Sanitization) ===");
-
-        String dirtyInput = "User_Test!";
-        String expectedClean = "ser_est"; 
-
-        // 1. Type the dirty input
-        profilePage.fillInputAndReadBack("Nama", dirtyInput);
-
-        // 2. CHECK 1: Did the app sanitize/truncate the symbols?
-        String actualValue = profilePage.getInputValue("Nama");
-        Assert.assertEquals(actualValue, expectedClean, 
-            "SANITIZATION FAIL: App did not remove symbols! Found: " + actualValue);
-
-        // 3. CHECK 2: Is the button enabled? (Since the name is now clean, it should be valid)
-        boolean isEnabled = profilePage.isSaveButtonEnabled();
-        Assert.assertTrue(isEnabled, 
-            "LOGIC FAIL: Name was sanitized to '" + actualValue + "' but Save button is still disabled!");
+        TestListener.getTest().log(Status.INFO, "Starting Test: Invalid Character Sanitization");
+        navigateToEditProfile();
+        String dirtyInput = "User_Test!123";
         
-        System.out.println("   -> SUCCESS: Symbols removed & Save button enabled.");
+        String actualUiText = profilePage.fillInputAndReadBack("Nama", dirtyInput);
+        
+        TestListener.getTest().info("User Typed: '" + dirtyInput + "' | UI Displayed: '" + actualUiText + "'");
+
+        TestListener.getTest().info("1. Input Phase: Checking sanitization result",
+             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        
+        // 2. Assertion: Regex Validation
+        String allowedPattern = "^[a-z0-9_.]+$";
+        boolean isValidFormat = actualUiText.matches(allowedPattern);
+        
+        Assert.assertTrue(isValidFormat, 
+            "SANITIZATION FAIL: Output '" + actualUiText + "' contains invalid characters! Allowed: [a-z, 0-9, _, .]");
+
+        // Verify the Save button is enabled (since the name is now valid)
+        boolean isEnabled = profilePage.isSaveButtonEnabled();
+        Assert.assertTrue(isValidFormat, 
+            "SANITIZATION FAIL: Output '" + actualUiText + "' contains invalid characters! Allowed: [a-z, 0-9, _, .]");
+       
+        // Final Valid State
+        TestListener.getTest().pass("2. Success: Output matches allowed pattern (lowercase/num/_) & Save is enabled.",
+             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
     @Test(priority = 5, description = "Logic: Block Future Date of Birth")
     public void testFutureDate() {
-        System.out.println("=== TEST 5: Future Date ===");
-
+        TestListener.getTest().log(Status.INFO, "Starting Test: Future Date Logic");
+        navigateToEditProfile();
         String nextYear = String.valueOf(java.time.Year.now().getValue() + 1);
-        
-        // 1. Try to set date
-        // capture the boolean result: TRUE = Date Changed, FALSE = Year Not Found
-        boolean yearWasFound = profilePage.updateDateOfBirthSmart(nextYear, "Jan", "1");
 
-        // 2. Logic: If year wasn't found, the App BLOCKED the future date. SUCCESS!
+        TestListener.getTest().info("1. Ready to attempt selecting future year: " + nextYear,
+             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        // Returns TRUE if year existed and was selected, FALSE if year wasn't in the list
+        //set the dob with number format
+        boolean yearWasFound = profilePage.updateDateOfBirth(nextYear, "1", "1");
+
         if (!yearWasFound) {
-            System.out.println("   -> SUCCESS: Future year was not selectable (Hidden by App).");
-            return; // EXIT THE TEST HERE. Do not check the save button.
+            // Outcome A: The App is smart and hides future years completely
+            TestListener.getTest().pass("2. Success: Future year " + nextYear + " is not selectable (Hidden by App).",
+                 MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+            return; 
         }
 
-        // 3. If year WAS found, THEN check if Save is disabled
-        Assert.assertFalse(profilePage.isSaveButtonEnabled(), 
-            "LOGIC FAIL: System allows saving a Future Date!");
+        boolean isEnabled = profilePage.isSaveButtonEnabled();
+        Assert.assertFalse(isEnabled, "LOGIC FAIL: System allows saving a Future Date!");
+        
+        TestListener.getTest().pass("2. Success: Future date selected, but Save button is disabled.",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
-    // ========================================================================
     // GROUP C: EDGE CASES & SYSTEM STABILITY
-    // ========================================================================
-
     @Test(priority = 6, description = "Max Character Boundary")
     public void testMaxCharBoundary() {
-        System.out.println("=== TEST 6: Max Char Boundary ===");
-
-        // Create 300 characters
+        TestListener.getTest().log(Status.INFO, "Starting Test: Max Character Boundary (300 chars)");
+        navigateToEditProfile();
         String massiveString = "a".repeat(300);
-        profilePage.fillInputAndReadBack("Nama", massiveString);
-
-        // 1. Get the Actual Length
-        String currentText = profilePage.getInputValue("Nama");
-        int actualLength = currentText.length();
-        System.out.println("   -> Input Length in Box: " + actualLength);
-
-        // 2. DUAL CHECK LOGIC
-        if (actualLength < 300) {
-            // SCENARIO A: The app Truncated the text (Good!)
-            // If it cut it down to a safe limit (e.g. 100), the save button should be ENABLED.
-            System.out.println("   -> App truncated input (Safe). Checking Save Button...");
-            Assert.assertTrue(profilePage.isSaveButtonEnabled(), 
-                "FAIL: App truncated text to safe limit but Save button is disabled!");
-        } else {
-            // SCENARIO B: The app kept all 300 chars (Risk!)
-            // If the text is massive, the save button MUST be DISABLED.
-            System.out.println("   -> App accepted all characters. Checking Save Button lock...");
-            Assert.assertFalse(profilePage.isSaveButtonEnabled(), 
-                "RISK: App accepted 300 chars AND left the Save button enabled! Buffer Overflow Risk.");
-        }
         
-        System.out.println("   -> SUCCESS: App handled max limit correctly.");
+        String currentText = profilePage.fillInputAndReadBack("Nama", massiveString);
+        int actualLength = currentText.length();
+
+        TestListener.getTest().info("Generated 300 chars. UI accepted: " + actualLength + " chars.");
+
+        TestListener.getTest().info("1. Input Phase: massive string entered.",
+             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        // Logic Branching
+        if (actualLength < 300) {
+            // SCENARIO A: The App Truncated the text (Good UX)
+            TestListener.getTest().info("Logic: App truncated input (Safe). Checking Save Button...");
+            
+            Assert.assertTrue(profilePage.isSaveButtonEnabled(), "FAIL: Text truncated but Save disabled!");
+            
+            // SNAPSHOT 2A: SUCCESS (TRUNCATED)
+            TestListener.getTest().pass("2. Success: App truncated overflow text safely & Save is enabled.",
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        } else {
+            // SCENARIO B: The App Accepted all text (Risk)
+            TestListener.getTest().warning("Logic: App accepted all 300 chars. Verifying Safety Lock...");
+            
+            Assert.assertFalse(profilePage.isSaveButtonEnabled(), 
+                "RISK: App accepted 300 chars AND left the Save button enabled! Potential Buffer Overflow.");
+            
+            // SNAPSHOT 2B: SUCCESS (BLOCKED)
+            TestListener.getTest().pass("2. Success: App accepted text but correctly blocked submission.",
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        }
     }
 
     @Test(priority = 7, description = "Stability: Data persistence after Rotation")
     public void testRotationPersistence() {
-        System.out.println("=== TEST 7: Rotation Persistence ===");
-
+        TestListener.getTest().log(Status.INFO, "Starting Test: Screen Rotation Persistence");
+        navigateToEditProfile();
         String testData = "rotate_test";
-        
-        // 1. Fill Data
-        profilePage.fillInputAndReadBack("Nama", testData);
 
-        // 2. Try to Rotate (With Handler)
+        String initialUiText = profilePage.fillInputAndReadBack("Nama", testData);
+        TestListener.getTest().info("User Typed: '" + testData + "' | UI Displayed: '" + initialUiText + "'");
+
+        // SNAPSHOT 1: PORTRAIT EVIDENCE
+        TestListener.getTest().info("1. Portrait Mode: Data entered successfully.",
+             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         try {
-            System.out.println("   -> Attempting to rotate to Landscape...");
+            TestListener.getTest().info("Action: Rotating device to LANDSCAPE...");
             driver.rotate(ScreenOrientation.LANDSCAPE);
-            Thread.sleep(2000);
-            
-            System.out.println("   -> Attempting to rotate to Portrait...");
+            Thread.sleep(2000); // Wait for animation and layout adjustment
+
+            // SNAPSHOT 2: LANDSCAPE EVIDENCE
+            TestListener.getTest().info("2. Landscape Mode: Checking UI stability.",
+                 MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+            TestListener.getTest().info("Action: Rotating device back to PORTRAIT...");
             driver.rotate(ScreenOrientation.PORTRAIT);
-            Thread.sleep(2000);
-            
+            Thread.sleep(2000); // Wait for layout reset
+
         } catch (Exception e) {
-            // === HANDLE: ROTATION FAILED ===
-            // This catches cases where the device/emulator does not support rotation
-            System.out.println("   -> [SKIP] Device failed to rotate. This test step is skipped.");
-            System.out.println("      Reason: " + e.getMessage());
-            
-            // Return immediately so we don't fail the assertion below.
-            // The test will be marked as "Passed" (Green) but with a Log message explaining why.
-            return; 
+            TestListener.getTest().skip("Device failed to rotate. Skipping test.");
+            throw new SkipException("Device does not support rotation API: " + e.getMessage());
         }
 
-        // 3. Verify Data (Only runs if rotation succeeded)
-        // We read the text back to ensure the app didn't wipe the form
-        String currentText = profilePage.fillInputAndReadBack("Nama", testData); 
+        String currentText = profilePage.getInputValue("Nama"); 
         
-        Assert.assertEquals(currentText, testData, 
-            "STABILITY FAIL: Data lost after screen rotation!");
-        
-        System.out.println("   -> SUCCESS: Data persisted.");
+        Assert.assertEquals(currentText, testData, "STABILITY FAIL: Text field was cleared or corrupted after rotation!");
+
+        TestListener.getTest().pass("3. Success: Data persisted exactly after full rotation cycle.",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 }

@@ -21,18 +21,21 @@ public class TargetTest extends BaseTest {
         targetPage = new TargetActionHelper((AndroidDriver) driver);
     }
 
-    // ==========================================
     // A. FUNCTIONAL (POSITIVE)
-    // ==========================================
-
-    @Test(priority = 1, description = "1. Set Valid Target")
+    @Test(priority = 1, description = "Set Valid Target")
     public void testSetValidTarget() {
         // Log to Report instead of Console
         TestListener.getTest().log(Status.INFO, "Starting Test: Set Valid Target (5 km)");
 
+        TestListener.getTest().info("Initial Dashboard State",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         targetPage.cleanUpExistingTarget();
         targetPage.openModal();
+
         targetPage.fillForm("5");
+        TestListener.getTest().info("Form filled with value: 5",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
         targetPage.submitForm();
         targetPage.handleSuccessModal(); // Assumes you fixed this method as discussed
@@ -42,21 +45,25 @@ public class TargetTest extends BaseTest {
         boolean isDisplayed = targetPage.isTargetDisplayed("5");
         Assert.assertTrue(isDisplayed, "Target 5 km visual text not found on dashboard.");
 
-        // === EVIDENCE SCREENSHOT (Success) ===
-        // This puts the picture inside the green "Pass" log in your HTML report
-        TestListener.getTest().pass("Target successfully set to 5km!", 
+        // Take the final Success Screenshot
+        TestListener.getTest().pass("Target successfully set to 5 km!", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
-    @Test(priority = 2, description = "2. Update Target")
+    @Test(priority = 2, description = "Update Target")
     public void testUpdateTarget() {
         TestListener.getTest().log(Status.INFO, "Starting Test: Update Target to 10 km");
+        TestListener.getTest().info("Dashboard state before update", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         targetPage.cleanUpExistingTarget();
         targetPage.openModal();
+
         targetPage.fillForm("10");
-        targetPage.submitForm();
+        TestListener.getTest().info("Form filled with new value: 10", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
         
+        targetPage.submitForm();
         targetPage.handleSuccessModal();
         targetPage.waitForLoading(3000);
 
@@ -67,96 +74,125 @@ public class TargetTest extends BaseTest {
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
-    // ==========================================
     // B. EXTREME & EDGE CASES (NEGATIVE)
-    // ==========================================
-
     @DataProvider(name = "invalidInputs")
     public Object[][] createInvalidData() {
         return new Object[][] {
             { "0", "Zero" },
             { "-100", "Negative" },
-            { "5.5", "Decimal" }
+            { "5.5", "Decimal" },
+            { "999999999", "Max Integer Limit" },
+            { "@#$ABCD", "Special Characters" }
         };
     }
 
-    @Test(priority = 3, dataProvider = "invalidInputs", description = "Verify invalid numeric inputs are blocked")
+    @Test(priority = 3, dataProvider = "invalidInputs", description = "Verify system handles various invalid inputs")
     public void testInvalidNumericValues(String input, String caseName) {
-        TestListener.getTest().log(Status.INFO, "Testing Invalid Input Case: " + caseName + " (" + input + ")");
+        TestListener.getTest().log(Status.INFO, "Testing Case: " + caseName + " (" + input + ")");
         
         targetPage.cleanUpExistingTarget();
         targetPage.openModal();
-        targetPage.fillForm(input);
 
-        // Check Sanitization
+        TestListener.getTest().info("Initial Modal State",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        
+        targetPage.fillForm(input);
+        TestListener.getTest().info("Attempted input: " + input,
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        // 1. Check Sanitization (Page Logic)
         String actualText = targetPage.getInputValue();
         TestListener.getTest().info("User typed: " + input + " | App showed: " + actualText);
 
-        // Special handling for Negative numbers (Auto-fix check)
-        if (caseName.equals("Negative") && !actualText.contains("-")) {
-            TestListener.getTest().pass("Success: App auto-sanitized negative input.");
+        // Logic for NEGATIVE numbers
+        if (caseName.contains("Negative") && !actualText.contains("-")) {
+            TestListener.getTest().pass("Success: App auto-sanitized negative input.",
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+            targetPage.dismissModal();
             return; 
         }
 
+        // Logic for DECIMALS
+        if (caseName.contains("Decimal")) {
+            if (!actualText.contains(".")) {
+                TestListener.getTest().pass("Success: App auto-sanitized decimal input.",
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+                targetPage.dismissModal();
+                return;
+            } else {
+                TestListener.getTest().info("'.' detected. Proceeding to check submit block...");
+            }
+        }
+
+        // Logic for SPECIAL CHARS (Optional: Check if app removed them instantly)
+        if (caseName.contains("Special") && actualText.isEmpty()) {
+             TestListener.getTest().pass("Success: App prevented typing special characters.",
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+            targetPage.dismissModal();
+             return;
+        }
+
+        // --- SUBMIT CHECK ---
+        // If the bad input is still there (like 999999999), try to submit.
+        // The system MUST keep the modal open to count as a "Pass".
         targetPage.submitForm();
-        
-        // Assert modal is still visible (using Helper, not driver!)
-        // Note: You need to implement 'isModalVisible' in your Helper as discussed
-        try {
-             Assert.assertTrue(driver.findElement(targetPage.TITLE_MODAL).isDisplayed(), 
-                 "Failed: Modal closed for input " + input);
-             TestListener.getTest().pass("System correctly blocked invalid input.");
-        } catch (Exception e) {
-             // If this fails, the Listener will catch it and take a screenshot automatically!
-             Assert.fail("Modal closed or crashed on invalid input: " + input);
+        targetPage.waitForLoading(1000);
+
+        if (targetPage.isModalVisible()) {
+             TestListener.getTest().pass("System correctly blocked input: " + caseName,
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        } else {
+             // If modal closed, it means the app accepted "999999999" or Crashed
+             Assert.fail("Critical Fail: Modal closed or App Crashed on input: " + input);
         }
             
         targetPage.dismissModal();
     }
 
-    @Test(priority = 4, description = "Max Limit & Chars")
-    public void testMaxLimitAndChars() {
-        TestListener.getTest().info("Testing Max Int & Special Characters");
-        
+    @Test(priority = 4, description = "Empty Field Submission")
+    public void testEmptyField() {
+        TestListener.getTest().info("Testing Empty Field Submission");
         targetPage.openModal();
-        
-        // Case: Max Int
-        targetPage.fillForm("999999999");
+
+        // Ensure field is cleared
+        targetPage.clearFieldAndBack("1"); // Use your smart clear method
+        TestListener.getTest().info("Field cleared (Empty State)", 
+             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         targetPage.submitForm();
-        // Simple assert to check if app crashed
-        TestListener.getTest().info("Submitted Max Int. Checking stability...");
+        targetPage.waitForLoading(1000);
         
-        // Case: Special Chars
-        targetPage.fillForm("@#$ABCD");
-        targetPage.submitForm();
-        
-        try {
-            targetPage.waitForLoading(500);
-            Assert.assertTrue(driver.findElement(targetPage.TITLE_MODAL).isDisplayed());
-            TestListener.getTest().pass("System rejected special characters.");
-        } catch (Exception e) {
-            Assert.fail("Modal closed/crashed on special characters");
-        }
-        
+        Assert.assertTrue(targetPage.isModalVisible(), "Modal closed on Empty Input!");
+        TestListener.getTest().pass("System correctly rejected empty input.", 
+             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
         targetPage.dismissModal();
     }
 
-    @Test(priority = 6, description = "Backgrounding")
+    @Test(priority = 5, description = "Backgrounding")
     public void testBackgrounding() {
         TestListener.getTest().info("Testing App Backgrounding state");
         
         targetPage.cleanUpExistingTarget();
         targetPage.openModal();
+
+        // Snapshot of the empty modal
+        TestListener.getTest().info("Initial Modal State", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        
         targetPage.fillForm("50");
+        TestListener.getTest().info("State before backgrounding (Input: 50)", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         TestListener.getTest().info("Sending app to background for 3 seconds...");
         ((AndroidDriver) driver).runAppInBackground(java.time.Duration.ofSeconds(3));
         
         targetPage.waitForLoading(1000);
         
-        Assert.assertTrue(driver.findElement(targetPage.TITLE_MODAL).isDisplayed(), "Modal closed after backgrounding");
-        TestListener.getTest().pass("App state preserved after backgrounding.");
-        
+        Assert.assertTrue(targetPage.isModalVisible(), "Modal closed after backgrounding");
+        TestListener.getTest().pass("App state preserved (Modal visible) after backgrounding.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+            
         targetPage.dismissModal();
     }
 }

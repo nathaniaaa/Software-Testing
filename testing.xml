@@ -5,9 +5,9 @@
         <listener class-name="tests.utils.TestListener" />
     </listeners>
     
-    <test name="Test Riwayat Challenge">
+    <test name="Creation Tests">
         <classes>
-            <class name="tests.flow.challenge.challenges.TestChallengeSaya" />
+            <class name="tests.flow.challenge.rewards.TestRewards" />
         </classes>
     </test>
 </suite>
