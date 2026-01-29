@@ -1,9 +1,7 @@
-package tests.flow.challenge.rewards; 
+package tests.flow.challenge.rewards;
 
 import tests.BaseTest;
-import tests.utils.TestListener; 
-import com.aventstack.extentreports.MediaEntityBuilder; 
-
+import tests.utils.TestInfo; 
 import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -12,93 +10,67 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class TestRewards extends BaseTest {
 
-    // Daftar Lokasi
-    
-    // Ikon Challenge (Bottom Navigation)
+    // --- DAFTAR LOKASI (LOCATORS) ---
     By navChallenge = AppiumBy.xpath("//android.widget.Button[@text='Challenge Challenge']");
-
-    // Tab Rewards (Header Atas)
     By tabRewards = AppiumBy.xpath("//android.view.View[@content-desc='Rewards Rewards']");
-
-    // Button "Riwayat Rewards" 
     By btnRiwayatReward = AppiumBy.xpath("//android.view.View[@content-desc='Public Riwayat Reward']");
-
-    // Back
     By btnBack = AppiumBy.xpath("//android.widget.Button");
 
-    // Test Cases
-    @Test(priority = 1)
+    // --- TEST CASES ---
+
+    @Test(priority = 1, description = "Navigasi ke Menu Challenge")
+    @TestInfo(
+        expected = "Halaman Challenge terbuka, Tab 'Rewards' terlihat.",
+        note = "Pastikan user sudah login sebelumnya."
+    )
     public void testMasukMenuChallenge() {
         System.out.println("TEST 1: Buka Menu Challenge");
-        
         sleep(2000);
 
-        // Klik Bottom Nav Challenge
-        System.out.println("Klik menu Challenge");
-        driver.findElement(navChallenge).click();
+        // 1. Klik Bottom Nav Challenge (Otomatis SS + Excel)
+        clickTest(navChallenge, "Klik menu Challenge di Bottom Nav");
         
-        // Validasi: Pastikan tombol Rewards muncul sebagai tanda halaman challenge terbuka
+        // 2. Validasi
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabRewards));
-        
         Assert.assertTrue(driver.findElements(tabRewards).size() > 0, "Gagal masuk halaman Challenge!");
-        
-        TestListener.getTest().pass("Halaman Challenge Terbuka (Tab Rewards terlihat).", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
-    @Test(priority = 2)
+    @Test(priority = 2, description = "Flow Buka Tab Rewards & Riwayat")
+    @TestInfo(
+        expected = "User bisa membuka Tab Rewards, masuk ke Riwayat, dan kembali lagi dengan tombol Back.",
+        note = "Cek kestabilan transisi halaman."
+    )
     public void testBukaRewardsDanRiwayat() {
         System.out.println("TEST 2: Buka Rewards -> Riwayat -> Back");
-
-        // Klik Tab Rewards
         sleep(1500); 
-        System.out.println("Klik Tab Rewards");
-        wait.until(ExpectedConditions.elementToBeClickable(tabRewards)).click();
 
-        TestListener.getTest().pass("Berhasil Masuk ke Halaman Rewards. (Klik Tab Rewards)", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        // 1. Klik Tab Rewards
+        clickTest(tabRewards, "Klik Tab Rewards");
 
-        // Klik Button Riwayat Rewards
+        // 2. Klik Button Riwayat Rewards
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
-        
-        Assert.assertTrue(driver.findElement(btnRiwayatReward).isDisplayed(), "Tombol Riwayat Rewards tidak ditemukan.");
+        clickTest(btnRiwayatReward, "Klik menu Riwayat Rewards");
 
-        sleep(1500); 
-        System.out.println("Klik Riwayat Rewards");
-        driver.findElement(btnRiwayatReward).click();
-
-        // Validasi Halaman Riwayat
+        // Validasi Masuk Halaman Riwayat
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnBack));
-        System.out.println("Masuk ke halaman Riwayat Rewards.");
-        
-        Assert.assertTrue(driver.findElement(btnBack).isDisplayed(), "Gagal masuk halaman Riwayat Rewards.");
+        Assert.assertTrue(driver.findElement(btnBack).isDisplayed(), "Gagal masuk halaman Riwayat.");
 
-        TestListener.getTest().pass("Berhasil masuk ke halaman Riwayat Rewards.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-
-        // Klik BACK
+        // 3. Klik Back
         sleep(2000); 
-        System.out.println("Klik Back");
         
-        // Cek apakah tombol back ada
         if (driver.findElements(btnBack).size() > 0) {
-            driver.findElement(btnBack).click();
+            clickTest(btnBack, "Klik tombol Back");
         } else {
-            // Fallback: pakai bawaan system jika tombol back gak ada
             System.out.println("Tombol Back UI tidak ada, pakai Back System.");
             driver.navigate().back();
         }
 
-        // Validasi: harusnya balik ke halaman Rewards (tombol Riwayat muncul lagi)
+        // Validasi Kembali ke Rewards
         try {
             wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
         } catch (Exception e) {}
 
-        Assert.assertTrue(driver.findElements(btnRiwayatReward).size() > 0, "Gagal kembali ke halaman Rewards! Masih di halaman Riwayat.");
-        System.out.println("Berhasil kembali.");
-
-        TestListener.getTest().pass("Berhasil kembali ke halaman Rewards.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        Assert.assertTrue(driver.findElements(btnRiwayatReward).size() > 0, "Gagal kembali ke halaman Rewards!");
     }
 
     public void sleep(int millis) {

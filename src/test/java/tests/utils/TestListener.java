@@ -9,96 +9,121 @@ import org.testng.ITestListener;
 import org.testng.ITestResult;
 import tests.BaseTest;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 public class TestListener implements ITestListener {
 
     private static ExtentReports extent = ExtentManager.getInstance();
     private static ThreadLocal<ExtentTest> test = new ThreadLocal<>();
+    
+    // Map untuk menyimpan Parent Test (Supaya report HTML rapi per Class)
+    private static Map<String, ExtentTest> classLevelTests = new HashMap<>();
+
+    // --- HELPER: Ambil data dari @TestInfo ---
+    private String getExpected(ITestResult result) {
+        try {
+            Method method = result.getMethod().getConstructorOrMethod().getMethod();
+            TestInfo info = method.getAnnotation(TestInfo.class);
+            return (info != null) ? info.expected() : "-";
+        } catch (Exception e) { return "-"; }
+    }
+
+    private String getNote(ITestResult result) {
+        try {
+            Method method = result.getMethod().getConstructorOrMethod().getMethod();
+            TestInfo info = method.getAnnotation(TestInfo.class);
+            return (info != null) ? info.note() : "-";
+        } catch (Exception e) { return "-"; }
+    }
+
+    @Override
+    public void onStart(ITestContext context) {
+        // Setup Excel saat suite mulai jalan
+        ExcelReportManager.setupExcel();
+    }
 
     @Override
     public void onTestStart(ITestResult result) {
-        // 1. Ambil Deskripsi
+        // --- 1. LOGIKA PARENT-CHILD (Grouping per Class) ---
+        String className = result.getTestClass().getRealClass().getSimpleName();
+        ExtentTest parentTest;
+
+        if (classLevelTests.containsKey(className)) {
+            parentTest = classLevelTests.get(className);
+        } else {
+            parentTest = extent.createTest(className);
+            classLevelTests.put(className, parentTest);
+        }
+
+        // --- 2. SETUP CHILD TEST (Method) ---
         String methodName = result.getMethod().getDescription();
-        
-        // [FIX PENTING] Cek Null DAN Cek Kosong ("")
         if (methodName == null || methodName.isEmpty()) {
             methodName = result.getMethod().getMethodName();
         }
-
-        // [BAN SEREP] Kalau masih kosong juga (jarang terjadi), kasih nama default biar GAK CRASH
-        if (methodName == null || methodName.isEmpty()) {
-            methodName = "Test Tanpa Nama";
-        }
-
-        // 2. Ambil Nama Class dengan aman
-        String className = "Unknown Class";
-        try {
-            className = result.getTestClass().getRealClass().getSimpleName();
-        } catch (Exception e) {}
-
-        // 3. Buat Test di Report
-        try {
-            ExtentTest extentTest = extent.createTest(methodName)
-                                          .assignCategory(className);
-            test.set(extentTest);
-        } catch (Exception e) {
-            System.out.println("Gagal membuat report: " + e.getMessage());
-        }
+        
+        // Buat Node dibawah Parent
+        ExtentTest childTest = parentTest.createNode(methodName);
+        test.set(childTest);
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        if (test.get() != null) {
-            test.get().log(Status.PASS, "Test Passed");
-        }
+        // 1. Log ke HTML (Wajib biar statusnya Hijau/Pass)
+        if (test.get() != null) test.get().log(Status.PASS, "Test Case Selesai dengan Sukses.");
+
+        // --- PENTING: BAGIAN EXCEL DIHAPUS ---
+        // Kita TIDAK lagi menulis ke Excel di sini.
+        // Kenapa? Karena step-step (Klik A, Klik B, Validasi C) sudah dicatat
+        // oleh method `clickTest` di dalam BaseTest.java.
+        // Jadi laporan Excel kamu nanti isinya detail per langkah, bukan cuma 1 baris di akhir.
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        // [FIX] Safety check: Kalau test gagal sebelum mulai (misal di @BeforeClass), init dulu
-        if (test.get() == null) {
-            onTestStart(result);
-        }
+        String base64Screenshot = null;
 
+        // Ambil Screenshot saat Error (Biasanya tanpa kotak merah karena crash mendadak)
+        try {
+            Object currentClass = result.getInstance();
+            if (currentClass instanceof BaseTest) {
+                base64Screenshot = ((BaseTest) currentClass).getScreenshotBase64();
+            }
+        } catch (Exception e) {}
+
+        // 1. Log ke HTML (Extent)
         if (test.get() != null) {
-            // 1. Log error message
             test.get().fail(result.getThrowable());
-
-            // 2. Capture Screenshot automatically
-            try {
-                Object currentClass = result.getInstance();
-                
-                // [FIX] Cek tipe class biar aman (instanceof)
-                if (currentClass instanceof BaseTest) {
-                    BaseTest baseTest = (BaseTest) currentClass;
-                    String screenshotCode = baseTest.getScreenshotBase64();
-
-                    if (screenshotCode != null) {
-                        test.get().fail("Bukti Screenshot:",
-                            MediaEntityBuilder.createScreenCaptureFromBase64String(screenshotCode).build());
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Gagal attach screenshot: " + e.getMessage());
+            if (base64Screenshot != null) {
+                test.get().fail("Bukti Error:", 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(base64Screenshot).build());
             }
         }
+
+        // 2. Log ke EXCEL (FAIL) - Wajib ada biar ketahuan kalau test gagal
+        String testCaseName = result.getMethod().getDescription();
+        if(testCaseName == null) testCaseName = result.getMethod().getMethodName();
+
+        String expected = getExpected(result);
+        String note = getNote(result);
+        String actual = "GAGAL: " + result.getThrowable().getMessage(); 
+
+        ExcelReportManager.logToExcel(testCaseName, expected, actual, base64Screenshot, note, "FAIL");
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        // [FIX] Handle kalau test di-skip (biasanya karena error di setup)
-        if (test.get() == null) {
-            onTestStart(result);
-        }
-        if (test.get() != null) {
-            test.get().log(Status.SKIP, "Test Skipped: " + result.getThrowable());
-        }
+        if (test.get() != null) test.get().log(Status.SKIP, "Skipped");
+        
+        String testCaseName = result.getMethod().getMethodName();
+        ExcelReportManager.logToExcel(testCaseName, "-", "Test dilewati (Skipped)", null, "-", "SKIP");
     }
 
     @Override
     public void onFinish(ITestContext context) {
-        if (extent != null) {
-            extent.flush();
-        }
+        if (extent != null) extent.flush(); // Save HTML
+        ExcelReportManager.saveExcel();     // Save Excel
     }
     
     public static ExtentTest getTest() {

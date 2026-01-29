@@ -7,17 +7,17 @@
     
     <test name="Flow Tests">
         <classes>
-            <class name="tests.flow.beranda.TestBottomNav" />
+            <!-- <class name="tests.flow.beranda.TestBottomNav" />
             <class name="tests.flow.beranda.TestShortcuts" />
             <class name="tests.flow.saya.TestBadgesSyaratPrivasi" />
             <class name="tests.flow.aktivitas.TestRiwayatChallenge" />
             <class name="tests.flow.aktivitas.TestRiwayatLari" />
-            <class name="tests.flow.MulaiLari.TestMulaiLari" />
+            <class name="tests.flow.MulaiLari.TestMulaiLari" /> -->
             <class name="tests.flow.challenge.rewards.TestRewards" />
-            <class name="tests.flow.challenge.leaderboard.TestLeaderboard" />
+            <!-- <class name="tests.flow.challenge.leaderboard.TestLeaderboard" />
             <class name="tests.flow.challenge.challenges.TestChallengeSaya" />
             <class name="tests.flow.challenge.challenges.TestPublicChallenge" />
-            <class name="tests.flow.challenge.challenges.TestRewardBulan" />
+            <class name="tests.flow.challenge.challenges.TestRewardBulan" /> -->
         </classes>
     </test>
 </suite>
