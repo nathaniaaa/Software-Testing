@@ -27,10 +27,14 @@ public class BaseTest {
     protected WebDriverWait wait;
     protected ActionHelper actions; 
 
-    // LOCATORS
+    // --- LOCATORS ---
+    // Iklan & Navigasi Awal
     private final By AD_CLOSE_BUTTON_TEXT = AppiumBy.xpath("//android.widget.Button[@text='Nanti Saja']");
     private final By AD_CLOSE_BUTTON_ID = AppiumBy.id("com.telkomsel.telkomselcm:id/btSecondTypeFirstSecondary");
     private final By MALL_TAB_ID = AppiumBy.accessibilityId("Mall");
+    
+    // LOCATOR BARU: Bottom Navigation Beranda (Ayo Lari)
+    private final By navBeranda = AppiumBy.xpath("//android.widget.Button[@text=\"Beranda Beranda\"]");
 
     @BeforeClass
     public void setUp() throws Exception {
@@ -44,9 +48,8 @@ public class BaseTest {
                 .setAppWaitActivity("*") 
                 .setAppWaitDuration(Duration.ofMillis(30000)) 
                 .setAutoGrantPermissions(true)
-                .setNoReset(true)
-                .setNewCommandTimeout(Duration.ofSeconds(60)) 
-                .setAdbExecTimeout(Duration.ofSeconds(60)); 
+                .setNoReset(true) // PENTING: NoReset true agar session tidak mati
+                .setNewCommandTimeout(Duration.ofSeconds(60)); 
 
         driver = new AndroidDriver(
                 URI.create("http://127.0.0.1:4723").toURL(), options
@@ -55,7 +58,9 @@ public class BaseTest {
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         actions = new ActionHelper(driver);
 
-        masukKeMenuAyoLari();
+        // --- SMART NAVIGATION ---
+        // Cek posisi dulu sebelum navigasi penuh
+        ensureOnAyoLariDashboard();
     }
 
     @AfterClass
@@ -65,6 +70,60 @@ public class BaseTest {
         }
     }
 
+    // --- LOGIC BARU: Cek & Reset ke Beranda ---
+    // --- LOGIC BARU: FORCE RESTART APP ---
+    public void ensureOnAyoLariDashboard() {
+        System.out.println("--- PREPARING TEST ENV ---");
+        
+        try {
+            String appPackage = "com.telkomsel.telkomselcm";
+            
+            // 1. Matikan Aplikasi (Force Stop)
+            // Ini membersihkan semua popup, sisa scroll, atau page yang nyangkut
+            System.out.println("Merestart aplikasi agar fresh...");
+            driver.terminateApp(appPackage);
+            
+            // Jeda dikit biar napas
+            try { Thread.sleep(2000); } catch (Exception e) {}
+
+            // 2. Buka Lagi
+            driver.activateApp(appPackage);
+            System.out.println("Aplikasi dibuka kembali.");
+
+            // 3. Tunggu Loading Awal (Biasanya ada splash screen / iklan)
+            try { Thread.sleep(5000); } catch (Exception e) {}
+
+            // 4. Handle Iklan (Wajib cek lagi karena abis restart biasanya muncul iklan)
+            handlePotentialAds();
+
+            // 5. Cek Posisi: Apakah langsung di Dashboard Ayo Lari?
+            // Biasanya kalau abis restart, dia balik ke Home Utama Telkomsel (Mall)
+            if (isElementVisible(navBeranda)) {
+                System.out.println("State Aman: Langsung masuk fitur Ayo Lari.");
+            } else {
+                // Kalau tidak ada tombol 'Beranda', berarti dia terlempar ke Home Utama
+                // Jalankan navigasi masuk lagi
+                System.out.println("Posisi di Home Utama. Masuk ke Ayo Lari...");
+                masukKeMenuAyoLari();
+            }
+
+        } catch (Exception e) {
+            System.out.println("Gagal restart app: " + e.getMessage());
+        }
+    }
+
+    // Helper untuk cek elemen tanpa bikin error
+    public boolean isElementVisible(By locator) {
+        try {
+            // Cek cepat (3 detik)
+            new WebDriverWait(driver, Duration.ofSeconds(3)).until(ExpectedConditions.visibilityOfElementLocated(locator));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // --- LOGIC LAMA (FULL NAVIGATION) ---
     public void masukKeMenuAyoLari() {
         try { 
             System.out.println("Menunggu aplikasi stabil...");
@@ -82,13 +141,14 @@ public class BaseTest {
 
         // 2. TAP "MALL" TAB
         System.out.println("Klik Menu Mall...");
+        try { Thread.sleep(3000); } catch (Exception e) {} 
+
         try {
             WebElement mallTab = wait.until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
             mallTab.click();
             System.out.println("  -> Berhasil klik tab Mall.");
         } catch (Exception e) {
             System.out.println("  -> Gagal klik Mall Tab (Mungkin tertutup iklan/overlay). Force Tap...");
-            // actions.tapByCoordinates(540, 2200);
             actions.tapAtScreenRatio(0.5, 0.9);
         }
         
@@ -123,6 +183,7 @@ public class BaseTest {
         // 4. CLICK "AYO MULAI LARI"
         System.out.println("Klik tombol Ayo Mulai Lari...");
         try {
+            Thread.sleep(2000);
             WebElement btnMulai = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 AppiumBy.accessibilityId("Ayo Mulai Lari")
             ));
@@ -159,11 +220,9 @@ public class BaseTest {
 
         // --- TYPE B: Iklan Overlay (Tap Outside) ---
         System.out.println("Menunggu sejenak sebelum cek Iklan Type B (Overlay)...");
-        // [FIX] Tambahkan sleep agar iklan sempat muncul (rendering time)
         try { Thread.sleep(3000); } catch (InterruptedException e) {}
 
         try {
-            // [FIX] Tambahkan durasi wait dari 2 detik menjadi 5 detik
             new WebDriverWait(driver, Duration.ofSeconds(5))
                 .until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
             
@@ -171,7 +230,6 @@ public class BaseTest {
             
         } catch (Exception e) {
              System.out.println("  -> LAYAR TERBLOKIR! Mencoba tap outside (Type B)...");
-            //  actions.tapByCoordinates(540, 150); // Tap area aman atas
             actions.tapAtScreenRatio(0.5, 0.15); 
             try { Thread.sleep(1500); } catch (InterruptedException ex) {}
         }

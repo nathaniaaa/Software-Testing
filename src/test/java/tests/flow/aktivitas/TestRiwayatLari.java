@@ -138,7 +138,7 @@ public class TestRiwayatLari extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("TEST DLU XIXIXIXXI"); // Nama baru
+            input.sendKeys("TEST TEST 1234"); // Nama baru
             try { Thread.sleep(2000); } catch (Exception e) {}
             System.out.println("Ketik nama baru selesai.");
             
