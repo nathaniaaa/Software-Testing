@@ -12,6 +12,8 @@ import tests.BaseTest;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList; 
+import java.util.List;
 
 public class TestListener implements ITestListener {
 
@@ -46,45 +48,36 @@ public class TestListener implements ITestListener {
 
     @Override
     public void onTestStart(ITestResult result) {
-        // --- 1. LOGIKA PARENT-CHILD (Grouping per Class) ---
+        // Create HTML Report Node
         String className = result.getTestClass().getRealClass().getSimpleName();
-        ExtentTest parentTest;
-
-        if (classLevelTests.containsKey(className)) {
-            parentTest = classLevelTests.get(className);
-        } else {
-            parentTest = extent.createTest(className);
-            classLevelTests.put(className, parentTest);
-        }
-
-        // --- 2. SETUP CHILD TEST (Method) ---
+        ExtentTest parentTest = extent.createTest(className); // Simplified for this example
         String methodName = result.getMethod().getDescription();
-        if (methodName == null || methodName.isEmpty()) {
-            methodName = result.getMethod().getMethodName();
-        }
+        if (methodName == null) methodName = result.getMethod().getMethodName();
         
-        // Buat Node dibawah Parent
-        ExtentTest childTest = parentTest.createNode(methodName);
-        test.set(childTest);
+        test.set(parentTest.createNode(methodName));
+        
+        // Note: BaseTest.clearEvidence() is handled by @BeforeMethod in BaseTest
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        // 1. Log ke HTML (Wajib biar statusnya Hijau/Pass)
-        if (test.get() != null) test.get().log(Status.PASS, "Test Case Selesai dengan Sukses.");
+        if (test.get() != null) test.get().log(Status.PASS, "Test Passed");
 
-        // --- PENTING: BAGIAN EXCEL DIHAPUS ---
-        // Kita TIDAK lagi menulis ke Excel di sini.
-        // Kenapa? Karena step-step (Klik A, Klik B, Validasi C) sudah dicatat
-        // oleh method `clickTest` di dalam BaseTest.java.
-        // Jadi laporan Excel kamu nanti isinya detail per langkah, bukan cuma 1 baris di akhir.
+        // --- WRITE TO EXCEL (ONE ROW) ---
+        String testName = result.getMethod().getDescription();
+        if (testName == null) testName = result.getMethod().getMethodName();
+
+        // 1. Get ALL screenshots collected during the test
+        List<String> screenshots = BaseTest.getScreenshotList();
+
+        // 2. Log to Excel
+        ExcelReportManager.logToExcel(testName, "-", "Test Passed Successfully", screenshots, "PASS");
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
+        // --- HTML LOGGING ---
         String base64Screenshot = null;
-
-        // Ambil Screenshot saat Error (Biasanya tanpa kotak merah karena crash mendadak)
         try {
             Object currentClass = result.getInstance();
             if (currentClass instanceof BaseTest) {
@@ -92,24 +85,26 @@ public class TestListener implements ITestListener {
             }
         } catch (Exception e) {}
 
-        // 1. Log ke HTML (Extent)
         if (test.get() != null) {
             test.get().fail(result.getThrowable());
             if (base64Screenshot != null) {
-                test.get().fail("Bukti Error:", 
+                test.get().fail("Failure Snapshot", 
                     MediaEntityBuilder.createScreenCaptureFromBase64String(base64Screenshot).build());
             }
         }
 
-        // 2. Log ke EXCEL (FAIL) - Wajib ada biar ketahuan kalau test gagal
-        String testCaseName = result.getMethod().getDescription();
-        if(testCaseName == null) testCaseName = result.getMethod().getMethodName();
+        // --- EXCEL LOGGING (ONE ROW) ---
+        String testName = result.getMethod().getDescription();
+        if (testName == null) testName = result.getMethod().getMethodName();
 
-        String expected = getExpected(result);
-        String note = getNote(result);
-        String actual = "GAGAL: " + result.getThrowable().getMessage(); 
+        // 1. Get screenshots collected so far + Add the Failure screenshot
+        List<String> screenshots = BaseTest.getScreenshotList();
+        if (base64Screenshot != null) {
+            screenshots.add(base64Screenshot);
+        }
 
-        ExcelReportManager.logToExcel(testCaseName, expected, actual, base64Screenshot, note, "FAIL");
+        // 2. Log to Excel
+        ExcelReportManager.logToExcel(testName, "-", "FAILED: " + result.getThrowable().getMessage(), screenshots, "FAIL");
     }
 
     @Override
@@ -117,13 +112,13 @@ public class TestListener implements ITestListener {
         if (test.get() != null) test.get().log(Status.SKIP, "Skipped");
         
         String testCaseName = result.getMethod().getMethodName();
-        ExcelReportManager.logToExcel(testCaseName, "-", "Test dilewati (Skipped)", null, "-", "SKIP");
+        ExcelReportManager.logToExcel(testCaseName, "-", "Test dilewati (Skipped)", null, "SKIP");
     }
 
     @Override
     public void onFinish(ITestContext context) {
-        if (extent != null) extent.flush(); // Save HTML
-        ExcelReportManager.saveExcel();     // Save Excel
+        if (extent != null) extent.flush(); 
+        ExcelReportManager.saveExcel();
     }
     
     public static ExtentTest getTest() {

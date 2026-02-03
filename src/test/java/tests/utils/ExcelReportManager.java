@@ -2,42 +2,47 @@ package tests.utils;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.commons.codec.binary.Base64;
-
+import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
+import java.util.List;
+import javax.imageio.ImageIO;      
+import java.awt.image.BufferedImage;
 
 public class ExcelReportManager {
 
     private static Workbook workbook;
     private static Sheet sheet;
     private static int rowIndex = 0;
-    private static String filePath;
+    
+    // --- CONFIGURATION ---
+    // 220 points height (Approx 293 pixels)
+    private static final float ROW_HEIGHT_POINTS = 220f; 
 
-    // --- SETUP AWAL: Bikin File & Header ---
     public static void setupExcel() {
+        if (workbook != null) return;
         workbook = new XSSFWorkbook();
-        sheet = workbook.createSheet("QA Automation Report");
+        sheet = workbook.createSheet("QA Report");
 
-        // 1. Bikin Style Header (Warna Cyan/Aqua, Bold, Border)
+        // Header Styling
         CellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setFillForegroundColor(IndexedColors.AQUA.getIndex());
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         Font font = workbook.createFont();
         font.setBold(true);
         headerStyle.setFont(font);
-        setBorders(headerStyle);
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
         headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
-        // 2. Bikin Baris Header
-        Row headerRow = sheet.createRow(rowIndex++);
-        headerRow.setHeight((short) 600); // Agak tinggi dikit headernya
-
-        String[] headers = {"No", "Test Case Name", "Expected Result", "Actual Result", "Screenshot", "Note", "Status"};
+        setBorders(headerStyle);
         
+        Row headerRow = sheet.createRow(rowIndex++);
+        headerRow.setHeightInPoints(40); 
+
+        // Header Columns
+        String[] headers = {"No", "Test Case Name", "Expected Result", "Actual Result", "Status", "Screenshots ->"};
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
@@ -45,60 +50,103 @@ public class ExcelReportManager {
         }
     }
 
-    // --- FUNGSI TULIS DATA PER BARIS ---
-    public static void logToExcel(String testName, String expected, String actual, String base64Image, String note, String status) {
+    public static void logToExcel(String testName, String expected, String actual, List<String> screenshots, String status) {
         if (workbook == null) setupExcel();
 
         Row row = sheet.createRow(rowIndex++);
-        // Tinggi baris diset cukup besar (3000 unit) agar gambar muat
-        row.setHeight((short) 3000); 
+        row.setHeightInPoints(ROW_HEIGHT_POINTS); // Force Row Height
 
-        // Style untuk sel biasa (Wrap text, Border, Tengah)
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setWrapText(true);
-        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        setBorders(cellStyle);
-
-        // Style khusus Status (Merah/Hijau)
+        CellStyle style = workbook.createCellStyle();
+        style.setWrapText(true);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        setBorders(style);
+        
         CellStyle statusStyle = workbook.createCellStyle();
-        statusStyle.cloneStyleFrom(cellStyle);
-        Font statusFont = workbook.createFont();
-        statusFont.setBold(true);
-        if (status.equalsIgnoreCase("FAIL")) {
-            statusFont.setColor(IndexedColors.RED.getIndex());
-        } else {
-            statusFont.setColor(IndexedColors.GREEN.getIndex());
-        }
-        statusStyle.setFont(statusFont);
+        statusStyle.cloneStyleFrom(style);
+        Font font = workbook.createFont();
+        font.setBold(true);
+        font.setColor(status.equalsIgnoreCase("PASS") ? IndexedColors.GREEN.getIndex() : IndexedColors.RED.getIndex());
+        statusStyle.setFont(font);
         statusStyle.setAlignment(HorizontalAlignment.CENTER);
 
-        // Isi Data ke Kolom
-        createCell(row, 0, String.valueOf(rowIndex - 1), cellStyle); // No
-        createCell(row, 1, testName, cellStyle);                     // Test Case
-        createCell(row, 2, expected, cellStyle);                     // Expected
-        createCell(row, 3, actual, cellStyle);                       // Actual
-        
-        // Kolom 4: Screenshot (Logic khusus)
-        Cell imgCell = row.createCell(4);
-        imgCell.setCellStyle(cellStyle);
-        if (base64Image != null && !base64Image.isEmpty()) {
-            insertImageToCell(base64Image, row.getRowNum(), 4);
-        } else {
-            imgCell.setCellValue("No Image");
-        }
+        // --- FILL TEXT COLUMNS ---
+        createCell(row, 0, String.valueOf(rowIndex - 1), style);
+        createCell(row, 1, testName, style);
+        createCell(row, 2, expected, style);
+        createCell(row, 3, actual, style);
+        createCell(row, 4, status, statusStyle); 
 
-        createCell(row, 5, note, cellStyle);                         // Note
-        createCell(row, 6, status, statusStyle);                     // Status
+        // --- INSERT IMAGES (STARTING AT COLUMN 5) ---
+        if (screenshots != null) {
+            for (int i = 0; i < screenshots.size(); i++) {
+                // Insert at Col 5, 6, 7...
+                insertImageToCell(screenshots.get(i), row.getRowNum(), 5 + i);
+            }
+        }
     }
 
-    // --- HELPER: Bikin Sel Cepat ---
+    private static void insertImageToCell(String base64Image, int rowNum, int colNum) {
+        try {
+            byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+            
+            // 1. GET TRUE IMAGE SIZE (Java Native)
+            ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
+            BufferedImage bImage = ImageIO.read(bis);
+            if (bImage == null) return;
+            bis.close(); 
+
+            double imgWidth = bImage.getWidth();
+            double imgHeight = bImage.getHeight();
+
+            // 2. CALCULATE EXACT SCALE
+            // Convert Row Height Points to Pixels (Points * 1.3333)
+            double rowHeightPx = ROW_HEIGHT_POINTS * 1.3333;
+            double scale = rowHeightPx / imgHeight;
+
+            // 3. PRE-CALCULATE COLUMN WIDTH & SET IT FIRST
+            // This is the FIX. We prepare the column size BEFORE adding the image.
+            double newImgWidthPx = imgWidth * scale;
+            
+            // Excel Width Unit = 1/256th char width. (Approx 36.56 units per pixel)
+            // We add padding (+ 200) so the image has a small border
+            int columnWidthUnits = (int) (newImgWidthPx * 36.56) + 200; 
+            
+            // Expand the column if needed
+            if (sheet.getColumnWidth(colNum) < columnWidthUnits) {
+                sheet.setColumnWidth(colNum, columnWidthUnits); 
+            }
+
+            // 4. ADD PICTURE
+            int pictureIdx = workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
+            Drawing<?> drawing = sheet.createDrawingPatriarch();
+            ClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
+            
+            // Anchor Top-Left
+            anchor.setCol1(colNum);
+            anchor.setRow1(rowNum);
+            
+            // Critical: Don't resize automatically when we manipulate columns later
+            anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_DONT_RESIZE);
+
+            Picture pict = drawing.createPicture(anchor, pictureIdx);
+            
+            // 5. RESIZE IMAGE
+            // Now that the column is the right size, resize() will work accurately.
+            // Reset to 1.0 first to clear any default scaling assumptions
+            pict.resize(1.0); 
+            pict.resize(scale);
+
+        } catch (Exception e) {
+            System.err.println("Img Error: " + e.getMessage());
+        }
+    }
+
     private static void createCell(Row row, int col, String value, CellStyle style) {
         Cell cell = row.createCell(col);
         cell.setCellValue(value != null ? value : "-");
         cell.setCellStyle(style);
     }
-
-    // --- HELPER: Border Kotak ---
+    
     private static void setBorders(CellStyle style) {
         style.setBorderBottom(BorderStyle.THIN);
         style.setBorderTop(BorderStyle.THIN);
@@ -106,53 +154,23 @@ public class ExcelReportManager {
         style.setBorderLeft(BorderStyle.THIN);
     }
 
-    // --- LOGIC TEMPEL GAMBAR ---
-    private static void insertImageToCell(String base64Image, int rowNum, int colNum) {
-        try {
-            byte[] imageBytes = Base64.decodeBase64(base64Image);
-            int pictureIdx = workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
-            
-            Drawing<?> drawing = sheet.createDrawingPatriarch();
-            ClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
-            
-            // Koordinat Gambar (Pas di tengah sel)
-            anchor.setCol1(colNum);
-            anchor.setRow1(rowNum);
-            anchor.setCol2(colNum + 1);
-            anchor.setRow2(rowNum + 1);
-            // Padding (Jarak tepi gambar ke garis)
-            anchor.setDx1(50); anchor.setDy1(50); 
-            anchor.setDx2(-50); anchor.setDy2(-50);
-
-            drawing.createPicture(anchor, pictureIdx);
-        } catch (Exception e) {
-            System.out.println("Gagal insert gambar: " + e.getMessage());
-        }
-    }
-
-    // --- SIMPAN FILE ---
     public static void saveExcel() {
         try {
-            // Atur Lebar Kolom (Satuan 1/256th character width)
-            sheet.setColumnWidth(0, 1500);  // No
-            sheet.setColumnWidth(1, 8000);  // Test Case
-            sheet.setColumnWidth(2, 9000);  // Expected
-            sheet.setColumnWidth(3, 9000);  // Actual
-            sheet.setColumnWidth(4, 8000);  // Screenshot
-            sheet.setColumnWidth(5, 5000);  // Note
-            sheet.setColumnWidth(6, 3000);  // Status
-
+            // Set widths for text columns
+            sheet.setColumnWidth(0, 1500); // No
+            sheet.setColumnWidth(1, 6000); // Test Case
+            sheet.setColumnWidth(2, 6000); // Expected
+            sheet.setColumnWidth(3, 6000); // Actual
+            sheet.setColumnWidth(4, 3000); // Status
+            
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            filePath = System.getProperty("user.dir") + "/test-output/Manual_QA_Format_" + timestamp + ".xlsx";
+            String filePath = System.getProperty("user.dir") + "/test-output/Final_Report_" + timestamp + ".xlsx";
             
             FileOutputStream fileOut = new FileOutputStream(filePath);
             workbook.write(fileOut);
             fileOut.close();
             workbook.close();
-            
-            System.out.println("\n[EXCEL] Laporan berhasil dibuat: " + filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            System.out.println("Report Saved: " + filePath);
+        } catch (IOException e) { e.printStackTrace(); }
     }
 }

@@ -5,6 +5,8 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Date;
+import java.util.ArrayList; 
+import java.util.List;
 
 // --- IMPORT IMAGE PROCESSING ---
 import javax.imageio.ImageIO;
@@ -32,16 +34,21 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
+
+import tests.ActionHelper;
 
 public class BaseTest {
 
     protected AndroidDriver driver;
     protected WebDriverWait wait;
     protected ActionHelper actions; 
+
+    private static ThreadLocal<List<String>> screenshots = ThreadLocal.withInitial(ArrayList::new);
 
     // --- LOCATORS ---
     private final By AD_CLOSE_BUTTON_TEXT = AppiumBy.xpath("//android.widget.Button[@text='Nanti Saja']");
@@ -75,6 +82,11 @@ public class BaseTest {
         ensureOnAyoLariDashboard();
     }
 
+    @BeforeMethod
+    public void clearEvidence() {
+        getScreenshotList().clear();
+    }
+
     @AfterClass
     public void tearDown() {
         if (driver != null) {
@@ -82,54 +94,35 @@ public class BaseTest {
         }
     }
 
+    public static List<String> getScreenshotList() {
+        return screenshots.get();
+    }
+
     // =======================================================
-    // 🔥 METODE UTAMA: CLICK + SCREENSHOT + DESKRIPSI OTOMATIS (EXCEL & HTML)
+    // 🔥 UPDATED METHOD: HANDLES LIST OF SCREENSHOTS
     // =======================================================
     public void clickTest(By locator, String stepDetail) {
         try {
-            // 1. AMBIL DESKRIPSI DARI @Test (description="...")
-            String mainTestName = "Test";
-            try {
-                mainTestName = Reporter.getCurrentTestResult().getMethod().getDescription();
-                if (mainTestName == null) {
-                    mainTestName = Reporter.getCurrentTestResult().getName();
-                }
-            } catch (Exception e) {}
-
-            // Format Nama di Excel: "[Buka Menu] Klik tombol X"
-            String finalTestName = "[" + mainTestName + "] " + stepDetail;
-
-            // 2. Tunggu elemen siap
             WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
 
-            // 3. AMBIL SCREENSHOT DENGAN KOTAK MERAH
+            // 1. Capture Screenshot
             String evidence = getScreenshotWithHighlight(element);
 
-            // 4. CATAT KE EXCEL
-            ExcelReportManager.logToExcel(
-                finalTestName, 
-                "User melakukan tap pada elemen.", 
-                "Berhasil tap elemen.", 
-                evidence, 
-                "-", 
-                "PASS"
-            );
-            
-            // 5. UPDATE HTML REPORT (Agar gambar muncul di browser)
+            // 2. Add to List (DO NOT LOG TO EXCEL YET)
+            getScreenshotList().add(evidence);
+
+            // 3. Log to HTML Report (Optional, for detailed steps)
             if (TestListener.getTest() != null) {
                 TestListener.getTest().pass(stepDetail, 
                     MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
             }
 
-            // 6. LAKUKAN KLIK
             element.click();
-            System.out.println("[SUCCESS] " + finalTestName);
+            System.out.println("[SUCCESS] " + stepDetail);
 
         } catch (Exception e) {
-            System.out.println("[FAILED] " + stepDetail + ": " + e.getMessage());
-            
             String errorEvidence = getScreenshotBase64();
-            ExcelReportManager.logToExcel(stepDetail, "Elemen dapat diklik", "GAGAL: " + e.getMessage(), errorEvidence, "Error", "FAIL");
+            getScreenshotList().add(errorEvidence); // Add error photo to list
             
             if (TestListener.getTest() != null) {
                 TestListener.getTest().fail("Gagal: " + stepDetail,
@@ -162,10 +155,8 @@ public class BaseTest {
             g.setColor(Color.RED);
             g.setStroke(new BasicStroke(8)); 
             g.drawRect(x, y, w, h);
-            
             g.setColor(new Color(255, 0, 0, 40)); 
             g.fillRect(x, y, w, h);
-
             g.dispose();
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
