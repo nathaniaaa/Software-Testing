@@ -22,7 +22,7 @@ public class TestChallengeSaya extends BaseTest {
     By btnLihatSemua = AppiumBy.xpath("(//android.widget.TextView[@text='Lihat Semua'])[1]");
 
     // Card Spesifik (Pelari FOMO & Yuk Lari Sehat)
-    By cardPelariFomo = AppiumBy.xpath("//android.widget.TextView[@text='Pelari tidak fomo']");
+    By cardPelariFomo = AppiumBy.xpath("//android.widget.TextView[@text='Pelari FOMO']");
     By cardYukLariSehat = AppiumBy.xpath("//android.widget.TextView[@text='YUUUUK LARI SEHAT']");
 
     // Card Urutan Pertama (Cadangan kalau spesifik ga ada)
