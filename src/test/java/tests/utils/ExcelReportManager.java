@@ -42,7 +42,7 @@ public class ExcelReportManager {
         headerRow.setHeightInPoints(40); 
 
         // Header Columns
-        String[] headers = {"No", "Test Case Name", "Expected Result", "Actual Result", "Status", "Screenshots ->"};
+        String[] headers = {"No", "Test Case Name", "Expected Result", "Actual Result", "Note", "Status", "Screenshots ->"};
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
@@ -50,11 +50,11 @@ public class ExcelReportManager {
         }
     }
 
-    public static void logToExcel(String testName, String expected, String actual, List<String> screenshots, String status) {
+    public static void logToExcel(String testName, String expected, String actual, String note, List<String> screenshots, String status) {
         if (workbook == null) setupExcel();
 
         Row row = sheet.createRow(rowIndex++);
-        row.setHeightInPoints(ROW_HEIGHT_POINTS); // Force Row Height
+        row.setHeightInPoints(ROW_HEIGHT_POINTS); 
 
         CellStyle style = workbook.createCellStyle();
         style.setWrapText(true);
@@ -74,13 +74,14 @@ public class ExcelReportManager {
         createCell(row, 1, testName, style);
         createCell(row, 2, expected, style);
         createCell(row, 3, actual, style);
-        createCell(row, 4, status, statusStyle); 
+        createCell(row, 4, note, style);       // New Note Column
+        createCell(row, 5, status, statusStyle); // Status is now Column 5
 
-        // --- INSERT IMAGES (STARTING AT COLUMN 5) ---
+        // --- INSERT IMAGES (STARTING AT COLUMN 6) ---
         if (screenshots != null) {
             for (int i = 0; i < screenshots.size(); i++) {
-                // Insert at Col 5, 6, 7...
-                insertImageToCell(screenshots.get(i), row.getRowNum(), 5 + i);
+                // Col 6, 7, 8...
+                insertImageToCell(screenshots.get(i), row.getRowNum(), 6 + i);
             }
         }
     }
@@ -161,7 +162,8 @@ public class ExcelReportManager {
             sheet.setColumnWidth(1, 6000); // Test Case
             sheet.setColumnWidth(2, 6000); // Expected
             sheet.setColumnWidth(3, 6000); // Actual
-            sheet.setColumnWidth(4, 3000); // Status
+            sheet.setColumnWidth(4, 5000); // Note
+            sheet.setColumnWidth(5, 3000); // Status
             
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
             String filePath = System.getProperty("user.dir") + "/test-output/Final_Report_" + timestamp + ".xlsx";

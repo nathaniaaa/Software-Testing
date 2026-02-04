@@ -24,12 +24,21 @@ public class TestListener implements ITestListener {
     private static Map<String, ExtentTest> classLevelTests = new HashMap<>();
 
     // --- HELPER: Ambil data dari @TestInfo ---
-    private String getExpected(ITestResult result) {
+    private String getExpectedResult(ITestResult result) {
         try {
+            // Get the method that just ran
             Method method = result.getMethod().getConstructorOrMethod().getMethod();
+            
+            // Check for your custom annotation
             TestInfo info = method.getAnnotation(TestInfo.class);
-            return (info != null) ? info.expected() : "-";
-        } catch (Exception e) { return "-"; }
+            
+            if (info != null) {
+                return info.expected(); // Return the text you wrote in the test file
+            }
+        } catch (Exception e) {
+            // Ignore errors if annotation is missing
+        }
+        return "-"; // Default if no annotation found
     }
 
     private String getNote(ITestResult result) {
@@ -68,15 +77,20 @@ public class TestListener implements ITestListener {
         if (testName == null) testName = result.getMethod().getMethodName();
 
         // 1. Get ALL screenshots collected during the test
+        String expected = getExpectedResult(result);
+        String note = getNote(result); // <--- Get Note
+        String actual = "Test Passed Successfully";
         List<String> screenshots = BaseTest.getScreenshotList();
 
-        // 2. Log to Excel
-        ExcelReportManager.logToExcel(testName, "-", "Test Passed Successfully", screenshots, "PASS");
+        // Pass 'note' to Excel
+        ExcelReportManager.logToExcel(testName, expected, actual, note, screenshots, "PASS");
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        // --- HTML LOGGING ---
+        String testName = result.getMethod().getDescription();
+        if (testName == null) testName = result.getMethod().getMethodName();
+
         String base64Screenshot = null;
         try {
             Object currentClass = result.getInstance();
@@ -93,18 +107,16 @@ public class TestListener implements ITestListener {
             }
         }
 
-        // --- EXCEL LOGGING (ONE ROW) ---
-        String testName = result.getMethod().getDescription();
-        if (testName == null) testName = result.getMethod().getMethodName();
+        String expected = getExpectedResult(result);
+        String note = getNote(result); // <--- Get Note
+        String actual = "FAILED: " + result.getThrowable().getMessage();
 
-        // 1. Get screenshots collected so far + Add the Failure screenshot
         List<String> screenshots = BaseTest.getScreenshotList();
-        if (base64Screenshot != null) {
-            screenshots.add(base64Screenshot);
-        }
+        if (screenshots == null) screenshots = new ArrayList<>();
+        if (base64Screenshot != null) screenshots.add(base64Screenshot);
 
-        // 2. Log to Excel
-        ExcelReportManager.logToExcel(testName, "-", "FAILED: " + result.getThrowable().getMessage(), screenshots, "FAIL");
+        // Pass 'note' to Excel
+        ExcelReportManager.logToExcel(testName, expected, actual, note, screenshots, "FAIL");
     }
 
     @Override
@@ -112,7 +124,7 @@ public class TestListener implements ITestListener {
         if (test.get() != null) test.get().log(Status.SKIP, "Skipped");
         
         String testCaseName = result.getMethod().getMethodName();
-        ExcelReportManager.logToExcel(testCaseName, "-", "Test dilewati (Skipped)", null, "SKIP");
+        ExcelReportManager.logToExcel(testCaseName, "-", "Test dilewati (Skipped)", "-", null, "SKIP");
     }
 
     @Override
