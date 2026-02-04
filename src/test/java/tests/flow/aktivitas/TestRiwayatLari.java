@@ -138,7 +138,7 @@ public class TestRiwayatLari extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("TEST TEST 1234"); // Nama baru
+            input.sendKeys("TEST TEST OKIWWW"); // Nama baru
             try { Thread.sleep(2000); } catch (Exception e) {}
             System.out.println("Ketik nama baru selesai.");
             
@@ -182,7 +182,7 @@ public class TestRiwayatLari extends BaseTest {
         System.out.println("TEST 4: Interaksi Peta (Map)");
 
         System.out.println("Scrolling down to Map");
-        actions.swipeVertical(0.4, 0.15); 
+        actions.swipeVertical(0.9, 0.4); 
         try { Thread.sleep(2000); } catch (Exception e) {}
 
         // Validasi Peta
