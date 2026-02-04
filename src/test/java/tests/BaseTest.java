@@ -251,7 +251,7 @@ public class BaseTest {
         } catch (Exception e) {}
 
         try { Thread.sleep(3000); } catch (InterruptedException e) {}
-        tapCenterScreen(); 
+        // tapCenterScreen(); 
     }
 
     public void handlePotentialAds() {
