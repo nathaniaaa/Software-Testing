@@ -9,4 +9,5 @@ public @interface TestInfo {
     String expected() default "-";
     String note() default "-";
     String priority() default "Normal";
+    String group() default "";
 }

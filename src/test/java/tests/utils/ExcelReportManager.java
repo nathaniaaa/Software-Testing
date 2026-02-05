@@ -1,6 +1,7 @@
 package tests.utils;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
@@ -17,6 +18,8 @@ public class ExcelReportManager {
     private static Workbook workbook;
     private static Sheet sheet;
     private static int rowIndex = 0;
+    private static CellStyle groupHeaderStyle; 
+    private static String lastGroupName = "";
     
     // --- CONFIGURATION ---
     // 220 points height (Approx 293 pixels)
@@ -38,6 +41,12 @@ public class ExcelReportManager {
         headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         setBorders(headerStyle);
         
+        groupHeaderStyle = workbook.createCellStyle();
+        groupHeaderStyle.cloneStyleFrom(headerStyle);
+        groupHeaderStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        groupHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        groupHeaderStyle.setAlignment(HorizontalAlignment.LEFT); // Left-align text
+
         Row headerRow = sheet.createRow(rowIndex++);
         headerRow.setHeightInPoints(40); 
 
@@ -50,8 +59,31 @@ public class ExcelReportManager {
         }
     }
 
-    public static void logToExcel(String testName, String expected, String actual, String note, List<String> screenshots, String status) {
+    public static void logToExcel(String group, String testName, String expected, String actual, String note, List<String> screenshots, String status) {
         if (workbook == null) setupExcel();
+
+        if (group != null && !group.isEmpty() && !group.equals(lastGroupName)) {
+            
+            // 1. Create a new row for the group header
+            Row groupRow = sheet.createRow(rowIndex++);
+            groupRow.setHeightInPoints(25); // Slightly taller row
+
+            // 2. Create the cell and set its value and style
+            Cell groupCell = groupRow.createCell(0);
+            groupCell.setCellValue(group.toUpperCase());
+            groupCell.setCellStyle(groupHeaderStyle);
+
+            // 3. Merge cells from Column 0 to Column 6 (the last column)
+            sheet.addMergedRegion(new CellRangeAddress(
+                groupRow.getRowNum(), // Start Row
+                groupRow.getRowNum(), // End Row
+                0,                    // Start Column (A)
+                6                     // End Column (G)
+            ));
+            
+            // 4. Update the tracker
+            lastGroupName = group;
+        }
 
         Row row = sheet.createRow(rowIndex++);
         row.setHeightInPoints(ROW_HEIGHT_POINTS); 

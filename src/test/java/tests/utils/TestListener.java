@@ -41,6 +41,14 @@ public class TestListener implements ITestListener {
         return "-"; // Default if no annotation found
     }
 
+    private String getGroup(ITestResult result) {
+        try {
+            Method method = result.getMethod().getConstructorOrMethod().getMethod();
+            TestInfo info = method.getAnnotation(TestInfo.class);
+            return (info != null) ? info.group() : "";
+        } catch (Exception e) { return ""; }
+    }
+
     private String getNote(ITestResult result) {
         try {
             Method method = result.getMethod().getConstructorOrMethod().getMethod();
@@ -78,12 +86,13 @@ public class TestListener implements ITestListener {
 
         // 1. Get ALL screenshots collected during the test
         String expected = getExpectedResult(result);
+        String group = getGroup(result);
         String note = getNote(result); // <--- Get Note
         String actual = "Test Passed Successfully";
         List<String> screenshots = BaseTest.getScreenshotList();
 
         // Pass 'note' to Excel
-        ExcelReportManager.logToExcel(testName, expected, actual, note, screenshots, "PASS");
+        ExcelReportManager.logToExcel(group, testName, expected, actual, note, screenshots, "PASS");
     }
 
     @Override
@@ -108,7 +117,8 @@ public class TestListener implements ITestListener {
         }
 
         String expected = getExpectedResult(result);
-        String note = getNote(result); // <--- Get Note
+        String note = getNote(result); 
+        String group = getGroup(result);
         String actual = "FAILED: " + result.getThrowable().getMessage();
 
         List<String> screenshots = BaseTest.getScreenshotList();
@@ -116,7 +126,7 @@ public class TestListener implements ITestListener {
         if (base64Screenshot != null) screenshots.add(base64Screenshot);
 
         // Pass 'note' to Excel
-        ExcelReportManager.logToExcel(testName, expected, actual, note, screenshots, "FAIL");
+        ExcelReportManager.logToExcel(group, testName, expected, actual, note, screenshots, "FAIL");
     }
 
     @Override
@@ -124,7 +134,8 @@ public class TestListener implements ITestListener {
         if (test.get() != null) test.get().log(Status.SKIP, "Skipped");
         
         String testCaseName = result.getMethod().getMethodName();
-        ExcelReportManager.logToExcel(testCaseName, "-", "Test dilewati (Skipped)", "-", null, "SKIP");
+        String group = getGroup(result);
+        ExcelReportManager.logToExcel(group, testCaseName, "-", "Test dilewati (Skipped)", "-", null, "SKIP");
     }
 
     @Override
