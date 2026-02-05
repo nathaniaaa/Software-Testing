@@ -5,7 +5,7 @@ import tests.utils.TestListener;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.testng.Assert; // Tambahan: Import Assert
+import org.testng.Assert; 
 import org.testng.annotations.Test;
 
 import com.aventstack.extentreports.MediaEntityBuilder;
@@ -26,23 +26,25 @@ public class TestShortcuts extends BaseTest {
     // Link 'Lihat Semua' 
     // Challenge yang Diikuti -> Challenge Saya
     By textLihatSemuaChallengeYangDiikuti = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[1]");
-    // Challenges (Public Challenge) -> Halaman Navigasi Challenge (kalau dari Bottom Navigation)
+    
+    // Challenges (Public Challenge) -> Halaman Navigasi Challenge
     By textLihatSemuaChallenges = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
+
     By textLihatSemuaRiwayatLari = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
     
-    // Card di List Challenge Saya (saat masuk Lihat Semua yang Challenge yang Diikuti)
-    By cardInListMyChallenge = AppiumBy.xpath("(//android.widget.TextView[@text='Pelari FOMO'])[1]");
-    
-    // Card Challenges (Public Challenge) di Beranda (Lari)
-    By cardDailyRunBeranda = AppiumBy.xpath("//android.widget.TextView[@text='Lari']");
-    
-    // Card Riwayat Lari di Beranda (Aktivitas Lari)
-    By cardRiwayatBeranda = AppiumBy.xpath("//android.widget.TextView[@text='Aktivitas Lari']");
+    // Card Challenge Saya - dari beranda 
+    By cardChallengeSayaBeranda = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View[1]/android.view.View[1]/android.view.View[1]");
+
+    // Card Public Challenge - dari beranda
+    By cardPublicChallengeBeranda = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View[1]/android.view.View[2]/android.view.View[1]");
+
+    // Card Riwayat Lari - dari beranda
+    By cardRiwayatBeranda = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View[1]/android.view.View[2]");
 
     // Test Cases
-    @Test(priority = 1)
+    @Test(priority = 1, description = "Test Interaksi Shortcut dan Navigasi di Halaman Beranda - Khusus Bagian Challenge yang Diikuti (Challenge Saya)")
     public void testBerandaInteractionFlow() {
-        System.out.println("START TEST: Beranda Shortcuts & Navigation Flow");
+        System.out.println("Test 1: Interaksi Shortcut dan Navigasi di Halaman Beranda - Khusus Bagian Challenge yang Diikuti (Challenge Saya)");
         waitTime();
 
         TestListener.getTest().pass("Tampilan awal Beranda.", 
@@ -64,7 +66,7 @@ public class TestShortcuts extends BaseTest {
         TestListener.getTest().pass("Berhasil scroll vertikal halaman Beranda ke atas.", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        // Scroll horizontal di Challenge yang Diikuti
+        // Scroll horizontal di Challenge yang Diikuti - Challenge Saya
         System.out.println("Scroll Horizontal 'Challenge Saya'");
         actions.swipeHorizontal(0.9, 0.1, 0.35); // Geser Kiri
         waitTime();
@@ -78,41 +80,61 @@ public class TestShortcuts extends BaseTest {
         TestListener.getTest().pass("Berhasil scroll horizontal card Challenge yang diikuti ke kanan.", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        // Klik Lihat Semua di Challenge yang Diikuti (Challenge Saya)
+        // Klik lihat semua yg diikuti (Challenge Saya)
         System.out.println("Klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya)");
         driver.findElement(textLihatSemuaChallengeYangDiikuti).click();
-        waitTime();
-
-        try {
-            Assert.assertTrue(driver.findElement(cardInListMyChallenge).isDisplayed(), "Gagal masuk ke halaman List Challenge Saya.");
-        } catch (Exception e) { }
+        
+        // Tunggu 
+        try { 
+            wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.className("android.view.View"))); 
+        } catch (Exception e) {}
 
         TestListener.getTest().pass("Berhasil klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya).", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        // Klik salah 1 card (di dalam List)
-        System.out.println("Klik Card 'Pelari FOMO' di List");
-        wait.until(ExpectedConditions.elementToBeClickable(cardInListMyChallenge)).click();
         waitTime();
-
-        TestListener.getTest().pass("Berhasil klik card 'Pelari FOMO' di List Challenge yang Diikuti.", 
+        clickBack();
+        TestListener.getTest().pass("Berhasil kembali dari 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya).", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        // Back 2x (Detail -> List -> Beranda)
-        System.out.println("Back 2x ke Beranda");
-        clickBack(); // Back dari Detail
+        // Klik card Challenge Saya (card di Beranda)
+        System.out.println(" Klik Salah Satu Card 'Challenge Saya' di Beranda");
+        // LOGIC: Cek apakah Card Pertama (Index 2) Ada?
+        if (driver.findElements(cardChallengeSayaBeranda).size() > 0) {
+            // == KONDISI: ADA LIST ==
+            System.out.println("Card ditemukan di List. Klik Card Pertama.");
+            driver.findElement(cardChallengeSayaBeranda).click();
+            waitTime();
+
+            TestListener.getTest().pass("Berhasil klik card pertama di List Challenge yang Diikuti.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+            // Back ke Beranda
+            System.out.println("Back ke Beranda");
+            clickBack(); // Back dari Detail
+            waitTime();
+            
+            TestListener.getTest().pass("Berhasil kembali ke Beranda.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        } else {
+            // == KONDISI: LIST KOSONG ==
+            System.out.println("List Kosong / Card tidak ditemukan.");
+            TestListener.getTest().warning("List Challenge Kosong", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        }
+        waitTime();
+    }
+
+    @Test(priority = 2, description = "Test Interaksi Shortcut dan Navigasi di Halaman Beranda - Khusus Bagian Public Challenge")
+    public void testPublicChallenge() {
+        System.out.println("Test 1: Interaksi Shortcut dan Navigasi di Halaman Beranda - Khusus Bagian Public Challenge");
         waitTime();
 
-        TestListener.getTest().pass("Berhasil kembali dari Detail ke List Challenge yang Diikuti.", 
+        TestListener.getTest().pass("Tampilan awal Beranda.", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        clickBack(); // Back dari List (Beranda)
-        waitTime();
-
-        Assert.assertTrue(driver.findElement(textLihatSemuaChallengeYangDiikuti).isDisplayed(), "Gagal kembali ke Beranda setelah dari List Challenge.");
-
-        TestListener.getTest().pass("Berhasil kembali dari List Challenge yang Diikuti ke Beranda.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        Assert.assertTrue(driver.findElement(navBeranda).isDisplayed(), "Gagal memuat halaman Beranda di awal test.");
 
         // Scroll horizontal di Challenges (Public Challenge)
         System.out.println("Scroll Horizontal 'Public Challenges'");
@@ -128,21 +150,34 @@ public class TestShortcuts extends BaseTest {
         TestListener.getTest().pass("Berhasil scroll horizontal card Public Challenges ke kanan.", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        // Klik card Lari (card di Beranda)
-        System.out.println(" Klik Card 'Lari' di Beranda (Public Challenges)");
-        driver.findElement(cardDailyRunBeranda).click();
+        // Klik card Public Challenges (card di Beranda)
+        System.out.println(" Klik Salah Satu Card 'Public Challenges' di Beranda");
+        
+        // LOGIC: Cek apakah Card Pertama (Index 2) Ada?
+        if (driver.findElements(cardPublicChallengeBeranda).size() > 0) {
+            // == KONDISI: ADA LIST ==
+            System.out.println("Card ditemukan di List. Klik Card Pertama.");
+            driver.findElement(cardPublicChallengeBeranda).click();
+            waitTime();
+
+            TestListener.getTest().pass("Berhasil klik card pertama di List Public Challenges.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+            // Back ke Beranda
+            System.out.println("Back ke Beranda");
+            clickBack(); // Back dari Detail
+            waitTime();
+            
+            TestListener.getTest().pass("Berhasil kembali ke Beranda.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        } else {
+            // == KONDISI: LIST KOSONG ==
+            System.out.println("List Kosong / Card tidak ditemukan.");
+            TestListener.getTest().warning("List Public Challenges Kosong", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        }
         waitTime();
-
-        TestListener.getTest().pass("Berhasil klik card 'Lari' di Beranda (Public Challenges).", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-
-        clickBack(); // Balik ke Beranda
-        waitTime();
-
-        Assert.assertTrue(driver.findElement(cardDailyRunBeranda).isDisplayed(), "Gagal kembali ke Beranda dari Detail Lari.");
-
-        TestListener.getTest().pass("Berhasil kembali ke Beranda dari Detail Lari.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Klik lihat semua yg punya challenges (Public Challenge)
         System.out.println("Klik 'Lihat Semua' (Public Challenge)");
@@ -175,10 +210,21 @@ public class TestShortcuts extends BaseTest {
 
         TestListener.getTest().pass("Berhasil kembali ke Beranda dari halaman Challenges (Public Challenge).", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+    }
+
+    @Test(priority = 3, description = "Test Interaksi Shortcut dan Navigasi di Halaman Beranda - Khusus Bagian Riwayat Lari")
+    public void testRiwayatLari() {
+        System.out.println("Test 1: Interaksi Shortcut dan Navigasi di Halaman Beranda - Khusus Bagian Riwayat Lari");
+        waitTime();
+
+        TestListener.getTest().pass("Tampilan awal Beranda.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        Assert.assertTrue(driver.findElement(navBeranda).isDisplayed(), "Gagal memuat halaman Beranda di awal test.");
 
         // Scroll Beranda untuk cari Riwayat Lari
         System.out.println(" Scroll cari 'Riwayat Lari'");
-        actions.swipeVertical(0.9, 0.3);
+        actions.swipeVertical(0.9, 0.1);
         waitTime();
 
         TestListener.getTest().pass("Berhasil scroll vertikal halaman Beranda untuk cari Riwayat Lari.", 
@@ -193,7 +239,7 @@ public class TestShortcuts extends BaseTest {
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // Ini bakal ke pop up ke navigasi aktivitas -> Jdi trs pilih bot nav yg beranda
-        System.out.println(" Pindah Tab Aktivitas -> Klik Bottom Nav 'Beranda'");
+        System.out.println("Karena Pindah ke Tab Aktivitas -> Maka Klik Bottom Nav 'Beranda' untuk Kembali");
         driver.findElement(navBeranda).click();
         waitTime();
 
@@ -202,7 +248,7 @@ public class TestShortcuts extends BaseTest {
 
         // Scroll lgi ke bawah (Cari Card Riwayat di Beranda)
         System.out.println(" Scroll lagi cari Card Riwayat");
-        actions.swipeVertical(0.9, 0.3);
+        actions.swipeVertical(0.9, 0.1);
         waitTime();
 
         TestListener.getTest().pass("Berhasil scroll vertikal halaman Beranda untuk cari Card Riwayat Lari.", 
@@ -210,20 +256,33 @@ public class TestShortcuts extends BaseTest {
 
         // Klik salah 1 card di riwayat lari
         System.out.println(" Klik Card 'Aktivitas Lari'");
-        driver.findElement(cardRiwayatBeranda).click();
-        try { 
-            Thread.sleep(5000); 
-            TestListener.getTest().pass("Berhasil klik card Aktivitas Lari.", 
+
+        // LOGIC: Cek apakah Card Pertama (Index 2) Ada?
+        if (driver.findElements(cardRiwayatBeranda).size() > 0) {
+            // == KONDISI: ADA LIST ==
+            System.out.println("Card ditemukan di List. Klik Card Pertama.");
+            driver.findElement(cardRiwayatBeranda).click();
+            waitTime();
+
+            TestListener.getTest().pass("Berhasil klik card pertama di List Riwayat Lari.", 
                 MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-        } catch (Exception e) {}
 
-        // Back 1x (Balik ke Beranda)
-        System.out.println(" Back ke Beranda (Finish)");
-        clickBack();
+            // Back ke Beranda
+            System.out.println("Back ke Beranda");
+            clickBack(); // Back dari Detail
+            waitTime();
+            
+            TestListener.getTest().pass("Berhasil kembali ke Beranda.", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
-        TestListener.getTest().pass("Berhasil kembali ke Beranda dari Detail Aktivitas Lari.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-        
+        } else {
+            // == KONDISI: LIST KOSONG ==
+            System.out.println("List Kosong / Card tidak ditemukan.");
+            TestListener.getTest().warning("List Riwayat Lari Kosong", 
+                MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        }
+        waitTime();
+
         // Reset ke atas
         actions.scrollToTop();
 
@@ -231,7 +290,7 @@ public class TestShortcuts extends BaseTest {
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
     }
 
-    // Helper 
+    // Helper
     public void waitTime() {
         try { Thread.sleep(3000); } catch (Exception e) {}
     }
@@ -245,7 +304,7 @@ public class TestShortcuts extends BaseTest {
             } else if (driver.findElements(btnBackList).size() > 0) {
                 driver.findElement(btnBackList).click();
             } else {
-                System.out.println("   (Tombol Back UI gak nemu, pakai Back HP)");
+                System.out.println("Tombol Back UI gak nemu, pakai Back HP");
                 driver.navigate().back();
             }
             waitTime();

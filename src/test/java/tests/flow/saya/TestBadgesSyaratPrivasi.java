@@ -81,7 +81,7 @@ public class TestBadgesSyaratPrivasi extends BaseTest {
 
         // Scroll ke bawah ke Card Syarat & Privasi
         System.out.println("Scroll Vertical Halaman Profil");
-        actions.swipeVertical(0.7, 0.4);
+        actions.swipeVertical(0.8, 0.3);
         waitTime();
 
         TestListener.getTest().pass("Berhasil scroll ke bawah cari menu Syarat & Privasi.", 
