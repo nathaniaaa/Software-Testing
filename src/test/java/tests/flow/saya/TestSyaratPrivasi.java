@@ -1,0 +1,192 @@
+package tests.flow.saya;
+
+import tests.BaseTest;
+import tests.utils.TestInfo;
+import tests.utils.TestListener; 
+import com.aventstack.extentreports.MediaEntityBuilder; 
+
+import org.openqa.selenium.By;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+import io.appium.java_client.AppiumBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
+public class TestSyaratPrivasi extends BaseTest {
+    // Daftar Lokasi
+    // Ikon Saya (Bottom Navigation)
+    By navSaya = AppiumBy.xpath("//android.widget.Button[@text=\"Saya Saya\"]");
+
+    // 'Lihat Semua' di Badges
+    By textLihatSemuaBadges = AppiumBy.xpath("//android.widget.TextView[@text=\"Lihat Semua\"]");
+
+    // Tombol back di halaman Syarat & Privasi
+    By btnBackSyaratPrivasi = AppiumBy.xpath("//android.widget.Button");
+
+    // Card Syarat & Privasi
+    By cardSyaratPrivasi = AppiumBy.xpath("//android.view.View[@content-desc=\"icon information Syarat & Privasi Lihat syarat dan privasi pengguna.\"]");
+
+    // Link Syarat dan Ketentuan
+    By linkSyaratKetentuan = AppiumBy.xpath("//android.widget.TextView[@text=\"Syarat dan ketentuan\"]");
+    // Back Syarat dan Ketentuan
+    By btnBackSyaratKetentuan = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View/android.view.View[3]/android.view.View[1]/android.widget.Button");
+
+    // Link Kebijakan Privasi
+    By linkKebijakanPrivasi = AppiumBy.xpath("//android.view.View[@content-desc=\"Kebijakan Privasi\"]");
+    // Ikon search untuk validasi halaman Kebijakan Privasi
+    By searchKebijakanPrivasi = AppiumBy.xpath("//android.widget.Button[@resource-id=\"headerSearchMobile\"]");
+
+    // Test Cases
+    @Test(priority = 1, description = "Navigasi ke Halaman Syarat & Privasi dari Profil")
+    @TestInfo(
+        expected = "Halaman Profile terbuka, user bisa masuk ke halaman Syarat & Privasi.",
+        note = "Pastikan user sudah login sebelumnya.",
+        group = "Syarat & Privasi"
+    ) 
+    public void testSyaratPrivasi(){
+        System.out.println("Test 1: Navigasi ke Halaman Syarat & Privasi dari Profil");
+
+        // Klik Saya di Bottom Navigation
+        System.out.println("Klik Saya (Bottom Navigation)");
+        clickTest(navSaya, "Klik Saya (Bottom Navigation)");
+        waitTime();
+
+        Assert.assertTrue(driver.findElement(textLihatSemuaBadges).isDisplayed(), "Gagal masuk ke halaman Profil (Saya).");
+        
+        TestListener.getTest().pass("Berhasil masuk ke halaman Profil.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        // Scroll ke bawah ke Card Syarat & Privasi
+        System.out.println("Scroll Vertical Halaman Profil");
+        actions.swipeVertical(0.8, 0.3);
+        waitTime();
+
+        TestListener.getTest().pass("Berhasil scroll ke bawah cari menu Syarat & Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+
+        // Klik Card Syarat & Privasi
+        System.out.println("Klik Card Syarat & Privasi");
+        clickTest(cardSyaratPrivasi, "Klik Card Syarat & Privasi");
+        waitTime();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnBackSyaratPrivasi));
+        System.out.println("Validasi: Button Back muncul di halaman Syarat & Privasi.");
+
+        Assert.assertTrue(driver.findElement(linkSyaratKetentuan).isDisplayed(), "Gagal masuk ke menu Syarat & Privasi.");
+
+        TestListener.getTest().pass("Berhasil masuk ke halaman Syarat & Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+    }
+
+    @Test(priority = 2, description = "Link Syarat dan Ketentuan")
+    @TestInfo(
+        expected = "User bisa membuka detail Syarat dan Ketentuan.",
+        note = "Pastikan user sudah berada di halaman Syarat & Privasi.",
+        group = "Syarat & Privasi"
+    )
+    public void testSyaratdanKetentuan(){
+        System.out.println("Test 2: Link Syarat dan Ketentuan");
+
+        // Klik Link Syarat dan Ketentuan
+        System.out.println("Klik Link Syarat dan Ketentuan");
+        clickTest(linkSyaratKetentuan, "Klik Link Syarat dan Ketentuan");
+        waitTime();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnBackSyaratKetentuan));
+        System.out.println("Validasi: Halaman Syarat dan Ketentuan muncul.");
+
+        Assert.assertTrue(driver.findElement(btnBackSyaratKetentuan).isDisplayed(), "Gagal masuk ke detail Syarat & Ketentuan.");
+
+        TestListener.getTest().pass("Berhasil masuk ke detail Syarat & Ketentuan.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+    }
+
+    @Test(priority = 3, description = "Navigasi Kembali dari Syarat dan Ketentuan")
+    @TestInfo(
+        expected = "User bisa kembali dari halaman detail Syarat dan Ketentuan.",
+        note = "Pastikan user sudah berada di halaman Syarat & Privasi.",
+        group = "Syarat & Privasi"
+    )
+    public void testNavigasiKembaliSyaratdanKetentuan(){
+        System.out.println("Test 3: Navigasi Kembali dari Syarat dan Ketentuan");
+
+        // Kembali dari Syarat dan Ketentuan
+        System.out.println("Kembali dari Syarat dan Ketentuan");
+        clickTest(btnBackSyaratKetentuan, "Klik back Syarat dan Ketentuan");
+        waitTime();
+
+        Assert.assertTrue(driver.findElement(linkKebijakanPrivasi).isDisplayed(), "Gagal kembali ke menu Syarat & Privasi dari detail Syarat.");
+
+        TestListener.getTest().pass("Berhasil kembali ke menu Syarat & Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+    }
+
+    @Test(priority = 4, description = "Link Kebijakan Privasi")
+    @TestInfo(
+        expected = "User bisa membuka detail Kebijakan Privasi.",
+        note = "Pastikan user sudah berada di halaman Syarat & Privasi.",
+        group = "Syarat & Privasi"
+    )
+    public void testKebijakanPrivasi(){
+        System.out.println("Test 4: Link Kebijakan Privasi");
+
+        // Klik Link Kebijakan Privasi
+        System.out.println("Klik Link Kebijakan Privasi");
+        clickTest(linkKebijakanPrivasi, "Klik Link Kebijakan Privasi");
+        waitTime();
+        
+        wait.until(ExpectedConditions.visibilityOfElementLocated(searchKebijakanPrivasi));
+        System.out.println("Validasi: Halaman Kebijakan Privasi muncul.");
+
+        Assert.assertTrue(driver.findElement(searchKebijakanPrivasi).isDisplayed(), "Gagal masuk ke detail Kebijakan Privasi.");
+
+        TestListener.getTest().pass("Berhasil masuk ke detail Kebijakan Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+    }
+
+    @Test(priority = 5, description = "Navigasi Kembali dari Kebijakan Privasi")
+    @TestInfo(
+        expected = "User bisa kembali dari halaman detail Kebijakan Privasi.",
+        note = "Pastikan user sudah berada di halaman Kebijakan Privasi.",
+        group = "Syarat & Privasi"
+    )
+    public void testNavigasiKembaliKebijakanPrivasi(){
+        System.out.println("Test 5: Navigasi Kembali dari Kebijakan Privasi");
+
+        // Kembali dari Kebijakan Privasi
+        System.out.println("Kembali dari Kebijakan Privasi");
+        driver.navigate().back();
+        waitTime();
+
+        Assert.assertTrue(driver.findElement(linkSyaratKetentuan).isDisplayed(), "Gagal kembali ke menu Syarat & Privasi dari detail Kebijakan.");
+
+        TestListener.getTest().pass("Berhasil kembali ke menu Syarat & Privasi.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+    }
+
+    @Test(priority = 6, description = "Navigasi Kembali dari Syarat & Privasi")
+    @TestInfo(
+        expected = "User bisa kembali dari halaman Syarat & Privasi.",
+        note = "Pastikan user sudah berada di halaman Syarat & Privasi.",
+        group = "Syarat & Privasi"
+    )
+    public void testNavigasiKembalikeProfile(){
+        System.out.println("Test 6: Navigasi Kembali dari Syarat & Privasi");
+
+        // Kembali ke Profil dari Syarat & Privasi
+        System.out.println("Kembali ke Profil dari Syarat & Privasi");
+        clickTest(btnBackSyaratPrivasi, "Klik back di Halaman Syarat & Privasi");
+        waitTime();
+
+        Assert.assertTrue(driver.findElement(cardSyaratPrivasi).isDisplayed(), "Gagal kembali ke halaman Profil utama.");
+
+        TestListener.getTest().pass("Berhasil kembali ke halaman Profil utama.", 
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+    }
+
+    // Helper 
+    public void waitTime() {
+        try { Thread.sleep(3000); } catch (Exception e) {}
+    }
+
+    
+}

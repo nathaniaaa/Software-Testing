@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.ArrayList; 
 import java.util.List;
+import java.util.Base64;
 
 // --- IMPORT IMAGE PROCESSING ---
 import javax.imageio.ImageIO;
@@ -133,7 +134,7 @@ public class BaseTest {
     }
 
     // =======================================================
-    // IMAGE PROCESSING (HIGHLIGHT BOX)
+    // IMAGE PROCESSING (HIGHLIGHT BOX) (with click)
     // =======================================================
     public String getScreenshotWithHighlight(WebElement element) {
         try {
@@ -165,6 +166,33 @@ public class BaseTest {
 
         } catch (Exception e) {
             return getScreenshotBase64(); 
+        }
+    }
+
+    // Mark kotak highlight (no klik)
+    public void highlightAndCapture(By locator, String stepDetail) {
+        try {
+            // 1. Cari elemennya (tunggu sampai terlihat)
+            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+
+            // 2. Ambil screenshot dengan kotak merah (menggunakan fungsi yang sudah kamu buat)
+            String evidence = getScreenshotWithHighlight(element);
+
+            // 3. Masukkan ke list evidence (agar otomatis ditarik oleh TestListener ke Excel)
+            getScreenshotList().add(evidence);
+
+            // 4. Log ke HTML Report (Extent Report)
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info("Highlight: " + stepDetail, 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+            }
+            
+            System.out.println("[HIGHLIGHT] " + stepDetail);
+
+        } catch (Exception e) {
+            System.err.println("Gagal highlight elemen: " + e.getMessage());
+            // Jika gagal highlight, ambil screenshot biasa sebagai backup
+            getScreenshotList().add(getScreenshotBase64());
         }
     }
 
