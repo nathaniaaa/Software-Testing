@@ -200,6 +200,46 @@ public class BaseTest {
         return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
     }
 
+    public void logInfo(String message) {
+        try {
+            // 1. Take Screenshot
+            String screenshot = getScreenshotBase64();
+
+            // 2. Add to Excel List
+            if (getScreenshotList() != null) {
+                getScreenshotList().add(screenshot);
+            }
+
+            // 3. Add to HTML Report (Extent)
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info(message, 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(screenshot).build());
+            }
+        } catch (Exception e) {
+            System.out.println("Log Info Failed: " + e.getMessage());
+        }
+    }
+
+    public void logPass(String message) {
+        try {
+            // 1. Take Screenshot
+            String screenshot = getScreenshotBase64();
+
+            // 2. Add to Excel List
+            if (getScreenshotList() != null) {
+                getScreenshotList().add(screenshot);
+            }
+
+            // 3. Add to HTML Report (Extent)
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().pass(message, 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(screenshot).build());
+            }
+        } catch (Exception e) {
+            System.out.println("Log Pass Failed: " + e.getMessage());
+        }
+    }
+
     // =======================================================
     // NAVIGATION & UTILS
     // =======================================================

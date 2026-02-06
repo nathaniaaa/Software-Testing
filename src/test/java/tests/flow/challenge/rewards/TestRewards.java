@@ -47,6 +47,7 @@ public class TestRewards extends BaseTest {
         // 1. Klik Tab Rewards
         clickTest(tabRewards, "Klik Tab Rewards");
 
+        logInfo("Masuk ke Tab Rewards.");
         // 2. Klik Button Riwayat Rewards
         wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
         clickTest(btnRiwayatReward, "Klik menu Riwayat Rewards");
@@ -60,10 +61,13 @@ public class TestRewards extends BaseTest {
         
         if (driver.findElements(btnBack).size() > 0) {
             clickTest(btnBack, "Klik tombol Back");
+            logPass("Kembali ke Tab Rewards.");
         } else {
             System.out.println("Tombol Back UI tidak ada, pakai Back System.");
             driver.navigate().back();
         }
+
+
 
         // Validasi Kembali ke Rewards
         try {
