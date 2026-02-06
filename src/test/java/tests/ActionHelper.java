@@ -1,5 +1,10 @@
 package tests;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.time.Duration;
 import java.util.Arrays;
@@ -21,19 +26,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
-import javax.imageio.ImageIO;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import org.openqa.selenium.Rectangle; 
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-
-import tests.utils.TestListener;       
 import com.aventstack.extentreports.MediaEntityBuilder;
-
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
@@ -64,55 +57,88 @@ public class ActionHelper {
     // 🔥 1. SMART TAP (AUTO-HIGHLIGHT & REPORT) - USE THIS!
     // ========================================================================
 
+        public void highlightAndCapture(By locator, String stepDetail) {
+        try {
+            // 1. Cari elemennya (tunggu sampai terlihat)
+            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+
+            // 2. Ambil screenshot dengan kotak merah (menggunakan fungsi yang sudah kamu buat)
+            String evidence = getScreenshotWithHighlight(element);
+
+            // 3. Masukkan ke list evidence (agar otomatis ditarik oleh TestListener ke Excel)
+            // 3. Add to Excel List (Accessing BaseTest static list)
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(evidence);
+            }
+            // 4. Log ke HTML Report (Extent Report)
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info("Highlight: " + stepDetail, 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+            }
+            
+            System.out.println("[HIGHLIGHT] " + stepDetail);
+
+        } catch (Exception e) {
+            System.err.println("Gagal highlight elemen: " + e.getMessage());
+            // Jika gagal highlight, ambil screenshot biasa sebagai backup
+            // Backup: Standard screenshot if highlight fails
+            if (BaseTest.getScreenshotList() != null) {
+               // Assuming getScreenshotBase64() is available or use driver screenshot
+               try {
+                   String errorShot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
+                   BaseTest.getScreenshotList().add(errorShot);
+               } catch (Exception ex) {}
+            }
+        }
+    }
+
     /**
      * Finds element, Highlights it red, Screenshots it, Logs to Excel/HTML, then Clicks.
      * @param locator The element locator (By.id, By.xpath, etc.)
      * @param stepDetail Description for the report (e.g., "Click Save Button")
      */
-    public void tap(By locator, String stepDetail) {
+public void tap(WebElement element, String stepDetail) {
         try {
-            // 1. Wait for element
-            WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
-
-            // 2. Capture Screenshot with Red Highlight
+            // --- LOGIC STARTS HERE ---
+            // 1. Capture Screenshot with Red Highlight
             String evidence = getScreenshotWithHighlight(element);
 
-            // 3. Add to Excel Report List (Accessing BaseTest static list)
+            // 2. Add to Excel Report List
             if (BaseTest.getScreenshotList() != null) {
                 BaseTest.getScreenshotList().add(evidence);
             }
 
-            // 4. Log to HTML Report (Extent)
+            // 3. Log to HTML Report
             if (TestListener.getTest() != null) {
                 TestListener.getTest().info("Tapping: " + stepDetail,
                     MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
             }
 
-            // 5. Perform Click
+            // 4. Perform Click
             element.click();
             System.out.println("[SUCCESS] " + stepDetail);
+            // --- LOGIC ENDS HERE ---
 
         } catch (Exception e) {
-            // Handle Failure: Take standard screenshot (no highlight)
+            // Failure handling (Standard screenshot)
             try {
                 String errorEvidence = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
-                
-                // Add error to Excel list
-                if (BaseTest.getScreenshotList() != null) {
-                    BaseTest.getScreenshotList().add(errorEvidence);
-                }
-                
-                // Add error to HTML report
+                if (BaseTest.getScreenshotList() != null) BaseTest.getScreenshotList().add(errorEvidence);
                 if (TestListener.getTest() != null) {
                     TestListener.getTest().fail("Failed: " + stepDetail + " - " + e.getMessage(),
                         MediaEntityBuilder.createScreenCaptureFromBase64String(errorEvidence).build());
                 }
-            } catch (Exception ex) {
-                System.err.println("Could not capture failure screenshot.");
-            }
-            throw e; // Crash the test so TestNG knows it failed
+            } catch (Exception ex) {}
+            throw e; 
         }
     }
+
+    public void tap(By locator, String stepDetail) {
+        // 1. Wait for element using the default class wait (10s)
+        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
+        // 2. Reuse the tap(WebElement, String) method
+        tap(element, stepDetail); 
+    } 
 
     /**
      * Helper to draw a RED BOX around the element on a screenshot.
@@ -136,12 +162,12 @@ public class ActionHelper {
             int h = (int) (elementRect.getHeight() * scaleFactor);
 
             // Draw Red Border
-            g.setColor(Color.RED);
+            g.setColor(Color.BLUE);
             g.setStroke(new BasicStroke(8)); 
             g.drawRect(x, y, w, h);
             
             // Draw Semi-transparent Red Fill
-            g.setColor(new Color(255, 0, 0, 40)); 
+            g.setColor(new Color(0, 0, 255, 40)); 
             g.fillRect(x, y, w, h);
             
             g.dispose();
@@ -213,7 +239,7 @@ public void tapByCoordinates(int x, int y) {
             int y = (int) (targetY * scaleFactor);
             int radius = 30; // Size of the marker
 
-            g.setColor(Color.RED);
+            g.setColor(Color.BLUE);
             g.setStroke(new BasicStroke(5));
 
             // Draw Circle
@@ -224,7 +250,7 @@ public void tapByCoordinates(int x, int y) {
             g.drawLine(x, y - radius - 10, x, y + radius + 10); // Vertical
             
             // Draw semi-transparent fill
-            g.setColor(new Color(255, 0, 0, 50));
+            g.setColor(new Color(0, 0, 255, 50));
             g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
 
             g.dispose();
@@ -297,7 +323,7 @@ public void tapByCoordinates(int x, int y) {
             System.out.println("  -> Tapping at Ratio: " + xRatio + ", " + yRatio + " (Pixel: " + x + ", " + y + ")");
 
             tapByCoordinates(x, y);
-            
+
         } catch (Exception e) {
             // 5. Error Handling
             System.err.println("  -> Failed to tap at ratio (" + xRatio + ", " + yRatio + "): " + e.getMessage());
