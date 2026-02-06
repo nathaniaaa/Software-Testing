@@ -1,16 +1,8 @@
 package tests;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-
-import javax.imageio.ImageIO;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
@@ -26,23 +18,26 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
+import tests.utils.TestListener;       
+import tests.helper.CaptureHelper;
 import com.aventstack.extentreports.MediaEntityBuilder;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
-import tests.utils.TestListener;
 
 public class ActionHelper {
     // 1. Declare the variables here
     protected  AndroidDriver driver; 
     protected  WebDriverWait wait; 
+    protected CaptureHelper capture;
 
     // 2. Initialize them in the Constructor
     public ActionHelper(AndroidDriver driver) {
         this.driver = driver;
-        
-        // This is the missing part: Initialize 'wait' with a 10-second timeout
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        
+        // Inisialisasi CaptureHelper disini!
+        this.capture = new CaptureHelper(driver);
     }
 
     public void waitForLoading(int millis) {
@@ -138,48 +133,6 @@ public void tap(WebElement element, String stepDetail) {
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
         // 2. Reuse the tap(WebElement, String) method
         tap(element, stepDetail); 
-    } 
-
-    /**
-     * Helper to draw a RED BOX around the element on a screenshot.
-     */
-    public String getScreenshotWithHighlight(WebElement element) {
-        try {
-            Rectangle elementRect = element.getRect();
-            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            BufferedImage image = ImageIO.read(srcFile);
-
-            Graphics2D g = image.createGraphics();
-            
-            // Calculate scale in case of high-DPI screens
-            double screenWidth = (double) driver.manage().window().getSize().getWidth();
-            double imgWidth = (double) image.getWidth();
-            double scaleFactor = imgWidth / screenWidth;
-
-            int x = (int) (elementRect.getX() * scaleFactor);
-            int y = (int) (elementRect.getY() * scaleFactor);
-            int w = (int) (elementRect.getWidth() * scaleFactor);
-            int h = (int) (elementRect.getHeight() * scaleFactor);
-
-            // Draw Red Border
-            g.setColor(Color.BLUE);
-            g.setStroke(new BasicStroke(8)); 
-            g.drawRect(x, y, w, h);
-            
-            // Draw Semi-transparent Red Fill
-            g.setColor(new Color(0, 0, 255, 40)); 
-            g.fillRect(x, y, w, h);
-            
-            g.dispose();
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", bos);
-            return java.util.Base64.getEncoder().encodeToString(bos.toByteArray());
-
-        } catch (Exception e) {
-            // Fallback to normal screenshot if image processing fails
-            return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
-        }
     }
 
     // ========================================================================
@@ -190,10 +143,10 @@ public void tap(WebElement element, String stepDetail) {
      * Tap pada koordinat spesifik (X, Y).
      * SANGAT PENTING untuk kasus CHART/GRAFIK MyTelkomsel.
      */
-public void tapByCoordinates(int x, int y) {
+    public void tapByCoordinates(int x, int y) {
         try {
             // 1. CAPTURE & HIGHLIGHT (Draw a Circle at X, Y)
-            String evidence = getScreenshotWithCoordinateHighlight(x, y);
+            String evidence = capture.getScreenshotWithCoordinateHighlight(x, y);
 
             // 2. Add to Excel List
             if (BaseTest.getScreenshotList() != null) {
@@ -219,48 +172,6 @@ public void tapByCoordinates(int x, int y) {
         } catch (Exception e) {
             System.err.println("   -> Failed to tap by coordinates: " + e.getMessage());
             // Fail safely (optional: take regular screenshot here)
-        }
-    }
-
-    public String getScreenshotWithCoordinateHighlight(int targetX, int targetY) {
-        try {
-            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            BufferedImage image = ImageIO.read(srcFile);
-
-            Graphics2D g = image.createGraphics();
-
-            // Calculate scale (for high-DPI devices)
-            double screenWidth = (double) driver.manage().window().getSize().getWidth();
-            double imgWidth = (double) image.getWidth();
-            double scaleFactor = imgWidth / screenWidth;
-
-            // Scale the target coordinates
-            int x = (int) (targetX * scaleFactor);
-            int y = (int) (targetY * scaleFactor);
-            int radius = 30; // Size of the marker
-
-            g.setColor(Color.BLUE);
-            g.setStroke(new BasicStroke(5));
-
-            // Draw Circle
-            g.drawOval(x - radius, y - radius, radius * 2, radius * 2);
-
-            // Draw Crosshair (Optional: makes it look cooler)
-            g.drawLine(x - radius - 10, y, x + radius + 10, y); // Horizontal
-            g.drawLine(x, y - radius - 10, x, y + radius + 10); // Vertical
-            
-            // Draw semi-transparent fill
-            g.setColor(new Color(0, 0, 255, 50));
-            g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
-
-            g.dispose();
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", bos);
-            return java.util.Base64.getEncoder().encodeToString(bos.toByteArray());
-
-        } catch (Exception e) {
-            return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
         }
     }
 
@@ -471,50 +382,37 @@ public void tapByCoordinates(int x, int y) {
 
     // 2. OVERLOADED (Use this for Years: scrollToText("1998", 30))
     public void scrollToText(String visibleText, int maxSwipes) {
-    System.out.println("   -> Scrolling to find: '" + visibleText + "'");
-    try {
-        // 1. Try Scrolling FORWARD (Down)
-        driver.findElement(AppiumBy.androidUIAutomator(
-            "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
-            ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (1)
-            ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\"))"
-        ));
-    } catch (Exception e) {
-        System.out.println("   -> Not found scrolling Down. Trying to scroll UP...");
+        System.out.println("   -> Scrolling to find: '" + visibleText + "'");
         try {
-            // 2. Perform the Reverse Action (Force scroll UP)
+            // 1. Try Scrolling FORWARD (Down)
             driver.findElement(AppiumBy.androidUIAutomator(
                 "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
-                ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (2)
-                ".setAsVerticalList().scrollBackward()" 
-            ));
-            
-            // 3. Search Again (Now that we are higher up)
-            driver.findElement(AppiumBy.androidUIAutomator(
-                "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
-                ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (3) - This was missing!
+                ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (1)
                 ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\"))"
             ));
-            
-        } catch (Exception ex) {
-            System.out.println("WARN: Could not find '" + visibleText + "' in either direction.");
+        } catch (Exception e) {
+            System.out.println("   -> Not found scrolling Down. Trying to scroll UP...");
+            try {
+                // 2. Perform the Reverse Action (Force scroll UP)
+                driver.findElement(AppiumBy.androidUIAutomator(
+                    "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
+                    ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (2)
+                    ".setAsVerticalList().scrollBackward()" 
+                ));
+                
+                // 3. Search Again (Now that we are higher up)
+                driver.findElement(AppiumBy.androidUIAutomator(
+                    "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
+                    ".setMaxSearchSwipes(" + maxSwipes + ")" + // <--- HERE (3) - This was missing!
+                    ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\"))"
+                ));
+                
+            } catch (Exception ex) {
+                System.out.println("WARN: Could not find '" + visibleText + "' in either direction.");
+            }
         }
     }
-}
 
-    // public void scrollToText(String visibleText, int maxSwipes) {
-    //     System.out.println("   -> Scrolling to (approx): " + visibleText);
-    //     try {
-    //         driver.findElement(AppiumBy.androidUIAutomator(
-    //             "new UiScrollable(new UiSelector().scrollable(true).instance(0))" +
-    //             ".setMaxSearchSwipes(" + maxSwipes + ")" + 
-    //             // CHANGE IS HERE: Use textContains instead of text
-    //             ".scrollIntoView(new UiSelector().textContains(\"" + visibleText + "\"))"
-    //         ));
-    //     } catch (Exception e) {
-    //         System.out.println("WARN: Scroll to '" + visibleText + "' failed.");
-    //     }
-    // }
     public void scrollToExactText(String visibleText) {
         System.out.println("Smart Scrolling to (EXACT): " + visibleText);
         try {

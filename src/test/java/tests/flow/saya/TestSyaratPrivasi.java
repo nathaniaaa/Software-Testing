@@ -2,8 +2,6 @@ package tests.flow.saya;
 
 import tests.BaseTest;
 import tests.utils.TestInfo;
-import tests.utils.TestListener; 
-import com.aventstack.extentreports.MediaEntityBuilder; 
 
 import org.openqa.selenium.By;
 import org.testng.Assert;
@@ -51,17 +49,14 @@ public class TestSyaratPrivasi extends BaseTest {
         waitTime();
 
         Assert.assertTrue(driver.findElement(textLihatSemuaBadges).isDisplayed(), "Gagal masuk ke halaman Profil (Saya).");
-        
-        TestListener.getTest().pass("Berhasil masuk ke halaman Profil.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        logPass("Berhasil masuk ke halaman Profil.");
 
         // Scroll ke bawah ke Card Syarat & Privasi
         System.out.println("Scroll Vertical Halaman Profil");
         actions.swipeVertical(0.8, 0.3);
         waitTime();
 
-        TestListener.getTest().pass("Berhasil scroll ke bawah cari menu Syarat & Privasi.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        logPass("Berhasil scroll ke bawah cari menu Syarat & Privasi.");
 
         // Klik Card Syarat & Privasi
         System.out.println("Klik Card Syarat & Privasi");
@@ -73,8 +68,7 @@ public class TestSyaratPrivasi extends BaseTest {
 
         Assert.assertTrue(driver.findElement(linkSyaratKetentuan).isDisplayed(), "Gagal masuk ke menu Syarat & Privasi.");
 
-        TestListener.getTest().pass("Berhasil masuk ke halaman Syarat & Privasi.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        logPass("Berhasil masuk ke halaman Syarat & Privasi.");
     }
 
     @Test(priority = 2, description = "Link Syarat dan Ketentuan")
@@ -96,8 +90,7 @@ public class TestSyaratPrivasi extends BaseTest {
 
         Assert.assertTrue(driver.findElement(btnBackSyaratKetentuan).isDisplayed(), "Gagal masuk ke detail Syarat & Ketentuan.");
 
-        TestListener.getTest().pass("Berhasil masuk ke detail Syarat & Ketentuan.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        logPass("Berhasil masuk ke detail Syarat & Ketentuan.");
     }
 
     @Test(priority = 3, description = "Navigasi Kembali dari Syarat dan Ketentuan")
@@ -116,8 +109,7 @@ public class TestSyaratPrivasi extends BaseTest {
 
         Assert.assertTrue(driver.findElement(linkKebijakanPrivasi).isDisplayed(), "Gagal kembali ke menu Syarat & Privasi dari detail Syarat.");
 
-        TestListener.getTest().pass("Berhasil kembali ke menu Syarat & Privasi.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        logPass("Berhasil kembali ke menu Syarat & Privasi.");
     }
 
     @Test(priority = 4, description = "Link Kebijakan Privasi")
@@ -139,8 +131,7 @@ public class TestSyaratPrivasi extends BaseTest {
 
         Assert.assertTrue(driver.findElement(searchKebijakanPrivasi).isDisplayed(), "Gagal masuk ke detail Kebijakan Privasi.");
 
-        TestListener.getTest().pass("Berhasil masuk ke detail Kebijakan Privasi.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        logPass("Berhasil masuk ke detail Kebijakan Privasi.");
     }
 
     @Test(priority = 5, description = "Navigasi Kembali dari Kebijakan Privasi")
@@ -159,8 +150,7 @@ public class TestSyaratPrivasi extends BaseTest {
 
         Assert.assertTrue(driver.findElement(linkSyaratKetentuan).isDisplayed(), "Gagal kembali ke menu Syarat & Privasi dari detail Kebijakan.");
 
-        TestListener.getTest().pass("Berhasil kembali ke menu Syarat & Privasi.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        logPass("Berhasil kembali ke menu Syarat & Privasi.");
     }
 
     @Test(priority = 6, description = "Navigasi Kembali dari Syarat & Privasi")
@@ -179,8 +169,7 @@ public class TestSyaratPrivasi extends BaseTest {
 
         Assert.assertTrue(driver.findElement(cardSyaratPrivasi).isDisplayed(), "Gagal kembali ke halaman Profil utama.");
 
-        TestListener.getTest().pass("Berhasil kembali ke halaman Profil utama.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
+        logPass("Berhasil kembali ke halaman Profil utama.");
     }
 
     // Helper 
