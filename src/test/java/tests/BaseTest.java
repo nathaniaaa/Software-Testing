@@ -107,7 +107,7 @@ public class BaseTest {
             WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
 
             // 1. Capture Screenshot
-            String evidence = getScreenshotWithHighlight(element);
+            String evidence = actions.getScreenshotWithHighlight(element);
 
             // 2. Add to List (DO NOT LOG TO EXCEL YET)
             getScreenshotList().add(evidence);
@@ -133,42 +133,6 @@ public class BaseTest {
         }
     }
 
-    // =======================================================
-    // IMAGE PROCESSING (HIGHLIGHT BOX) (with click)
-    // =======================================================
-    public String getScreenshotWithHighlight(WebElement element) {
-        try {
-            Rectangle elementRect = element.getRect();
-            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            BufferedImage image = ImageIO.read(srcFile);
-
-            Graphics2D g = image.createGraphics();
-            
-            double screenWidth = (double) driver.manage().window().getSize().getWidth();
-            double imgWidth = (double) image.getWidth();
-            double scaleFactor = imgWidth / screenWidth;
-
-            int x = (int) (elementRect.getX() * scaleFactor);
-            int y = (int) (elementRect.getY() * scaleFactor);
-            int w = (int) (elementRect.getWidth() * scaleFactor);
-            int h = (int) (elementRect.getHeight() * scaleFactor);
-
-            g.setColor(Color.RED);
-            g.setStroke(new BasicStroke(8)); 
-            g.drawRect(x, y, w, h);
-            g.setColor(new Color(255, 0, 0, 40)); 
-            g.fillRect(x, y, w, h);
-            g.dispose();
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", bos);
-            return java.util.Base64.getEncoder().encodeToString(bos.toByteArray());
-
-        } catch (Exception e) {
-            return getScreenshotBase64(); 
-        }
-    }
-
     // Mark kotak highlight (no klik)
     public void highlightAndCapture(By locator, String stepDetail) {
         try {
@@ -176,7 +140,7 @@ public class BaseTest {
             WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
 
             // 2. Ambil screenshot dengan kotak merah (menggunakan fungsi yang sudah kamu buat)
-            String evidence = getScreenshotWithHighlight(element);
+            String evidence = actions.getScreenshotWithHighlight(element);
 
             // 3. Masukkan ke list evidence (agar otomatis ditarik oleh TestListener ke Excel)
             getScreenshotList().add(evidence);

@@ -1,13 +1,18 @@
 package tests;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 
+import javax.imageio.ImageIO;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
@@ -16,8 +21,23 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
+import javax.imageio.ImageIO;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import org.openqa.selenium.Rectangle; 
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+
+import tests.utils.TestListener;       
+import com.aventstack.extentreports.MediaEntityBuilder;
+
+
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
+import tests.utils.TestListener;
 
 public class ActionHelper {
     // 1. Declare the variables here
@@ -41,6 +61,102 @@ public class ActionHelper {
     }
 
     // ========================================================================
+    // 🔥 1. SMART TAP (AUTO-HIGHLIGHT & REPORT) - USE THIS!
+    // ========================================================================
+
+    /**
+     * Finds element, Highlights it red, Screenshots it, Logs to Excel/HTML, then Clicks.
+     * @param locator The element locator (By.id, By.xpath, etc.)
+     * @param stepDetail Description for the report (e.g., "Click Save Button")
+     */
+    public void tap(By locator, String stepDetail) {
+        try {
+            // 1. Wait for element
+            WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
+
+            // 2. Capture Screenshot with Red Highlight
+            String evidence = getScreenshotWithHighlight(element);
+
+            // 3. Add to Excel Report List (Accessing BaseTest static list)
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(evidence);
+            }
+
+            // 4. Log to HTML Report (Extent)
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info("Tapping: " + stepDetail,
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+            }
+
+            // 5. Perform Click
+            element.click();
+            System.out.println("[SUCCESS] " + stepDetail);
+
+        } catch (Exception e) {
+            // Handle Failure: Take standard screenshot (no highlight)
+            try {
+                String errorEvidence = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
+                
+                // Add error to Excel list
+                if (BaseTest.getScreenshotList() != null) {
+                    BaseTest.getScreenshotList().add(errorEvidence);
+                }
+                
+                // Add error to HTML report
+                if (TestListener.getTest() != null) {
+                    TestListener.getTest().fail("Failed: " + stepDetail + " - " + e.getMessage(),
+                        MediaEntityBuilder.createScreenCaptureFromBase64String(errorEvidence).build());
+                }
+            } catch (Exception ex) {
+                System.err.println("Could not capture failure screenshot.");
+            }
+            throw e; // Crash the test so TestNG knows it failed
+        }
+    }
+
+    /**
+     * Helper to draw a RED BOX around the element on a screenshot.
+     */
+    public String getScreenshotWithHighlight(WebElement element) {
+        try {
+            Rectangle elementRect = element.getRect();
+            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            BufferedImage image = ImageIO.read(srcFile);
+
+            Graphics2D g = image.createGraphics();
+            
+            // Calculate scale in case of high-DPI screens
+            double screenWidth = (double) driver.manage().window().getSize().getWidth();
+            double imgWidth = (double) image.getWidth();
+            double scaleFactor = imgWidth / screenWidth;
+
+            int x = (int) (elementRect.getX() * scaleFactor);
+            int y = (int) (elementRect.getY() * scaleFactor);
+            int w = (int) (elementRect.getWidth() * scaleFactor);
+            int h = (int) (elementRect.getHeight() * scaleFactor);
+
+            // Draw Red Border
+            g.setColor(Color.RED);
+            g.setStroke(new BasicStroke(8)); 
+            g.drawRect(x, y, w, h);
+            
+            // Draw Semi-transparent Red Fill
+            g.setColor(new Color(255, 0, 0, 40)); 
+            g.fillRect(x, y, w, h);
+            
+            g.dispose();
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", bos);
+            return java.util.Base64.getEncoder().encodeToString(bos.toByteArray());
+
+        } catch (Exception e) {
+            // Fallback to normal screenshot if image processing fails
+            return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
+        }
+    }
+
+    // ========================================================================
     // 1. TAP & CLICK ACTIONS (PENTING BUAT GRAFIK & BUTTON)
     // ========================================================================
 
@@ -48,8 +164,23 @@ public class ActionHelper {
      * Tap pada koordinat spesifik (X, Y).
      * SANGAT PENTING untuk kasus CHART/GRAFIK MyTelkomsel.
      */
-    public void tapByCoordinates(int x, int y) {
+public void tapByCoordinates(int x, int y) {
         try {
+            // 1. CAPTURE & HIGHLIGHT (Draw a Circle at X, Y)
+            String evidence = getScreenshotWithCoordinateHighlight(x, y);
+
+            // 2. Add to Excel List
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(evidence);
+            }
+
+            // 3. Log to HTML Report
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info("Tapping Coordinates: [" + x + ", " + y + "]",
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+            }
+
+            // 4. Perform Tap
             System.out.println("   -> Tapping at: " + x + ", " + y);
             PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
             Sequence tap = new Sequence(finger, 1);
@@ -58,8 +189,52 @@ public class ActionHelper {
             tap.addAction(new Pause(finger, Duration.ofMillis(100)));
             tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
             driver.perform(Collections.singletonList(tap));
+
         } catch (Exception e) {
             System.err.println("   -> Failed to tap by coordinates: " + e.getMessage());
+            // Fail safely (optional: take regular screenshot here)
+        }
+    }
+
+    public String getScreenshotWithCoordinateHighlight(int targetX, int targetY) {
+        try {
+            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            BufferedImage image = ImageIO.read(srcFile);
+
+            Graphics2D g = image.createGraphics();
+
+            // Calculate scale (for high-DPI devices)
+            double screenWidth = (double) driver.manage().window().getSize().getWidth();
+            double imgWidth = (double) image.getWidth();
+            double scaleFactor = imgWidth / screenWidth;
+
+            // Scale the target coordinates
+            int x = (int) (targetX * scaleFactor);
+            int y = (int) (targetY * scaleFactor);
+            int radius = 30; // Size of the marker
+
+            g.setColor(Color.RED);
+            g.setStroke(new BasicStroke(5));
+
+            // Draw Circle
+            g.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+
+            // Draw Crosshair (Optional: makes it look cooler)
+            g.drawLine(x - radius - 10, y, x + radius + 10, y); // Horizontal
+            g.drawLine(x, y - radius - 10, x, y + radius + 10); // Vertical
+            
+            // Draw semi-transparent fill
+            g.setColor(new Color(255, 0, 0, 50));
+            g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+
+            g.dispose();
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", bos);
+            return java.util.Base64.getEncoder().encodeToString(bos.toByteArray());
+
+        } catch (Exception e) {
+            return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
         }
     }
 
@@ -121,19 +296,8 @@ public class ActionHelper {
 
             System.out.println("  -> Tapping at Ratio: " + xRatio + ", " + yRatio + " (Pixel: " + x + ", " + y + ")");
 
-            // 3. Define W3C Action
-            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
-            Sequence tap = new Sequence(finger, 1);
+            tapByCoordinates(x, y);
             
-            // Move to coordinates -> Press Down -> Wait 100ms -> Lift Up
-            tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
-            tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-            tap.addAction(new Pause(finger, Duration.ofMillis(100))); 
-            tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-
-            // 4. Perform Action
-            driver.perform(Collections.singletonList(tap));
-
         } catch (Exception e) {
             // 5. Error Handling
             System.err.println("  -> Failed to tap at ratio (" + xRatio + ", " + yRatio + "): " + e.getMessage());
@@ -524,6 +688,10 @@ public class ActionHelper {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public String getScreenshotBase64() {
+        return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
     }
 
     /**
