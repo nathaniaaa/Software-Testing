@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.ArrayList; 
 import java.util.List;
 
+import tests.helper.CaptureHelper;
+
 public class TestListener implements ITestListener {
 
     private static ExtentReports extent = ExtentManager.getInstance();
@@ -104,7 +106,10 @@ public class TestListener implements ITestListener {
         try {
             Object currentClass = result.getInstance();
             if (currentClass instanceof BaseTest) {
-                base64Screenshot = ((BaseTest) currentClass).getScreenshotBase64();
+                CaptureHelper capture = ((BaseTest) currentClass).getCapture();
+                if (capture != null) {
+                    base64Screenshot = capture.getScreenshotBase64();
+                }
             }
         } catch (Exception e) {}
 

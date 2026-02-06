@@ -7,25 +7,12 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.ArrayList; 
 import java.util.List;
-import java.util.Base64;
 
-// --- IMPORT IMAGE PROCESSING ---
-import javax.imageio.ImageIO;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import org.openqa.selenium.Rectangle; 
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 
-// --- IMPORT EXCEL & REPORTING ---
-import tests.utils.ExcelReportManager; 
 import tests.utils.TestListener;       
 import com.aventstack.extentreports.MediaEntityBuilder; 
-import org.testng.Reporter; // Untuk mengambil deskripsi dari @Test
-// ---------------------------------------------
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
@@ -42,12 +29,14 @@ import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 
 import tests.ActionHelper;
+import tests.helper.CaptureHelper;
 
 public class BaseTest {
 
     protected AndroidDriver driver;
     protected WebDriverWait wait;
     protected ActionHelper actions; 
+    protected CaptureHelper capture;
 
     private static ThreadLocal<List<String>> screenshots = ThreadLocal.withInitial(ArrayList::new);
 
@@ -78,6 +67,8 @@ public class BaseTest {
         );
 
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+
+        capture = new CaptureHelper(driver);
         actions = new ActionHelper(driver);
 
         ensureOnAyoLariDashboard();
@@ -107,7 +98,7 @@ public class BaseTest {
             WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
 
             // 1. Capture Screenshot
-            String evidence = actions.getScreenshotWithHighlight(element);
+            String evidence = capture.getScreenshotWithHighlight(element);
 
             // 2. Add to List (DO NOT LOG TO EXCEL YET)
             getScreenshotList().add(evidence);
@@ -122,7 +113,7 @@ public class BaseTest {
             System.out.println("[SUCCESS] " + stepDetail);
 
         } catch (Exception e) {
-            String errorEvidence = getScreenshotBase64();
+            String errorEvidence = capture.getScreenshotBase64();
             getScreenshotList().add(errorEvidence); // Add error photo to list
             
             if (TestListener.getTest() != null) {
@@ -133,41 +124,10 @@ public class BaseTest {
         }
     }
 
-    // Mark kotak highlight (no klik)
-    public void highlightAndCapture(By locator, String stepDetail) {
-        try {
-            // 1. Cari elemennya (tunggu sampai terlihat)
-            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-
-            // 2. Ambil screenshot dengan kotak merah (menggunakan fungsi yang sudah kamu buat)
-            String evidence = actions.getScreenshotWithHighlight(element);
-
-            // 3. Masukkan ke list evidence (agar otomatis ditarik oleh TestListener ke Excel)
-            getScreenshotList().add(evidence);
-
-            // 4. Log ke HTML Report (Extent Report)
-            if (TestListener.getTest() != null) {
-                TestListener.getTest().info("Highlight: " + stepDetail, 
-                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
-            }
-            
-            System.out.println("[HIGHLIGHT] " + stepDetail);
-
-        } catch (Exception e) {
-            System.err.println("Gagal highlight elemen: " + e.getMessage());
-            // Jika gagal highlight, ambil screenshot biasa sebagai backup
-            getScreenshotList().add(getScreenshotBase64());
-        }
-    }
-
-    public String getScreenshotBase64() {
-        return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
-    }
-
     public void logInfo(String message) {
         try {
             // 1. Take Screenshot
-            String screenshot = getScreenshotBase64();
+            String screenshot = capture.getScreenshotBase64();
 
             // 2. Add to Excel List
             if (getScreenshotList() != null) {
@@ -187,7 +147,7 @@ public class BaseTest {
     public void logPass(String message) {
         try {
             // 1. Take Screenshot
-            String screenshot = getScreenshotBase64();
+            String screenshot = capture.getScreenshotBase64();
 
             // 2. Add to Excel List
             if (getScreenshotList() != null) {
@@ -320,5 +280,9 @@ public class BaseTest {
             File destFile = new File("screenshots/" + fileName + "_" + timestamp + ".png");
             FileUtils.copyFile(srcFile, destFile);
         } catch (Exception e) {}
+    }
+
+    public CaptureHelper getCapture() {
+        return capture;
     }
 }
