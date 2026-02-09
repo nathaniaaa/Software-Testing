@@ -8,6 +8,7 @@
     <test name="Flow Tests">
         <classes>
             <class name="tests.flow.beranda.TestBeranda" />
+            <class name="tests.creation.positive.ProfileTest" />
         </classes>
     </test>
 </suite>

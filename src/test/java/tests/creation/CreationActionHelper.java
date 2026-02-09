@@ -121,9 +121,7 @@ public class CreationActionHelper extends ActionHelper{
 
     public void tapByAccessibilityId(String accId) {
         try {
-            System.out.println("   -> [Strict] Attempting Accessibility ID: " + accId);
-            wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(accId))).click();
-            System.out.println("   -> Clicked successfully.");
+            tap(AppiumBy.accessibilityId(accId), "Tap Access ID: " + accId);
         } catch (Exception e) {
             System.out.println("   -> Standard click failed. Engaging Center Tap fallback...");
             tapElementCenter(AppiumBy.accessibilityId(accId));
@@ -223,17 +221,16 @@ public class CreationActionHelper extends ActionHelper{
     public String fillInputAndReadBack(String label, String valueToType) {
         try {
             String xpath = String.format(inputXpathTemplate, label);
-            WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.xpath(xpath)));
-            
-            input.click();
-            input.clear();
-            input.sendKeys(valueToType);
-            
+            By locator = AppiumBy.xpath(xpath);
+
+            fillInputField(locator, valueToType);
+
             // Critical: Hide keyboard so the App triggers its "onBlur" or "Formatting" logic
             try { driver.hideKeyboard(); } catch (Exception ignored) {}
+            
             Thread.sleep(1000); // Give app 1s to auto-sanitize
             
-            return input.getText(); // Return what is ACTUALLY in the box
+            return driver.findElement(locator).getText(); // Return what is ACTUALLY in the box
         } catch (Exception e) {
             System.out.println("Failed to interact with input: " + label);
             return "";

@@ -13,7 +13,7 @@ import io.appium.java_client.android.AndroidDriver;
 import tests.BaseTest;
 import tests.utils.TestListener;
 
-public class ProfileTest extends BaseTest {
+public class ProfileTestv3 extends BaseTest {
 
     private ProfileActionHelper profilePage;
 
