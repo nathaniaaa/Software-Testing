@@ -48,55 +48,16 @@ public class ActionHelper {
         }
     }
 
-    // ========================================================================
-    // 🔥 1. SMART TAP (AUTO-HIGHLIGHT & REPORT) - USE THIS!
-    // ========================================================================
-
-        public void highlightAndCapture(By locator, String stepDetail) {
-        try {
-            // 1. Cari elemennya (tunggu sampai terlihat)
-            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-
-            // 2. Ambil screenshot dengan kotak merah (menggunakan fungsi yang sudah kamu buat)
-            String evidence = getScreenshotWithHighlight(element);
-
-            // 3. Masukkan ke list evidence (agar otomatis ditarik oleh TestListener ke Excel)
-            // 3. Add to Excel List (Accessing BaseTest static list)
-            if (BaseTest.getScreenshotList() != null) {
-                BaseTest.getScreenshotList().add(evidence);
-            }
-            // 4. Log ke HTML Report (Extent Report)
-            if (TestListener.getTest() != null) {
-                TestListener.getTest().info("Highlight: " + stepDetail, 
-                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
-            }
-            
-            System.out.println("[HIGHLIGHT] " + stepDetail);
-
-        } catch (Exception e) {
-            System.err.println("Gagal highlight elemen: " + e.getMessage());
-            // Jika gagal highlight, ambil screenshot biasa sebagai backup
-            // Backup: Standard screenshot if highlight fails
-            if (BaseTest.getScreenshotList() != null) {
-               // Assuming getScreenshotBase64() is available or use driver screenshot
-               try {
-                   String errorShot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
-                   BaseTest.getScreenshotList().add(errorShot);
-               } catch (Exception ex) {}
-            }
-        }
-    }
-
     /**
      * Finds element, Highlights it red, Screenshots it, Logs to Excel/HTML, then Clicks.
      * @param locator The element locator (By.id, By.xpath, etc.)
      * @param stepDetail Description for the report (e.g., "Click Save Button")
      */
-public void tap(WebElement element, String stepDetail) {
+    public void tap(WebElement element, String stepDetail) {
         try {
             // --- LOGIC STARTS HERE ---
             // 1. Capture Screenshot with Red Highlight
-            String evidence = getScreenshotWithHighlight(element);
+            String evidence = capture.getScreenshotWithHighlight(element);
 
             // 2. Add to Excel Report List
             if (BaseTest.getScreenshotList() != null) {

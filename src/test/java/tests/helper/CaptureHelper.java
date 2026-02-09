@@ -56,12 +56,12 @@ public class CaptureHelper {
             int h = (int) (elementRect.getHeight() * scaleFactor);
 
             // Draw Red Border
-            g.setColor(Color.RED);
+            g.setColor(Color.BLUE);
             g.setStroke(new BasicStroke(8)); 
             g.drawRect(x, y, w, h);
             
             // Draw Semi-transparent Red Fill
-            g.setColor(new Color(255, 0, 0, 40)); 
+            g.setColor(new Color(0, 0, 255, 40)); 
             g.fillRect(x, y, w, h);
             
             g.dispose();
@@ -93,7 +93,7 @@ public class CaptureHelper {
             int y = (int) (targetY * scaleFactor);
             int radius = 30; // Size of the marker
 
-            g.setColor(Color.RED);
+            g.setColor(Color.BLUE);
             g.setStroke(new BasicStroke(5));
 
             // Draw Circle
@@ -104,7 +104,7 @@ public class CaptureHelper {
             g.drawLine(x, y - radius - 10, x, y + radius + 10); // Vertical
             
             // Draw semi-transparent fill
-            g.setColor(new Color(255, 0, 0, 50));
+            g.setColor(new Color(0, 0, 255, 50));
             g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
 
             g.dispose();
