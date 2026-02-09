@@ -41,8 +41,9 @@ public class TestBeranda extends BaseTest {
     // Test Cases
     @Test(priority = 1, description = "Pengguna Melihat Detail Total Lari Harian dari Beranda")
     @TestInfo(
+        testType = "Positive Case",
         expected = "Pengguna dapat Melihat Detail Total Lari Harian dari Beranda",
-        note = "Pastikan user sudah login sebelumnya.",
+        note = "",
         group = "Beranda"
     ) 
     public void testTotalLariHarian() {
@@ -52,18 +53,21 @@ public class TestBeranda extends BaseTest {
         logInfo("Tampilan awal Beranda");
         Assert.assertTrue(driver.findElement(navBeranda).isDisplayed(), "Gagal memuat halaman Beranda di awal test.");
         
-        capture.highlightRectangleByRatio(0.05, 0.40, 0.90, 0.20, "Validasi Tampilan Total Lari Harian");
+        capture.highlightRectangleByRatio(0.05, 0.43, 0.90, 0.18, "Validasi Tampilan Total Lari Harian");
     }
 
     @Test(priority = 2, description = "Pengguna menekan tombol \"lihat semua\" pada Challenge yang diikuti")
     @TestInfo(
+        testType = "Positive Case",
         expected = "Menampilkan semua challenge yang telah diikuti maupun yang telah dibuat oleh Pengguna.",
-        note = "Pastikan user sudah login sebelumnya.",
+        note = "",
         group = "Beranda"
     ) 
     public void testLihatSemuaChallengeYangDiikuti() {
         System.out.println("Test 2: Pengguna menekan tombol \\\"lihat semua\\\" pada Challenge yang diikuti");
         waitTime();
+
+        capture.highlightRectangleByRatio(0.05, 0.25, 0.90, 0.15, "Bagian Challenge yang Diikuti (Challenge Saya)");
 
         // Klik lihat semua yg diikuti (Challenge Saya)
         System.out.println("Klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya)");
@@ -84,13 +88,18 @@ public class TestBeranda extends BaseTest {
 
     @Test(priority = 3, description = "Challenges")
     @TestInfo(
+        testType = "Positive Case",
         expected = "Pengguna bisa menampilkan halaman Challenge dengan menekan \"lihat semua\" pada Challenges (Public Challenges).",
-        note = "Pastikan user sudah login sebelumnya.",
+        note = "",
         group = "Beranda"
     ) 
-    public void testes() {
-        System.out.println("Test 3: Pengguna bisa menampilkan halaman Challenge dengan menekan \"lihat semua\" pada Challenges (Public Challenges).");
+    public void challenges() {
+        System.out.println("Test 3: Menampilkan detail daftar challenge yang mencakup Challenge Saya, Challenge Reward Januari, Exclusive Challenges, dan Public Challenge. \n" + //
+                        "\n" + //
+                        "Saat pengguna menekan 'Lihat Semua', aplikasi akan membuka tab Challenge untuk menampilkan daftar lengkapnya");
         waitTime();
+
+        capture.highlightRectangleByRatio(0.05, 0.61, 0.90, 0.20, "Bagian Challenges (Public Challenges)");
 
         // Klik lihat semua yg punya challenges (Public Challenge)
         System.out.println("Klik 'Lihat Semua' (Public Challenge)");
@@ -107,6 +116,97 @@ public class TestBeranda extends BaseTest {
         Assert.assertTrue(driver.findElement(navBeranda).isSelected() || driver.findElement(textLihatSemuaChallenges).isDisplayed(), "Gagal kembali ke Beranda via Bottom Nav.");
 
         logPass("Berhasil kembali ke Beranda.");
+    }
+
+    @Test(priority = 4, description = "Exclusive Challenges")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Challenge spesial Ayolari yang dibuat saat event-event lari tertentu, Pengguna dapat bergabung dalam Exclusive Challenges jika telah memenuhi syarat dan ketentuan yang berlaku yang dibuat oleh admin pembuat Exclusive Challenges tersebut",
+        note = "",
+        group = "Beranda"
+    ) 
+    public void exclusiveChallenges() {
+        System.out.println("Test 4: Challenge spesial Ayolari yang dibuat saat event-event lari tertentu, Pengguna dapat bergabung dalam Exclusive Challenges jika telah memenuhi syarat dan ketentuan yang berlaku yang dibuat oleh admin pembuat Exclusive Challenges tersebut");
+        waitTime();
+
+        capture.highlightRectangleByRatio(0.05, 0.61, 0.90, 0.22, "Bagian Challenges (Public Challenges)");
+    }
+
+    @Test(priority = 5, description = "Public Challenges")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Fitur ini menampilkan daftar Public Challenge yang sedang berlangsung. Saat pengguna memilih salah satu challenge, detail lengkap challenge tersebut akan ditampilkan",
+        note = "",
+        group = "Beranda"
+    ) 
+    public void publicChallenges() {
+        logInfo("Tampilan awal");
+
+        // Scroll horizontal di Challenges (Public Challenge)
+        System.out.println("Scroll Horizontal 'Public Challenges'");
+        actions.swipeHorizontal(0.9, 0.1, 0.7);
+        waitTime();
+
+        actions.swipeHorizontal(0.1, 0.9, 0.7);
+        waitTime();
+
+        // Klik card Public Challenges (card di Beranda)
+        System.out.println(" Klik Salah Satu Card 'Public Challenges' di Beranda");
+        
+        // LOGIC: Cek apakah Card Pertama (Index 2) Ada?
+        if (driver.findElements(cardPublicChallengeBeranda).size() > 0) {
+            // Kondisi: Ada Card di List
+            System.out.println("Card ditemukan di List. Klik Card Pertama.");
+            clickTest(cardPublicChallengeBeranda, getScreenshotBase64());
+            waitTime();
+
+            // Back ke Beranda
+            System.out.println("Back ke Beranda");
+            clickBack(); // Back dari Detail
+            waitTime();
+            
+            logPass("Berhasil kembali ke Beranda");
+            
+        } else {
+            // Kondisi: List Kosong
+            System.out.println("List Kosong / Card tidak ditemukan.");
+            logInfo("List Public Challenges kosong");
+        }
+        waitTime();
+    }
+    
+    @Test(priority = 6, description = "Event Lari")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Fitur ini menampilkan berbagai banner Event Lari. Ketika pengguna menekan salah satu banner, akan ditampilkan informasi lengkap mengenai Event Lari tersebut",
+        note = "",
+        group = "Beranda"
+    ) 
+    public void eventLari() {
+        System.out.println("Test 6: Fitur ini menampilkan berbagai banner Event Lari. Ketika pengguna menekan salah satu banner, akan ditampilkan informasi lengkap mengenai Event Lari tersebut");
+        waitTime();
+
+        actions.swipeVertical(0.8, 0.2);
+
+        capture.highlightRectangleByRatio(0.05, 0.23, 0.90, 0.11, "Bagian Challenges (Public Challenges)");
+    }
+
+    @Test(priority = 7, description = "Riwayat Lari")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Menampilkan daftar Riwayat Lari terakhir milik pengguna. Di halaman beranda dibatasi hanya 4 Riwayat Lari paling terbaru saja termasuk sync lari menggunakan smartwatch.\n" + //
+                        "\n" + //
+                        "Jika dibuka Lihat Semua, maka akan tampil daftar Riwayat Lari lengkap milik pengguna dan pindah ke tab Aktivitas",
+        note = "",
+        group = "Beranda"
+    ) 
+    public void riwayatLari() {
+        System.out.println("Test 7: Menampilkan daftar Riwayat Lari terakhir milik pengguna. Di halaman beranda dibatasi hanya 4 Riwayat Lari paling terbaru saja termasuk sync lari menggunakan smartwatch.\n" + //
+                        "\n" + //
+                        "Jika dibuka Lihat Semua, maka akan tampil daftar Riwayat Lari lengkap milik pengguna dan pindah ke tab Aktivitas");
+        waitTime();
+
+        capture.highlightRectangleByRatio(0.05, 0.32, 0.90, 0.22, "Bagian Challenges (Public Challenges)");
     }
 
     // Helper

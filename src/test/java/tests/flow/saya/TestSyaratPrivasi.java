@@ -36,8 +36,9 @@ public class TestSyaratPrivasi extends BaseTest {
     // Test Cases
     @Test(priority = 1, description = "Navigasi ke Halaman Syarat & Privasi dari Profil")
     @TestInfo(
+        testType = "Positive Case",
         expected = "Halaman Profile terbuka, user bisa masuk ke halaman Syarat & Privasi.",
-        note = "Pastikan user sudah login sebelumnya.",
+        note = "",
         group = "Syarat & Privasi"
     ) 
     public void testSyaratPrivasi(){
@@ -73,8 +74,9 @@ public class TestSyaratPrivasi extends BaseTest {
 
     @Test(priority = 2, description = "Link Syarat dan Ketentuan")
     @TestInfo(
+        testType = "Positive Case",
         expected = "User bisa membuka detail Syarat dan Ketentuan.",
-        note = "Pastikan user sudah berada di halaman Syarat & Privasi.",
+        note = "",
         group = "Syarat & Privasi"
     )
     public void testSyaratdanKetentuan(){
@@ -102,8 +104,9 @@ public class TestSyaratPrivasi extends BaseTest {
 
     @Test(priority = 3, description = "Navigasi Kembali dari Syarat dan Ketentuan")
     @TestInfo(
+        testType = "Positive Case",
         expected = "User bisa kembali dari halaman detail Syarat dan Ketentuan.",
-        note = "Pastikan user sudah berada di halaman Syarat & Privasi.",
+        note = "",
         group = "Syarat & Privasi"
     )
     public void testNavigasiKembaliSyaratdanKetentuan(){
@@ -121,8 +124,9 @@ public class TestSyaratPrivasi extends BaseTest {
 
     @Test(priority = 4, description = "Link Kebijakan Privasi")
     @TestInfo(
+        testType = "Positive Case",
         expected = "User bisa membuka detail Kebijakan Privasi.",
-        note = "Pastikan user sudah berada di halaman Syarat & Privasi.",
+        note = "",
         group = "Syarat & Privasi"
     )
     public void testKebijakanPrivasi(){
@@ -150,8 +154,9 @@ public class TestSyaratPrivasi extends BaseTest {
 
     @Test(priority = 5, description = "Navigasi Kembali dari Kebijakan Privasi")
     @TestInfo(
+        testType = "Positive Case",
         expected = "User bisa kembali dari halaman detail Kebijakan Privasi.",
-        note = "Pastikan user sudah berada di halaman Kebijakan Privasi.",
+        note = "",
         group = "Syarat & Privasi"
     )
     public void testNavigasiKembaliKebijakanPrivasi(){
@@ -169,8 +174,9 @@ public class TestSyaratPrivasi extends BaseTest {
 
     @Test(priority = 6, description = "Navigasi Kembali dari Syarat & Privasi")
     @TestInfo(
+        testType = "Positive Case",
         expected = "User bisa kembali dari halaman Syarat & Privasi.",
-        note = "Pastikan user sudah berada di halaman Syarat & Privasi.",
+        note = "",
         group = "Syarat & Privasi"
     )
     public void testNavigasiKembalikeProfile(){

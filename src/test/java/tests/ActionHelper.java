@@ -371,6 +371,9 @@ public class ActionHelper {
         System.out.println("Swiping Horizontal: X(" + startXRatio + "->" + endXRatio + ") di tinggi Y=" + yRatio);
         
         performSwipe(startX, anchorY, endX, anchorY, 1000);
+
+        capture.drawSwipeArrow(startXRatio, yRatio, endXRatio, yRatio, 
+            "Horizontal Swipe (" + startXRatio + " -> " + endXRatio + ")");
     }
     
     // Drag/Pan Peta (Geser Peta pelan-pelan, bukan swipe cepat)

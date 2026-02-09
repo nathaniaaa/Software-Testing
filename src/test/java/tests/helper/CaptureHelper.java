@@ -211,4 +211,82 @@ public class CaptureHelper {
             }
         }
     }
+
+    /**
+     * Menggambar ANAK PANAH (Arrow) pada screenshot untuk menunjukkan arah swipe.
+     * Menggunakan perhitungan trigonometri untuk menggambar kepala panah.
+     * * @param startXRatio Rasio X Awal (0.0 - 1.0)
+     * @param startYRatio Rasio Y Awal (0.0 - 1.0)
+     * @param endXRatio Rasio X Akhir (0.0 - 1.0)
+     * @param endYRatio Rasio Y Akhir (0.0 - 1.0)
+     * @param stepDetail Keterangan untuk laporan
+     */
+    public void drawSwipeArrow(double startXRatio, double startYRatio, double endXRatio, double endYRatio, String stepDetail) {
+        try {
+            // Ambil Screenshot Mentah
+            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            BufferedImage image = ImageIO.read(srcFile);
+
+            int w = image.getWidth();
+            int h = image.getHeight();
+
+            // Konversi Rasio ke Pixel Koordinat Riil
+            int x1 = (int) (w * startXRatio);
+            int y1 = (int) (h * startYRatio);
+            int x2 = (int) (w * endXRatio);
+            int y2 = (int) (h * endYRatio);
+
+            Graphics2D g = image.createGraphics();
+            
+            g.setColor(Color.red); 
+            // Garis tebal 
+            g.setStroke(new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            // Gambar garis utama panah
+            g.drawLine(x1, y1, x2, y2);
+
+            // Hitung sudut garis utama
+            double angle = Math.atan2(y2 - y1, x2 - x1);
+            // Panjang sirip kepala panah (pixel)
+            int arrowHeadSize = 50; 
+            // Sudut bukaan sirip (30 derajat dalam radian)
+            double arrowHeadAngle = Math.PI / 6; 
+
+            // Gambar sirip 1
+            g.drawLine(x2, y2, 
+                (int) (x2 - arrowHeadSize * Math.cos(angle - arrowHeadAngle)), 
+                (int) (y2 - arrowHeadSize * Math.sin(angle - arrowHeadAngle)));
+                
+            // Gambar sirip 2
+            g.drawLine(x2, y2, 
+                (int) (x2 - arrowHeadSize * Math.cos(angle + arrowHeadAngle)), 
+                (int) (y2 - arrowHeadSize * Math.sin(angle + arrowHeadAngle)));
+
+            // Tambahkan lingkaran kecil di titik awal
+            int startDotSize = 20;
+            g.fillOval(x1 - startDotSize/2, y1 - startDotSize/2, startDotSize, startDotSize);
+            
+            g.dispose();
+
+            // Simpan & Masukkan ke Report
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", bos);
+            String evidence = java.util.Base64.getEncoder().encodeToString(bos.toByteArray());
+
+            // Add to Excel List (via BaseTest)
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(evidence);
+            }
+
+            // Add to HTML Report (via TestListener)
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info("Swipe Action: " + stepDetail, 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+            }
+            System.out.println("[SWIPE VISUAL] " + stepDetail);
+
+        } catch (Exception e) {
+            System.err.println("Gagal menggambar panah swipe: " + e.getMessage());
+        }
+    }
 }
