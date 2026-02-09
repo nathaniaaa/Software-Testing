@@ -23,7 +23,7 @@ public class TargetActionHelper extends CreationActionHelper {
     private final By RADIO_MINGGUAN = AppiumBy.xpath("//*[contains(@text, 'Mingguan')]");
     
     // We override the generic submit button with the specific Target one
-    private final By BTN_SUBMIT_TARGET = AppiumBy.xpath("//*[contains(@text, 'Atur Target')]");
+   private final By BTN_SUBMIT_TARGET = AppiumBy.xpath("//*[@text='Atur Target']");
     private final By BTN_YA_RESET = AppiumBy.xpath("//*[contains(@text, 'Ya') or contains(@text, 'Reset')]");
 
     // --- CONSTRUCTOR ---
@@ -54,7 +54,7 @@ public class TargetActionHelper extends CreationActionHelper {
 
     public void openModal() {
         try {
-            wait.until(ExpectedConditions.elementToBeClickable(BTN_ADD_TARGET)).click();
+            tap(BTN_ADD_TARGET, "Click Add Target Button");    
             wait.until(ExpectedConditions.visibilityOfElementLocated(TITLE_MODAL));
         } catch (Exception e) {
             System.out.println("   -> [Target] Open failed. Using Fallback Ratio...");
@@ -78,49 +78,58 @@ public class TargetActionHelper extends CreationActionHelper {
 
         // Specific logic for Radio button
         try {
-            driver.findElement(RADIO_MINGGUAN).click();
+            tap(RADIO_MINGGUAN, "Select Option: Mingguan");
         } catch (Exception e) {
+            System.out.println("   -> Standard tap failed, trying center tap...");
             tapElementCenter(RADIO_MINGGUAN); // Inherited from CreationActionHelper
         }
     }
 
     public void submitForm() {
-        // Reuse 'clickSubmitRobust' from CreationActionHelper!
-        clickSubmitRobust(BTN_SUBMIT_TARGET, 0.5, 0.88);  
+        try {
+            tap(BTN_SUBMIT_TARGET, "Click Submit Target");
+        } catch (Exception e) {
+            System.out.println("   -> Tap failed, trying robust submit...");
+            tapAtScreenRatio(0.5, 0.88);  
+        }
+        
+        
+    }
+
+    public boolean isTargetProgressVisible() {
+        boolean hasText = !driver.findElements(TARGET_PROGRESS_TEXT).isEmpty();
+        boolean hasBtn = !driver.findElements(BTN_RESET_TARGET).isEmpty();
+
+        return hasText || hasBtn;
     }
 
     public void cleanUpExistingTarget() {
         System.out.println("   -> [Target] Checking cleanup...");
         try {
-            boolean hasText = !driver.findElements(TARGET_PROGRESS_TEXT).isEmpty();
-            boolean hasBtn = !driver.findElements(BTN_RESET_TARGET).isEmpty();
+            boolean isVisible = isTargetProgressVisible();
+            if (!isVisible) return; 
 
-            if (!hasText && !hasBtn) return; // Clean
             System.out.println("   -> Target found. Cleaning up...");
+            
+            // 1. Click Reset (Trash Icon)
             try {
-                wait.until(ExpectedConditions.elementToBeClickable(BTN_YA_RESET)).click();
+                tap(BTN_RESET_TARGET, "Click Reset Target Button");
                 Thread.sleep(2000);
             } catch (Exception ignored) {
-                System.out.println("   -> Standard click failed. Using Sniper Fallback...");
-                // Uses the robust helper method from ActionHelper
                 tapButtonByTextOrId("Reset Target", "Reset Target");
             }
 
-            // Handle 'Ya' / Confirm Popup
+            // 2. Click Confirm 'Ya'
             try {
-                WebElement btnYa = wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_YA_RESET));
-                btnYa.click();
-                
-                System.out.println("   -> Confirming Reset. Waiting for refresh...");
-                waitForLoading(2500); // Wait for dashboard to update
+                tap(BTN_YA_RESET, "Click Confirm 'Ya'");
+                waitForLoading(2500);
             } catch (Exception e) {
-                System.out.println("   -> Warning: 'Ya' popup didn't appear or was missed.");
+                System.out.println("   -> Warning: 'Ya' popup missed.");
             }
 
         } catch (Exception e) {
             System.out.println("   -> Error during cleanup: " + e.getMessage());
         }
-        
     }
 
     public void dismissModal() {

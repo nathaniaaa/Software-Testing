@@ -13,11 +13,16 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import tests.ActionHelper; 
+import tests.helper.CaptureHelper;
 
 public class CreationActionHelper extends ActionHelper{
+    
+    protected CaptureHelper capture;
 
     public CreationActionHelper(AndroidDriver driver) {
         super(driver);
+        
+        this.capture = new CaptureHelper(driver);
     }
     // --- COMMON LOCATORS ---
     private final By BTN_NEXT_GENERIC = AppiumBy.xpath("//*[contains(@text, 'Selanjutnya') or contains(@text, 'Ya, Lanjutkan') or contains(@text, 'Oke')]");
@@ -76,6 +81,7 @@ public class CreationActionHelper extends ActionHelper{
             input.click();
             input.clear();
             input.sendKeys(text);
+            capture.highlightAndCapture(locator, "Filling field with: " + text);
             // try { driver.hideKeyboard(); } catch (Exception ignored) {}
         } catch (Exception e) {
             System.out.println("   -> Failed to fill input: " + locator);
@@ -84,8 +90,9 @@ public class CreationActionHelper extends ActionHelper{
 
     public void handleSuccessModal() {
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(TXT_SUCCESS_GENERIC));
-            wait.until(ExpectedConditions.elementToBeClickable(BTN_NEXT_GENERIC)).click();
+            // 2. Click the 'Next' Button
+            // This takes ANOTHER screenshot with a BLUE box around the button, then clicks
+            tap(BTN_NEXT_GENERIC, "Click Next on Success Modal");
         } catch (Exception e) {
             System.out.println("   -> Success modal auto-dismissed or not found.");
         }
@@ -94,25 +101,20 @@ public class CreationActionHelper extends ActionHelper{
     // --- SNIPER LOGIC (Strategies for finding tricky elements) ---
 
     public void tapButtonByTextOrId(String text, String accId) {
-        // 1. Try Accessibility ID (Fast)
         try {
+            // Custom Fast Wait (3s)
             WebDriverWait fastWait = new WebDriverWait(driver, Duration.ofSeconds(3));
-            fastWait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(accId))).click();
-            System.out.println("   -> Clicked via Access. ID: " + accId);
+            WebElement el = fastWait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(accId)));
+            
+            tap(el, "Click via Access. ID: " + accId); 
             return;
         } catch (Exception ignored) {
-            System.out.println("   -> Access. ID '" + accId + "' not found. Trying Text...");
+            System.out.println("ID not found, trying text...");
         }
 
-        // 2. Try Text (Normal Wait)
         try {
-            String xpath = String.format("//*[contains(@text, '%s')]", text);
-            wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.xpath(xpath))).click();
-            System.out.println("   -> Clicked via Text: " + text);
+            tap(AppiumBy.xpath("//*[contains(@text, '" + text + "')]"), "Click via Text: " + text);
         } catch (Exception e) {
-            // 3. Sniper Fallback
-            System.out.println("   -> Standard clicks failed. Engaging Sniper for: " + text);
-            // tapByTextPosition(text);
             tapByTextPosition(text);
         }
     }
