@@ -91,6 +91,13 @@ public class TestSyaratPrivasi extends BaseTest {
         Assert.assertTrue(driver.findElement(btnBackSyaratKetentuan).isDisplayed(), "Gagal masuk ke detail Syarat & Ketentuan.");
 
         logPass("Berhasil masuk ke detail Syarat & Ketentuan.");
+
+        actions.scrollAndCapture(13, 0.8, 0.2, "Baca Syarat & Ketentuan");
+        
+        System.out.println("Balik ke atas");
+        By textvalidasi1 = AppiumBy.xpath("//android.widget.TextView[@text='Selamat datang Syarat & Ketentuan']");
+        
+        actions.scrollToTopCustom(textvalidasi1, 15, 0.2, 0.85); 
     }
 
     @Test(priority = 3, description = "Navigasi Kembali dari Syarat dan Ketentuan")
@@ -132,6 +139,13 @@ public class TestSyaratPrivasi extends BaseTest {
         Assert.assertTrue(driver.findElement(searchKebijakanPrivasi).isDisplayed(), "Gagal masuk ke detail Kebijakan Privasi.");
 
         logPass("Berhasil masuk ke detail Kebijakan Privasi.");
+
+        actions.scrollAndCapture(13, 0.8, 0.2, "Baca Kebijakan Privasi");
+
+        System.out.println("Balik ke atas");
+        By textvalidasi1 = AppiumBy.xpath("//android.widget.TextView[@text='Kebijakan Privasi']");
+        
+        actions.scrollToTopCustom(textvalidasi1, 8, 0.2, 0.85); 
     }
 
     @Test(priority = 5, description = "Navigasi Kembali dari Kebijakan Privasi")

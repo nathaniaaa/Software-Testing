@@ -24,6 +24,7 @@ import com.aventstack.extentreports.MediaEntityBuilder;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
+import lombok.experimental.Helper;
 
 public class ActionHelper {
     // 1. Declare the variables here
@@ -94,6 +95,47 @@ public class ActionHelper {
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
         // 2. Reuse the tap(WebElement, String) method
         tap(element, stepDetail); 
+    }
+
+    //**
+    //  * Helper Scroll + Screenshot dengan Jarak Scroll Custom.
+    //  * @param maxScrolls Jumlah berapa kali mau scroll (misal: 5 kali)
+    //  * @param startY Titik Mulai Scroll (0.0 - 1.0). Contoh: 0.9 (Bawah banget)
+    //  * @param endY Titik Akhir Scroll (0.0 - 1.0). Contoh: 0.1 (Atas banget)
+    //  * @param baseDescription Keterangan untuk laporan (misal: "Scroll S&K")
+    
+    public void scrollAndCapture(int maxScrolls, double startY, double endY, String baseDescription) {
+        System.out.println("--- Mulai Custom Scroll & Capture: " + baseDescription + " ---");
+        
+        // 1. Foto Posisi Awal
+        logScreenshotInfo(baseDescription + " (Posisi Awal)");
+
+        for (int i = 1; i <= maxScrolls; i++) {
+            // Pake swipeVertical biar jaraknya bisa diatur sendiri!
+            swipeVertical(startY, endY); 
+            
+            // Tunggu animasi scroll (makin jauh scroll, makin lama animasinya)
+            waitForLoading(2000); 
+
+            // Foto setelah scroll
+            logScreenshotInfo(baseDescription + " (Scroll ke-" + i + ")");
+        }
+    }
+
+    // Helper kecil untuk log info (biar kodingan diatas rapi)
+    private void logScreenshotInfo(String desc) {
+        try {
+            String evidence = capture.getScreenshotBase64(); 
+            
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(evidence);
+            }
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info(desc,
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+            }
+            System.out.println("   [CAPTURED] " + desc);
+        } catch (Exception e) {}
     }
 
     // ========================================================================
@@ -403,6 +445,53 @@ public class ActionHelper {
             // Fallback: Manually swipe down from top of screen to bottom 3 times
             manualScrollToTop();
         }
+    }
+
+    /**
+     * [CUSTOM] Scroll ke Top dengan pengaturan koordinat manual.
+     * @param topElementLocator Elemen target (Judul)
+     * @param maxSwipes Maksimal swipe
+     * @param startY Titik Awal Jari (0.0 - 1.0)
+     * @param endY Titik Akhir Jari (0.0 - 1.0)
+     */
+    public void scrollToTopCustom(By topElementLocator, int maxSwipes, double startY, double endY) {
+        System.out.println("   -> Custom Scroll Up (Max: " + maxSwipes + ") | Koordinat: " + startY + " -> " + endY);
+        
+        for (int i = 0; i < maxSwipes; i++) {
+            // Cek apakah sudah sampai atas (Judul terlihat)
+            if (isElementPresent(topElementLocator, 1)) { 
+                System.out.println("   -> Sudah sampai atas. Stop.");
+                break; 
+            }
+
+            // Lakukan Swipe sesuai angka input
+            swipeVertical(startY, endY);
+            
+            // Jeda
+            waitForLoading(500);
+        }
+    }
+
+    /**
+     * Private Helper: Swipe Down hanya di area tengah (35% -> 75%).
+     */
+    private void performSafeSwipeDown() {
+        Dimension size = driver.manage().window().getSize();
+        int startX = size.width / 2;
+        
+        int startY = (int) (size.height * 0.35); 
+        int endY = (int) (size.height * 0.75);   
+
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence swipe = new Sequence(finger, 1);
+
+        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
+        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(300), PointerInput.Origin.viewport(), startX, endY));
+        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        driver.perform(Collections.singletonList(swipe));
     }
 
     /**
