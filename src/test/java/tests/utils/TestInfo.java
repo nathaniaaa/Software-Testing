@@ -10,4 +10,5 @@ public @interface TestInfo {
     String note() default "-";
     String priority() default "Normal";
     String group() default "";
+    String testType() default "Positive Cases";
 }
