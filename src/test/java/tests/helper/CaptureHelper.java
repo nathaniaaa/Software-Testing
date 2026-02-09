@@ -149,4 +149,66 @@ public class CaptureHelper {
         }
     }
 
+    /**
+     * Menggambar KOTAK (Rectangle) berdasarkan RASIO layar (0.0 - 1.0).
+     * * @param xRatio Posisi X Kiri (0.0 - 1.0)
+     * @param yRatio Posisi Y Atas (0.0 - 1.0)
+     * @param wRatio Lebar Kotak (0.0 - 1.0)
+     * @param hRatio Tinggi Kotak (0.0 - 1.0)
+     * @param stepDetail Pesan untuk laporan
+     */
+    public void highlightRectangleByRatio(double xRatio, double yRatio, double wRatio, double hRatio, String stepDetail) {
+        try {
+            // Ambil Screenshot Mentah
+            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            BufferedImage image = ImageIO.read(srcFile);
+
+            int imgWidth = image.getWidth();
+            int imgHeight = image.getHeight();
+
+            // Konversi Rasio ke Pixel Koordinat
+            int x = (int) (imgWidth * xRatio);
+            int y = (int) (imgHeight * yRatio);
+            int w = (int) (imgWidth * wRatio);
+            int h = (int) (imgHeight * hRatio);
+
+            // Mulai Menggambar
+            Graphics2D g = image.createGraphics();
+            
+            g.setColor(Color.BLUE); 
+            g.setStroke(new BasicStroke(10)); // Garis tebal
+            g.drawRect(x, y, w, h); // Gambar Garis Pinggir Kotak
+            
+            // Isi Kotak dengan warna transparan
+            g.setColor(new Color(0, 0, 255, 30)); // Biru Transparan
+            g.fillRect(x, y, w, h); 
+            
+            g.dispose();
+
+            // Simpan & Masukkan ke Report
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", bos);
+            String evidence = java.util.Base64.getEncoder().encodeToString(bos.toByteArray());
+
+            // Add to Excel List
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(evidence);
+            }
+
+            // Add to HTML Report
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info("Highlight Area: " + stepDetail, 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+            }
+            
+            System.out.println("[HIGHLIGHT AREA] " + stepDetail);
+
+        } catch (Exception e) {
+            System.err.println("Gagal highlight ratio: " + e.getMessage());
+            // Fallback: screenshot biasa
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(getScreenshotBase64());
+            }
+        }
+    }
 }
