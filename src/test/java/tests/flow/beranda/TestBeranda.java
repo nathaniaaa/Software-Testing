@@ -52,7 +52,7 @@ public class TestBeranda extends BaseTest {
         logInfo("Tampilan awal Beranda");
         Assert.assertTrue(driver.findElement(navBeranda).isDisplayed(), "Gagal memuat halaman Beranda di awal test.");
         
-        // capture.highlightByRatio(0.05, 0.40, 0.90, 0.20, "Validasi Total Lari Harian (Manual Ratio)");
+        capture.highlightRectangleByRatio(0.05, 0.40, 0.90, 0.20, "Validasi Tampilan Total Lari Harian");
     }
 
     @Test(priority = 2, description = "Pengguna menekan tombol \"lihat semua\" pada Challenge yang diikuti")
