@@ -385,15 +385,12 @@ public class TestAktifitas extends BaseTest {
         waitTime();
         
         try {
-            // Tunggu maksimal 10-20 detik sampai teks "Aktivitas Kamu" muncul
             wait.until(ExpectedConditions.visibilityOfElementLocated(tabRiwayatLari));
-            
-            // Jika baris di atas sukses (tidak error), berarti Pass
             logPass("Berhasil Kembali ke Halaman Aktivitas (Header ditemukan)");
             
         } catch (Exception e) {
             // Jika waktu habis dan tidak ketemu, baru Fail
-            Assert.fail("Gagal kembali ke Tab Aktivitas! Header 'Aktivitas Kamu' tidak muncul setelah menunggu.");
+            Assert.fail("Gagal kembali ke Tab Aktivitas!");
         }
     }
 
