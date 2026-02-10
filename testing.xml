@@ -7,7 +7,7 @@
     
     <test name="Flow Tests">
         <classes>
-            <class name="tests.flow.beranda.TestBeranda" />
+            <class name="tests.flow.positive.TestAktifitas" />
         </classes>
     </test>
 </suite>
