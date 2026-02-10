@@ -3,6 +3,8 @@ package tests.creation;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.time.Duration;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
@@ -21,6 +23,12 @@ public class ProfileActionHelper extends CreationActionHelper {
     // Specific Locator for the Date Input field specifically in Profile// The "trigger" is the box displaying the date, sibling to the Label
     private final By INPUT_DATE_DISPLAY = AppiumBy.xpath("//*[contains(@text, 'Tanggal Lahir')]/following-sibling::android.widget.Button");
     private final By TITLE_EDIT_PROFILE = AppiumBy.xpath("//*[contains(@text, 'Edit Profil')]");
+
+    // --- CAMERA LOCATORS ---
+    private final By BTN_CAMERA_SHUTTER = AppiumBy.xpath("//android.widget.ImageView[@content-desc='Take picture']");
+    private final By BTN_CAMERA_SWITCH  = AppiumBy.xpath("//android.widget.ImageView[@content-desc='Switch to front camera']");
+    private final By BTN_CAMERA_OK      = AppiumBy.xpath("//android.widget.ImageView[@content-desc='Tap OK to go back to previous app']");
+    private final By BTN_CAMERA_RETRY   = AppiumBy.xpath("//android.widget.ImageView[@content-desc='Tap retry to take picture again']");
     
     // CONSTRUCTOR
     public ProfileActionHelper(AndroidDriver driver) {
@@ -29,12 +37,11 @@ public class ProfileActionHelper extends CreationActionHelper {
 
     // PAGE ACTIONS
     public void navigateToProfileTab() {
-        System.out.println("Step: Clicking 'Saya' Tab...");
         try {
-            // Try standard navigation
+            tap(TAB_SAYA, "Click 'Saya' (Profile) Tab");
             wait.until(ExpectedConditions.visibilityOfElementLocated(TAB_SAYA)).click();
         } catch (Exception e) {
-            // Fallback
+            System.out.println("   -> Standard navigation failed. Trying Fallback...");
             tapByTextPosition("Saya");
         }
         
@@ -45,9 +52,10 @@ public class ProfileActionHelper extends CreationActionHelper {
     public void enterEditMode() {
         System.out.println("Step: Clicking 'Edit Profil' Button...");
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_EDIT_PROFIL)).click();
+            tap(BTN_EDIT_PROFIL, "Click 'Edit Profil' Button");
         } catch (Exception e) {
             // Coordinate fallback
+            System.out.println("   -> Button not found via ID. Using Ratio Fallback...");
             tapAtScreenRatio(0.56, 0.20);
         }
         
@@ -69,26 +77,52 @@ public class ProfileActionHelper extends CreationActionHelper {
                 tapAtScreenRatio(0.50, 0.63); // Select Photo
                 Thread.sleep(2000);
                 tapAtScreenRatio(0.83, 0.91); // Crop/Done
-            } else {
-                // Camera Logic (Generic Coords)
-                Thread.sleep(2000);
-                tapAtScreenRatio(0.5, 0.85); // Shutter
-                Thread.sleep(2000);
-                tapAtScreenRatio(0.5, 0.90); // OK
+            } else if (source.equalsIgnoreCase("Kamera") || source.equalsIgnoreCase("Camera")) {
+                
+                // --- CAMERA LOGIC STARTS HERE ---
+                Thread.sleep(2000); // Wait for Camera App to launch
+
+                 try {
+                    tap(BTN_CAMERA_SWITCH, "Switch Camera Lens");
+                } catch (Exception e) {
+                    System.out.println("   -> Switch locator failed. Using ratio fallback.");
+                    tapAtScreenRatio(0.84, 0.815);
+                }
+
+                try {
+                    // Uses Smart Tap: Highlights Shutter Button Blue & Screenshots
+                    tap(BTN_CAMERA_SHUTTER, "Click Shutter Button");
+                } catch (Exception e) {
+                    System.out.println("   -> Shutter locator failed. Using ratio fallback.");
+                    tapAtScreenRatio(0.5, 0.815);
+                }
+
+                // Wait for image capture animation
+                Thread.sleep(3000); 
+
+                // B. TAP OK / CONFIRM
+                try {
+                    // Uses Smart Tap: Highlights OK Button Blue & Screenshots
+                    tap(BTN_CAMERA_OK, "Click OK to Confirm Photo");
+                } catch (Exception e) {
+                    System.out.println("   -> OK button locator failed. Using ratio fallback.");
+                    tapAtScreenRatio(0.72, 0.86);
+                    //retry: 0.28, 0.86
+                }
             }
 
-            // Handle optional popup
+            // 4. Handle generic popup dismissal (if any)
             try {
                 Thread.sleep(1500);
-                if (driver.findElements(AppiumBy.xpath("//*[contains(@text, 'Galeri')]")).size() > 0) {
+                if (!driver.findElements(AppiumBy.xpath("//*[contains(@text, 'Galeri')]")).isEmpty()) {
                     tapAtScreenRatio(0.5, 0.2); // Dismiss
                 }
             } catch (Exception ignored) {}
-
         } catch (Exception e) {
             System.out.println("WARN: Photo upload failed.");
         }
     }
+
     public void selectGenderAndBloodType(String gender, String bloodType) {
         scrollToText(gender);
         tapButtonByTextOrId(gender, gender);
@@ -128,11 +162,12 @@ public class ProfileActionHelper extends CreationActionHelper {
         String currentYear = currentDateParts[2];   
         String currentMonthName = getMonthNameFromNumber(currentDateParts[1]); 
         String targetMonthName = getMonthNameFromNumber(targetMonth); // e.g., "08" or "8"
+        
         System.out.println("   -> Current UI Date: " + currentDay + " " + currentMonthName + " " + currentYear);
 
         // 2. OPEN PICKER
         try {
-            driver.findElement(INPUT_DATE_DISPLAY).click();
+           tap(INPUT_DATE_DISPLAY, "Open Date Picker");
         } catch (Exception e) {
             clickByLabelOffset("Tanggal Lahir");
         }
@@ -149,22 +184,24 @@ public class ProfileActionHelper extends CreationActionHelper {
         if (!currentYear.equals(targetYear)) {
             System.out.println("   -> Attempting to switch year to: " + targetYear);
             try {
+                tapByExactText(currentYear);
                 scrollToText(targetYear, 7); 
+                
                 driver.manage().timeouts().implicitlyWait(Duration.ofMillis(500));
                 
-                try {
-                    driver.findElement(AppiumBy.androidUIAutomator(
-                        "new UiSelector().text(\"" + targetYear + "\")"));
-                } finally {
-                    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-                }
-                tapByExactText(targetYear);   
+                WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(2));
+                WebElement yearEl = shortWait.until(ExpectedConditions.visibilityOfElementLocated(
+                    AppiumBy.androidUIAutomator("new UiSelector().text(\"" + targetYear + "\")")
+                ));
+                
+                tap(yearEl, "Select Year: " + targetYear); 
+
             } catch (Exception e) {
                 System.out.println("   -> [SUCCESS] Year '" + targetYear + "' was NOT found.");
                 System.out.println("   -> Closing picker safely...");
                 driver.navigate().back(); 
                 try {    
-                    driver.findElement(INPUT_DATE_DISPLAY).click();
+                    tap(INPUT_DATE_DISPLAY, "Close Date Picker");
                 } catch (Exception er) {
                     clickByLabelOffset("Tanggal Lahir");
                 }
@@ -224,7 +261,7 @@ public class ProfileActionHelper extends CreationActionHelper {
 
             // 5. CONFIRM, CLOSE PICKER
             try {    
-                driver.findElement(INPUT_DATE_DISPLAY).click();
+                tap(INPUT_DATE_DISPLAY, "Confirm Date Selection");
             } catch (Exception e) {
                 clickByLabelOffset("Tanggal Lahir");
             }
@@ -232,7 +269,7 @@ public class ProfileActionHelper extends CreationActionHelper {
 
         } catch (Exception e) {
             System.out.println("WARN: Failed during Month/Day selection. Closing picker.");
-            driver.navigate().back();
+            // driver.navigate().back();
             return false;
         }
 
@@ -326,7 +363,7 @@ public class ProfileActionHelper extends CreationActionHelper {
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             return false; // Return FALSE instead of crashing
         }
-}
+    }
 
     public boolean isSaveButtonEnabled() {
         try {
