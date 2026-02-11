@@ -16,7 +16,7 @@ public class ProfileActionHelper extends CreationActionHelper {
 
     // LOCATORS
     private final By TAB_SAYA = AppiumBy.accessibilityId("Saya\nTab 5 of 5");
-    private final By BTN_EDIT_PROFIL = AppiumBy.accessibilityId("Duration"); // Based on your code
+    private final By BTN_EDIT_PROFIL = AppiumBy.accessibilityId("Duration"); 
     private final By BTN_SUCCESS_OKE = AppiumBy.xpath("//*[contains(@text, 'Oke')]");
     private final By BTN_SAVE = AppiumBy.xpath("//*[contains(@text, 'Simpan')]");
     

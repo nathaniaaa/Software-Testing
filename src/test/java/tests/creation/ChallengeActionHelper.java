@@ -9,18 +9,21 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
+import tests.helper.CaptureHelper;
 
 public class ChallengeActionHelper extends CreationActionHelper {
+
+    protected CaptureHelper capture;
+        // --- CONSTRUCTOR ---
+    public ChallengeActionHelper(AndroidDriver driver) {
+        super(driver);
+        this.capture = new CaptureHelper(driver);
+    }
 
     // --- LOCATORS ---
     private final By BTN_ADD_YELLOW = AppiumBy.accessibilityId("create-run");
     private final By BTN_BUAT_CHALLENGE = AppiumBy.accessibilityId("Buat Challenge");
     private final By INPUT_NAME = AppiumBy.xpath("//*[contains(@text, 'Nama Challenge')]/following-sibling::android.widget.EditText");
-    
-    // --- CONSTRUCTOR ---
-    public ChallengeActionHelper(AndroidDriver driver) {
-        super(driver);
-    }
 
     // ==========================================
     // A. NAVIGATION & SETUP
@@ -55,13 +58,13 @@ public class ChallengeActionHelper extends CreationActionHelper {
     public void navigateToEditPage() {
         System.out.println("   -> Navigating to Edit Page...");
         try {
-            // Try finding the small "edit" icon (usually a pencil or gear)
             WebElement editBtn = wait.until(ExpectedConditions.elementToBeClickable(
                 AppiumBy.xpath("//android.widget.Button[contains(@content-desc, 'Edit') or @text='icon']")
             ));
-            editBtn.click();
+            tap(editBtn, "Click Edit Button");
         } catch (Exception e) {
             // Fallback: Top-Right Corner (Samsung A14 Standard)
+            System.out.println("   -> Standard edit button not found. Using fallback coordinates.");
             tapAtScreenRatio(0.925, 0.061);
         }
     }
@@ -78,9 +81,10 @@ public class ChallengeActionHelper extends CreationActionHelper {
         try {
             // Try to find the "Challenge" icon in bottom bar
             By tabLocator = AppiumBy.androidUIAutomator("new UiSelector().descriptionMatches(\"^Challenge(\\n.*|$)\")");
-            tapElementCenter(tabLocator);
+            tap(tabLocator, "Switch to Challenge Tab");
         } catch (Exception e) {
             // Fallback: Tap ratio for the Challenge Tab (approx 65% width, 93% height)
+            System.out.println("   -> Standard tab tap failed. Using Fallback...");
             tapAtScreenRatio(0.65, 0.93);
         }
         
@@ -197,17 +201,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
     public void updateChallengeName(String newName) {
         System.out.println("   -> [Action] Updating Name to: " + newName);
         try {
-            // 1. Find the input using the robust XPath (Sibling of Label)
-            WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(INPUT_NAME));
-            
-            // 2. Click to focus
-            input.click();
-            
-            // 3. CLEAR the text (The Critical Step)
-            input.clear(); 
-            
-            // 4. Type the new name
-            input.sendKeys(newName);
+            fillInputField(INPUT_NAME, newName);
             
             // 5. Hide keyboard
             try { driver.hideKeyboard(); } catch (Exception ignored) {}
@@ -227,11 +221,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         System.out.println("   -> [Action] Confirming Edit Success...");
         try {
             // 1. Wait for the success text
-            WebDriverWait modalWait = new WebDriverWait(driver, Duration.ofSeconds(5));
-            modalWait.until(ExpectedConditions.or(
-                ExpectedConditions.visibilityOfElementLocated(AppiumBy.xpath("//*[contains(@text, 'Challenge Berhasil Disimpan')]")),
-                ExpectedConditions.visibilityOfElementLocated(AppiumBy.xpath("//*[contains(@text, 'Berhasil')]"))
-            ));
+            By successMsgLocator = AppiumBy.xpath("//*[contains(@text, 'Challenge Berhasil') or contains(@text, 'Berhasil')]");
 
             // 2. Click "Oke"
             tapButtonByTextOrId("Oke", "Oke");
@@ -388,18 +378,50 @@ public class ChallengeActionHelper extends CreationActionHelper {
         if (clicks == 0) return;
         String action = (clicks > 0) ? "Increase" : "Decrease";
         String id = action + " " + unit;
-        for (int i = 0; i < Math.abs(clicks); i++) {
-            try { driver.findElement(AppiumBy.accessibilityId(id)).click(); } catch (Exception e) { break; }
+        int count = Math.abs(clicks);
+
+        By buttonLocator = AppiumBy.accessibilityId(id);
+
+        try {
+            capture.highlightAndCapture(buttonLocator, "Tap '" + id + "' " + count + " times");
+
+        for (int i = 0; i < count; i++) {
+                try {
+                    // We use standard Selenium click here for speed
+                    driver.findElement(buttonLocator).click();
+                    
+                    // Optional: Small sleep if the UI animation is slow
+                    // Thread.sleep(100); 
+                } catch (Exception e) {
+                    System.out.println("   -> Click loop interrupted at index " + i);
+                    break; 
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("   -> Failed to adjust time for " + id);
         }
     }
 
     private void selectBadgeRobust(String badgeId) {
         try {
-            wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(badgeId))).click();
+            tap(AppiumBy.accessibilityId(badgeId), "Select Badge: " + badgeId);
         } catch (Exception e) {
-            tapAtScreenRatio(0.15, 0.40); // Click first badge
+            System.out.println("   -> Badge ID '" + badgeId + "' not found. Using coordinate fallback.");
+            
+            // Fallback: Click the first badge position
+            tapAtScreenRatio(0.15, 0.40);
         }
-        try { Thread.sleep(500); tapByExactText("Pilih"); } catch (Exception e) { tapAtScreenRatio(0.50, 0.887); }
+        try { 
+            Thread.sleep(500); // Wait for selection animation
+            
+            tapButtonByTextOrId("Pilih", "Confirm Selection");
+            
+        } catch (Exception e) {
+            System.out.println("   -> 'Pilih' text not found. Using coordinate fallback.");
+            
+            // Fallback: Click the "Select" button area
+            tapAtScreenRatio(0.50, 0.887); 
+        }
     }
 
     /**
