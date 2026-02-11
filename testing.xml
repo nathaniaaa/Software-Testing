@@ -9,6 +9,7 @@
         <classes>
             <class name="tests.creation.positive.TargetTest" />
             <class name="tests.creation.positive.ProfileTest" />
+            <class name="tests.flow.beranda.TestBeranda" />
         </classes>
     </test>
 </suite>

@@ -1,4 +1,4 @@
-package tests.flow.saya;
+package tests.flow.positive;
 
 import tests.BaseTest;
 import tests.utils.TestInfo;
