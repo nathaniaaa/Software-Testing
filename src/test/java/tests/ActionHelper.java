@@ -11,6 +11,7 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
@@ -95,6 +96,11 @@ public class ActionHelper {
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
         // 2. Reuse the tap(WebElement, String) method
         tap(element, stepDetail); 
+    }
+
+    public void pressKeyboard(String text) {
+        System.out.println("   -> Keyboard Input (W3C): " + text);
+        new Actions(driver).sendKeys(text).perform();
     }
 
     //**

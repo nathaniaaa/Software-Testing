@@ -12,9 +12,9 @@ public class TestRewards extends BaseTest {
 
     // --- DAFTAR LOKASI (LOCATORS) ---
     By navChallenge = AppiumBy.xpath("//android.widget.Button[@text='Challenge Challenge']");
-    By tabRewards = AppiumBy.xpath("//android.view.View[@content-desc='Rewards Rewards']");
+    By tabRewardsIkonAtas = AppiumBy.xpath("//android.view.View[@content-desc='Rewards Rewards']");
     By btnRiwayatReward = AppiumBy.xpath("//android.view.View[@content-desc='Public Riwayat Reward']");
-    By btnBack = AppiumBy.xpath("//android.widget.Button");
+    By btnBackIkonRewards = AppiumBy.xpath("//android.widget.Button");
 
     // --- TEST CASES ---
 
@@ -31,8 +31,8 @@ public class TestRewards extends BaseTest {
         clickTest(navChallenge, "Klik menu Challenge di Bottom Nav");
         
         // 2. Validasi
-        wait.until(ExpectedConditions.visibilityOfElementLocated(tabRewards));
-        Assert.assertTrue(driver.findElements(tabRewards).size() > 0, "Gagal masuk halaman Challenge!");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(tabRewardsIkonAtas));
+        Assert.assertTrue(driver.findElements(tabRewardsIkonAtas).size() > 0, "Gagal masuk halaman Challenge!");
     }
 
     @Test(priority = 2, description = "Flow Buka Tab Rewards & Riwayat")
@@ -45,7 +45,7 @@ public class TestRewards extends BaseTest {
         sleep(1500); 
 
         // 1. Klik Tab Rewards
-        clickTest(tabRewards, "Klik Tab Rewards");
+        clickTest(tabRewardsIkonAtas, "Klik Tab Rewards");
 
         logInfo("Masuk ke Tab Rewards.");
         // 2. Klik Button Riwayat Rewards
@@ -53,14 +53,14 @@ public class TestRewards extends BaseTest {
         clickTest(btnRiwayatReward, "Klik menu Riwayat Rewards");
 
         // Validasi Masuk Halaman Riwayat
-        wait.until(ExpectedConditions.visibilityOfElementLocated(btnBack));
-        Assert.assertTrue(driver.findElement(btnBack).isDisplayed(), "Gagal masuk halaman Riwayat.");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(btnBackIkonRewards));
+        Assert.assertTrue(driver.findElement(btnBackIkonRewards).isDisplayed(), "Gagal masuk halaman Riwayat.");
 
         // 3. Klik Back
         sleep(2000); 
         
-        if (driver.findElements(btnBack).size() > 0) {
-            clickTest(btnBack, "Klik tombol Back");
+        if (driver.findElements(btnBackIkonRewards).size() > 0) {
+            clickTest(btnBackIkonRewards, "Klik tombol Back");
             logPass("Kembali ke Tab Rewards.");
         } else {
             System.out.println("Tombol Back UI tidak ada, pakai Back System.");
