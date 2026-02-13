@@ -17,18 +17,18 @@ public class TestRewardBulan extends BaseTest {
     By navChallenge = AppiumBy.xpath("//android.widget.Button[@text='Challenge Challenge']");
 
     // Lihat Detail Reward Bulan Januari
-    By btnLihatDetail = AppiumBy.xpath("//android.view.View[@content-desc='Lihat Detail']");
+    By btnLihatDetailRewardBulan = AppiumBy.xpath("//android.view.View[@content-desc='Lihat Detail']");
     
     // Tab Menu (Challenge & Leaderboard)
-    By tabChallenge = AppiumBy.xpath("//android.view.View[contains(@resource-id, 'trigger-challenge')]");
-    By tabLeaderboard = AppiumBy.xpath("//*[contains(@resource-id, 'trigger-leaderboard') or contains(@text, 'Leaderboard') or @content-desc='Leaderboard']");
+    By tabChallengeRewardBulan = AppiumBy.xpath("//android.view.View[contains(@resource-id, 'trigger-challenge')]");
+    By tabLeaderboardRewardBulan = AppiumBy.xpath("//*[contains(@resource-id, 'trigger-leaderboard') or contains(@text, 'Leaderboard') or @content-desc='Leaderboard']");
 
     // Tombol Aksi - Reward
     By btnKlaim = AppiumBy.xpath("(//android.widget.Button[@text='Klaim'])[1]");
     By btnSelesai = AppiumBy.xpath("//android.widget.Button[@text='Selesai']");
 
     // Tombol Back 
-    By btnBackReward = AppiumBy.xpath("//android.view.View[@content-desc='telkomsel-challenge']/android.widget.Button");
+    By btnBackRewardBulan = AppiumBy.xpath("//android.view.View[@content-desc='telkomsel-challenge']/android.widget.Button");
 
     // Test Cases
     @Test(priority = 1)
@@ -45,8 +45,8 @@ public class TestRewardBulan extends BaseTest {
         // Klik "Lihat Detail"
         System.out.println("Mencari tombol 'Lihat Detail'");
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(btnLihatDetail));
-            driver.findElement(btnLihatDetail).click();
+            wait.until(ExpectedConditions.visibilityOfElementLocated(btnLihatDetailRewardBulan));
+            driver.findElement(btnLihatDetailRewardBulan).click();
             System.out.println("Berhasil klik Lihat Detail.");
         } catch (Exception e) {
             System.out.println("Gagal klik Lihat Detail: " + e.getMessage());
@@ -58,9 +58,9 @@ public class TestRewardBulan extends BaseTest {
         }
 
         // Validasi: Pastikan masuk ke halaman detail
-        wait.until(ExpectedConditions.visibilityOfElementLocated(tabChallenge));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(tabChallengeRewardBulan));
         
-        Assert.assertTrue(driver.findElements(tabChallenge).size() > 0, "Gagal masuk halaman detail reward!");
+        Assert.assertTrue(driver.findElements(tabChallengeRewardBulan).size() > 0, "Gagal masuk halaman detail reward!");
         
         TestListener.getTest().pass("Berhasil masuk ke halaman Detail Reward Bulan Januari.", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
@@ -72,7 +72,7 @@ public class TestRewardBulan extends BaseTest {
 
         // Aktivitas di Tab Challenge
         System.out.println("Klik Tab Challenge");
-        driver.findElement(tabChallenge).click();
+        driver.findElement(tabChallengeRewardBulan).click();
         try { Thread.sleep(2000); } catch (Exception e) {}
         
         // Scroll ke Bawah (Cari tombol Klaim)
@@ -118,8 +118,8 @@ public class TestRewardBulan extends BaseTest {
         System.out.println("Pindah ke Tab Leaderboard");
         
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(tabLeaderboard));
-            driver.findElement(tabLeaderboard).click();
+            wait.until(ExpectedConditions.visibilityOfElementLocated(tabLeaderboardRewardBulan));
+            driver.findElement(tabLeaderboardRewardBulan).click();
         } catch (Exception e) {
             System.out.println("Gagal klik Leaderboard via ID, coba force click Text");
             driver.findElement(By.xpath("//*[contains(@text, 'Leaderboard')]")).click();
@@ -143,7 +143,7 @@ public class TestRewardBulan extends BaseTest {
         actions.swipeVertical(0.3, 0.7); 
         try { Thread.sleep(1500); } catch (Exception e) {}
         
-        Assert.assertTrue(driver.findElements(tabLeaderboard).size() > 0, "Aplikasi crash atau keluar dari halaman detail.");
+        Assert.assertTrue(driver.findElements(tabLeaderboardRewardBulan).size() > 0, "Aplikasi crash atau keluar dari halaman detail.");
         
         TestListener.getTest().pass("Scroll kembali ke atas di Leaderboard.", 
             MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
@@ -153,12 +153,12 @@ public class TestRewardBulan extends BaseTest {
     public void testKembaliKeList() {
         System.out.println("TEST 3: Kembali (Back Button)");
 
-        wait.until(ExpectedConditions.elementToBeClickable(btnBackReward));
-        driver.findElement(btnBackReward).click();
+        wait.until(ExpectedConditions.elementToBeClickable(btnBackRewardBulan));
+        driver.findElement(btnBackRewardBulan).click();
 
         try { Thread.sleep(2000); } catch (Exception e) {}
         
-        boolean isBackSuccess = driver.findElements(btnLihatDetail).size() > 0;
+        boolean isBackSuccess = driver.findElements(btnLihatDetailRewardBulan).size() > 0;
         
         Assert.assertTrue(isBackSuccess, "Gagal kembali ke halaman List Rewards!");
         System.out.println("Berhasil kembali ke list.");
