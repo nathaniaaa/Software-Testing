@@ -2,14 +2,11 @@ package tests.flow.positive;
 
 import tests.BaseTest;
 import tests.utils.TestInfo;
-import tests.utils.TestListener;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.openqa.selenium.interactions.Actions;
 import io.appium.java_client.AppiumBy;
 
 
