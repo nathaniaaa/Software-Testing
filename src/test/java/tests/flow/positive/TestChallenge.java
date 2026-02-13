@@ -194,14 +194,14 @@ public class TestChallenge extends BaseTest {
         if (driver.findElements(btnKlaim).size() > 0) {
             System.out.println("Tombol Klaim ditemukan.");
             
-            // 1. KLIK KLAIM (Cukup Sekali Saja!)
+            // Klik button 'Klaim'
             clickTest(btnKlaim, "Klik tombol Klaim Reward");
             
-            // Tunggu Popup Muncul
+            // Tunggu popup muncul
             try { Thread.sleep(2000); } catch (Exception e) {}
 
-            // 2. KLIK TOMBOL SELESAI (Dengan Fallback Back Button)
-            System.out.println("Mencoba menutup popup 'Selesai'...");
+            // Klik button 'Selesai' di popup
+            System.out.println("Mencoba menutup popup 'Selesai'");
             
             try {
                 // Coba cari & klik tombol Selesai
@@ -210,17 +210,12 @@ public class TestChallenge extends BaseTest {
                 logPass("Berhasil klik tombol Selesai.");
                 
             } catch (Exception e) {
-                // JIKA GAGAL KLIK: Gunakan Tombol Back Bawaan HP
+                // Jika button gagal, gunakan tombol Back bawaan HP
                 System.out.println("Tombol Selesai macet/tidak ketemu. Menggunakan tombol Back HP.");
                 driver.navigate().back();
                 logInfo("Popup ditutup menggunakan tombol Back System.");
             }
             
-            waitTime();
-
-        } else if (driver.findElements(btnSelesai).size() > 0) {
-            System.out.println("Status: Reward sudah diklaim (Tombol Selesai aktif di halaman utama).");
-            clickTest(btnSelesai, "Klik tombol Selesai");
             waitTime();
         } else {
             System.out.println("Info: Tombol Klaim/Selesai tidak muncul.");
@@ -728,6 +723,9 @@ public class TestChallenge extends BaseTest {
             System.out.println("Card 'Lari Merdeka 2026' TIDAK ditemukan di list");
             logInfo("SKIP: Challenge private tidak ditemukan di list (Mungkin belum di setujui penyelenggara)");
         }
+
+        driver.findElement(btnBackListSaya).click();
+        waitTime();
     }
 
     // **** BAGIAN TAB LEADERBOARD ****
