@@ -4,19 +4,15 @@ import java.io.File;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.ArrayList; 
 import java.util.List;
-
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-
-import tests.utils.TestListener;       
-import com.aventstack.extentreports.MediaEntityBuilder; 
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -24,12 +20,13 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
+import com.aventstack.extentreports.MediaEntityBuilder;
+
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
-
-import tests.ActionHelper;
 import tests.helper.CaptureHelper;
+import tests.utils.TestListener;
 
 public class BaseTest {
 
@@ -51,7 +48,7 @@ public class BaseTest {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("2ab55c03")
+                .setUdid("R9CW1010R2P")
                 .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
                 .setAppPackage("com.telkomsel.telkomselcm") 
@@ -71,7 +68,7 @@ public class BaseTest {
         capture = new CaptureHelper(driver);
         actions = new ActionHelper(driver);
 
-        ensureOnAyoLariDashboard();
+        // ensureOnAyoLariDashboard();
     }
 
     @BeforeMethod
@@ -161,6 +158,27 @@ public class BaseTest {
             }
         } catch (Exception e) {
             System.out.println("Log Pass Failed: " + e.getMessage());
+        }
+    }
+
+    public void logFail(String message) {
+        try {
+            // 1. Take Screenshot
+            String screenshot = capture.getScreenshotBase64();
+
+            // 2. Add to Excel List
+            if (getScreenshotList() != null) {
+                getScreenshotList().add(screenshot);
+            }
+
+            // 3. Add to HTML Report (Extent)
+            if (TestListener.getTest() != null) {
+                // Use .fail() to mark it red in the report
+                TestListener.getTest().fail(message, 
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(screenshot).build());
+            }
+        } catch (Exception e) {
+            System.out.println("Log Fail Failed: " + e.getMessage());
         }
     }
 

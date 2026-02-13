@@ -24,7 +24,6 @@ public class ExcelReportManager {
     private static Map<String, Sheet> sheets = new HashMap<>();
     private static Map<String, Integer> rowIndices = new HashMap<>();
     
-    // 🔥 NEW: Track the last group name separately for EACH sheet
     private static Map<String, String> lastGroupNames = new HashMap<>();
 
     // Styling
@@ -79,7 +78,6 @@ public class ExcelReportManager {
         Sheet sheet = getOrCreateSheet(sheetName);
         int rowIndex = rowIndices.get(sheetName);
 
-        // 🔥 CHECK GROUP CHANGE (Per Sheet)
         String lastGroup = lastGroupNames.get(sheetName);
         if (group != null && !group.isEmpty() && !group.equalsIgnoreCase(lastGroup)) {
             

@@ -120,33 +120,7 @@ public class ProfileTest extends BaseTest {
         logPass("Profile updated successfully with new data.");
     }
 
-    @Test(priority = 2, description = "Pengguna mengganti Foto profil nya dengan mengupload ulang lewat kamera, kemudian pengguna menyimpannya")
-    @TestInfo(
-        testType = "Positive Case",
-        group = "Profile",
-        expected = "Foto profil Pengguna akan terupdate",
-        note = "Requires Camera Permission"
-    )
-    public void testChangePhotoCamera() {
-        TestListener.getTest().log(Status.INFO, "Starting Test: Upload via Camera");
-
-        // 1. Navigate to Profile > Edit
-        profilePage.navigateToProfileTab();
-        profilePage.enterEditMode();
-
-        // 2. Perform Upload (Camera)
-        // This uses your updated logic with the specific Samsung A14 bounds
-        profilePage.uploadProfilePhoto("Kamera");
-
-        // 3. Save Changes (If there is a 'Simpan' button)
-        profilePage.saveAndVerify(); 
-        // 4. Assertion
-        // Verify we are back on the Edit Page or a Success Message appears
-
-        logPass("Success: Profile photo updated via Camera.");
-    }
-
-    @Test(priority = 3, description = "Pengguna mengganti Foto profil nya dengan mengupload ulang lewat galeri, kemudian pengguna menyimpannya")
+    @Test(priority = 2, description = "Pengguna mengganti Foto profil nya dengan mengupload ulang lewat galeri, kemudian pengguna menyimpannya")
     @TestInfo(
         testType = "Positive Case",
         group = "Profile",
@@ -172,4 +146,31 @@ public class ProfileTest extends BaseTest {
 
         logPass("Success: Profile photo updated via Gallery.");
     }
+
+    @Test(priority = 3, description = "Pengguna mengganti Foto profil nya dengan mengupload ulang lewat kamera, kemudian pengguna menyimpannya")
+    @TestInfo(
+        testType = "Positive Case",
+        group = "Profile",
+        expected = "Foto profil Pengguna akan terupdate",
+        note = "Requires Camera Permission"
+    )
+    public void testChangePhotoCamera() {
+        TestListener.getTest().log(Status.INFO, "Starting Test: Upload via Camera");
+
+        // 1. Navigate to Profile > Edit
+        profilePage.navigateToProfileTab();
+        profilePage.enterEditMode();
+
+        // 2. Perform Upload (Camera)
+        // This uses your updated logic with the specific Samsung A14 bounds
+        profilePage.uploadProfilePhoto("Kamera");
+
+        // 3. Save Changes (If there is a 'Simpan' button)
+        profilePage.saveAndVerify(); 
+        // 4. Assertion
+        // Verify we are back on the Edit Page or a Success Message appears
+
+        logPass("Success: Profile photo updated via Camera.");
+    }
+
 }
