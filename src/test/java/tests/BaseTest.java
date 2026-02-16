@@ -19,6 +19,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.SkipException;
 
 import com.aventstack.extentreports.MediaEntityBuilder;
 
@@ -48,7 +49,7 @@ public class BaseTest {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("R9CW1010R2P")
+                .setUdid("2ab55c03")
                 .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
                 .setAppPackage("com.telkomsel.telkomselcm") 
@@ -68,7 +69,7 @@ public class BaseTest {
         capture = new CaptureHelper(driver);
         actions = new ActionHelper(driver);
 
-        // ensureOnAyoLariDashboard();
+        ensureOnAyoLariDashboard();
     }
 
     @BeforeMethod
@@ -179,6 +180,34 @@ public class BaseTest {
             }
         } catch (Exception e) {
             System.out.println("Log Fail Failed: " + e.getMessage());
+        }
+    }
+
+    public void logSkip(String message) {
+        try {
+            // Ambil Screenshot (bukti kenapa di-skip, misal halaman kosong)
+            String screenshot = capture.getScreenshotBase64();
+
+            // Masukkan ke List Screenshot (buat Excel)
+            if (getScreenshotList() != null) {
+                getScreenshotList().add(screenshot);
+            }
+
+            // Log ke HTML Report 
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().log(com.aventstack.extentreports.Status.SKIP, message,
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(screenshot).build());
+            }
+
+            System.out.println("TEST SKIPPED: " + message);
+            throw new SkipException(message);
+
+        } catch (SkipException s) {
+            throw s;
+        } catch (Exception e) {
+            System.out.println("Log Skip Failed: " + e.getMessage());
+            // Tetap stop test walaupun log gagal
+            throw new SkipException(message);
         }
     }
 
