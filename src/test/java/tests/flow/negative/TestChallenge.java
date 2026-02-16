@@ -63,20 +63,18 @@ public class TestChallenge extends BaseTest {
     By btnBackRewardBulan = AppiumBy.xpath("//android.view.View[@content-desc='telkomsel-challenge']/android.widget.Button");
     
     // Test Cases
-    @Test(priority = 9, description = "Pengguna bergabung ke Public Challenges yang bertipe private")
+    @Test(priority = 1, description = "Pengguna bergabung ke challenge private dengan menginput kode undangan yang salah")
     @TestInfo(
-        testType = "Positive Case",
-        expected = "Pengguna dapat bergabung ke Public Challenges yang bertipe private buatan pengguna lain selama kuota peserta belum terpenuhi.\n" + //
-                        "\n" + "Setelah bergabung, maka Challenge tersebut akan masuk ke dalam daftar Challenge Saya pada Tab Challenge.",
+        testType = "Negative Case",
+        expected = "Pengguna mencoba bergabung ke challenge private dengan memasukkan kode undangan yang salah. Akibatnya, pengguna tidak dapat bergabung dan akan muncul pesan error sebagai penanda kesalahan",
         note = "",
         group = "Challenge"
     )
     public void testJoinPrivateChallenge() {
-        System.out.println("TEST 9: Pengguna bergabung ke Public Challenges yang bertipe private");
+        System.out.println("TEST 1: Pengguna bergabung ke challenge private dengan menginput kode undangan yang salah");
 
-        wait.until(ExpectedConditions.elementToBeClickable(btnBackListSaya)).click();;
-
-        logInfo("Tampilan awal");
+        // Klik bottom navigation Challenge
+        wait.until(ExpectedConditions.elementToBeClickable(navChallenge)).click();;
 
         // Scroll ke Bawah cari section Public
         System.out.println("Scroll mencari section Public Challenge");
@@ -116,28 +114,7 @@ public class TestChallenge extends BaseTest {
 
         logPass("Berhasil masuk detail 'Lari Merdeka 2026'.");
         
-        // Cek Tab Deskripsi
-        System.out.println("Cek Deskripsi -> Scroll Turun");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
-
-        logPass("Scroll ke bawah di Tab Deskripsi.");
-
-        actions.swipeVertical(0.5, 0.7);
-        waitTime();
-
-        // Cek Tab Leaderboard
-        System.out.println("Cek Leaderboard");
-        clickTest(tabLeaderboard, "Klik Tab Leaderboard");
-        waitTime();
-
-        System.out.println("Scroll Turun Leaderboard");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
-
-        logPass("Scroll ke bawah di Leaderboard.");
-
-        // JOIN CHALLENGE (2 Langkah)
+        // JOIN CHALLENGE 
         // Klik 'Join Challenge'
         System.out.println("Klik tombol 'Join Challenge'");
         clickTest(btnJoinChallenge, "Klik tombol 'Join Challenge'");
@@ -145,7 +122,7 @@ public class TestChallenge extends BaseTest {
 
         // Pengisian kode undangan - verifikasi
         System.out.println("Input Kode Undangan");
-        String kodeUndangan = "840494"; // jangan lupa ganti sesuai kode undangan challenge private 
+        String kodeUndangan = "123456"; // jangan lupa ganti sesuai kode undangan challenge private 
         // locator Kotak Pertama (Index 1)
         By inputDigitPertama = AppiumBy.xpath("//android.app.AlertDialog[contains(@resource-id, 'radix')]/android.view.View/android.view.View/android.widget.TextView[1]");
         
@@ -174,18 +151,17 @@ public class TestChallenge extends BaseTest {
         // Tunggu loading verifikasi
         waitTime();
 
-        if (driver.findElements(btnMenungguPersetujuan).size() > 0) {
-            System.out.println("Kode undangan benar, lanjut ke proses bergabung.");
-            logPass("Kode undangan benar, menunggu persetujuan");
+        if (driver.findElements(btnMenungguPersetujuan).size() == 0) {
+            System.out.println("Kode undangan salah, masukkan kode yang benar!");
+            logPass("Kode undangan salah, tidak dapat bergabung");
         } else {
-            System.out.println("Kode undangan salah atau terjadi masalah!");
-            logInfo("Kode undangan salah, tidak dapat bergabung");
+            System.out.println("Kode undangan salah, tetapi tombol 'Menunggu Persetujuan' ditemukan");
+            logFail("Kode undangan salah, tetapi tombol 'Menunggu Persetujuan' ditemukan");
         }
 
         // Back 2x
         System.out.println("Back ke List Public");
-        wait.until(ExpectedConditions.elementToBeClickable(btnBackDetail));
-        clickTest(btnBackDetail, "Klik tombol Back");
+        actions.tapAtScreenRatio(0.5, 0.3);
         waitTime();
         
         System.out.println("Back ke Halaman Challenge");
@@ -198,6 +174,146 @@ public class TestChallenge extends BaseTest {
         waitTime();
 
         logPass("Berhasil kembali ke halaman Challenge");
+    }
+
+    @Test(priority = 2, description = "Pengguna keluar dari Challenge Lari yang telah diikuti")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Selama Challenge Lari masih berlangsung, pengguna dapat memilih untuk keluar dari challenge yang telah diikuti.",
+        note = "",
+        group = "Challenge"
+    )
+    public void testKeluarPublicChallenge() {
+        System.out.println("Test 2: Pengguna keluar dari Challenge Lari yang telah diikuti");
+
+        // Klik "Lihat Semua" (Challenge Saya)
+        System.out.println("Klik Lihat Semua (Challenge Saya)");
+        
+        wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaSaya));
+        clickTest(btnLihatSemuaSaya, " Klik tombol Lihat Semua di Challenge Saya");
+        waitTime(); 
+
+        logPass("Berhasil masuk ke list card Challenge Saya");
+
+        // Klik Card
+        clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Challenge Saya");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
+        waitTime();
+
+        logPass("Berhasil masuk ke halaman detail 'Fun for health'");
+
+        // Keluar Challenge (Leave)
+        System.out.println("Proses Keluar Challenge");
+        
+        // Klik 'Keluar Challenge'
+        wait.until(ExpectedConditions.elementToBeClickable(btnKeluarChallenge));
+        clickTest(btnKeluarChallenge, " Klik tombol 'Keluar Challenge' -> Muncul konfirmasi");
+        waitTime(); // Tunggu popup konfirmasi
+        
+        // Klik 'Ya, Lanjutkan'
+        wait.until(ExpectedConditions.elementToBeClickable(btnKonfirmasiKeluar));
+        clickTest(btnKonfirmasiKeluar, " Klik tombol 'Ya, Lanjutkan' untuk konfirmasi keluar");
+        
+        System.out.println("Berhasil keluar, tunggu loading");
+        try { Thread.sleep(4000); } catch (Exception e) {} // Tunggu proses API selesai
+
+        logPass("Berhasil keluar/leave Challenge");
+
+        // Back 1x
+        System.out.println("Back ke List Saya");
+        if (driver.findElements(btnBackDetail).size() > 0) {
+             clickTest(btnBackDetail, "Klik tombol Back");
+        }
+        waitTime();
+
+        // Validasi Hilang
+        System.out.println("Validasi Challenge 'Fun for health' sudah hilang");
+
+        // Cek apakah card masih ada
+        boolean isCardPresent = driver.findElements(cardPublicChallenge).size() > 0;
+
+        if (!isCardPresent) {
+            // Skenario sukses: card sudah hilang
+            System.out.println("Berhasil keluar dari Challenge 'Fun for health', card sudah hilang dari list.");
+
+            logPass("Validasi: Challenge 'Fun for health' sudah hilang dari list.");
+
+        } else {
+            // Skenario gagal: card masih ada
+            System.out.println("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
+            logInfo("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
+        }
+    }
+
+    @Test(priority = 3, description = "Pengguna kembali join ke Challenge Lari setelah sebelumnya telah keluar dari challenge tersebut")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Setelah keluar dari Challenge Lari, pengguna masih dapat bergabung kembali selama masih ada kuota challenge tersebut masih tersedia",
+        note = "",
+        group = "Challenge"
+    )
+    public void testJoinPublicChallenge() {
+        System.out.println("TEST 3: Pengguna kembali join ke Challenge Lari setelah sebelumnya telah keluar dari challenge tersebut");
+
+        wait.until(ExpectedConditions.elementToBeClickable(btnBackListSaya)).click();
+
+        // Scroll ke Bawah cari section Public
+        System.out.println("Scroll mencari section Public Challenge");
+        actions.swipeVertical(0.8, 0.5); 
+        waitTime();
+
+        logPass("Section Public Challenge ditemukan");
+
+        // Klik "Lihat Semua" punya Public
+        System.out.println("Klik Lihat Semua (Public)");
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaPublic));
+            clickTest(btnLihatSemuaPublic, "Klik tombol Lihat Semua di Public Challenge");
+        } catch (Exception e) {
+            By alternatifLihatSemuaPublic = AppiumBy.xpath("(//android.view.View[@content-desc='Lihat Semua'])[last()]");
+            clickTest(alternatifLihatSemuaPublic, "Klik tombol Lihat Semua di Public Challenge - Alternatif");
+        }
+        waitTime();
+
+        logPass("Berhasil masuk ke list card Public Challenge");
+
+        // Cari Card "Fun for health" (Scroll To Text)
+        System.out.println("Mencari card 'Fun for health'");
+        actions.scrollToText("Fun for health"); 
+        waitTime(); 
+
+        logPass("Card Fun for health ditemukan");
+        
+        // Klik Card
+        wait.until(ExpectedConditions.elementToBeClickable(cardPublicChallenge));
+        clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Public Challenge");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
+        waitTime();
+
+        // Validasi: Masuk detail
+        Assert.assertTrue(driver.findElement(tabDeskripsi).isDisplayed(), "Gagal masuk detail challenge!");
+
+        logPass("Berhasil masuk detail 'Fun for health'.");
+
+        // JOIN CHALLENGE (2 Langkah)
+        // Klik 'Join Challenge'
+        System.out.println("Klik tombol 'Join Challenge'");
+        clickTest(btnJoinChallenge, "Klik tombol 'Join Challenge'");
+        waitTime();
+
+        logPass("Berhasil klik Join Challenge -> muncul tombol Bergabung Sekarang.");
+
+        // Klik 'Bergabung Sekarang'
+        System.out.println("Klik tombol 'Bergabung Sekarang'");
+        wait.until(ExpectedConditions.elementToBeClickable(btnBergabung));
+        clickTest(btnBergabung, "Klik tombol 'Bergabung Sekarang'");
+        
+        logPass("Berhasil klik tombol 'Bergabung Sekarang' -> sudah bergabung");
+        
+        System.out.println("Berhasil Join! Menunggu proses");
+        try { Thread.sleep(4000); } catch (Exception e) {} 
+
+        logPass("Berhasil Join Challenge.");
     }
 
     public void waitTime() {
