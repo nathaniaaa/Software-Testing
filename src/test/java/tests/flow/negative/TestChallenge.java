@@ -151,17 +151,35 @@ public class TestChallenge extends BaseTest {
         // Tunggu loading verifikasi
         waitTime();
 
-        if (driver.findElements(btnMenungguPersetujuan).size() == 0) {
-            System.out.println("Kode undangan salah, masukkan kode yang benar!");
-            logPass("Kode undangan salah, tidak dapat bergabung");
+        // Buat penanda bug
+        boolean isBugFound = false; 
+        String bugMessage = "";
+
+        // Cek apakah tombol sukses (menunggu persetujuan) muncul
+        boolean isSuccessButtonMuncul = driver.findElements(btnMenungguPersetujuan).size() > 0 || driver.findElements(btnBergabung).size() > 0;
+
+        if (!isSuccessButtonMuncul) {
+            // Skenario benar -> kode yg di input salah + ditolak
+            System.out.println("Kode undangan salah, tidak bisa bergabung");
+            logPass("Kode undangan salah, tidak bisa bergabung");
         } else {
-            System.out.println("Kode undangan salah, tetapi tombol 'Menunggu Persetujuan' ditemukan");
-            logFail("Kode undangan salah, tetapi tombol 'Menunggu Persetujuan' ditemukan");
+            // Skenario bug: kode yg di input salah tpi diterima
+            System.out.println("Kodenya salah kok berhasil?");
+            
+            // Tandai bahwa ada bug, catat di HTML, tapi jangan stop script
+            isBugFound = true;
+            bugMessage = "Sistem menerima kode undangan yang salah, tetapi muncul button 'Menunggu Persetujuan'";
+            logFail(bugMessage); 
         }
+
+        // Tutup modal input kode undangan
+        actions.tapAtScreenRatio(0.5, 0.2); 
+        waitTime();
 
         // Back 2x
         System.out.println("Back ke List Public");
-        actions.tapAtScreenRatio(0.5, 0.3);
+        wait.until(ExpectedConditions.elementToBeClickable(btnBackDetail));
+        clickTest(btnBackDetail, "Klik tombol Back");
         waitTime();
         
         System.out.println("Back ke Halaman Challenge");
@@ -173,12 +191,14 @@ public class TestChallenge extends BaseTest {
         }
         waitTime();
 
-        logPass("Berhasil kembali ke halaman Challenge");
+        if (isBugFound) {
+            Assert.fail(bugMessage); 
+        }
     }
 
     @Test(priority = 2, description = "Pengguna keluar dari Challenge Lari yang telah diikuti")
     @TestInfo(
-        testType = "Positive Case",
+        testType = "Negative Case",
         expected = "Selama Challenge Lari masih berlangsung, pengguna dapat memilih untuk keluar dari challenge yang telah diikuti.",
         note = "",
         group = "Challenge"
@@ -247,7 +267,7 @@ public class TestChallenge extends BaseTest {
 
     @Test(priority = 3, description = "Pengguna kembali join ke Challenge Lari setelah sebelumnya telah keluar dari challenge tersebut")
     @TestInfo(
-        testType = "Positive Case",
+        testType = "Negative Case",
         expected = "Setelah keluar dari Challenge Lari, pengguna masih dapat bergabung kembali selama masih ada kuota challenge tersebut masih tersedia",
         note = "",
         group = "Challenge"
