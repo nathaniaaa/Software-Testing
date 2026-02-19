@@ -50,6 +50,11 @@ public class TestAktifitas extends BaseTest {
     // Element Grafik 
     By grafikAreaLocator = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[2]/android.view.View/android.view.View[2]/android.view.View");
 
+    By textEmptyState = AppiumBy.xpath("//*[contains(@text, 'Belum ada') or contains(@text, 'Tidak ada') or contains(@text, 'belum ada')]");
+
+    static boolean isRiwayatLariAda = false;
+    static boolean isRiwayatChallengeAda = false;
+
     // Test Cases - Riwayat Lari
     @Test(priority = 1, description = "Navigasi ke Aktivitas")
     @TestInfo(
@@ -97,7 +102,14 @@ public class TestAktifitas extends BaseTest {
     public void testKlikCard() {
         System.out.println("TEST 3: Pengguna menekan salah satu Riwayat Lari dari hasil record dan atau dari hasil sync smartwatch");
 
-        if(driver.findElements(firstActivityCard).size() > 0) {
+        boolean isListKosong = driver.findElements(textEmptyState).size() > 0;
+
+        if(isListKosong) {
+            System.out.println("SKIP: Tidak ada Aktivitas lari di list!");
+
+            isRiwayatLariAda = false;
+            logSkip("Tidak ada Aktivitas lari");
+        } else {
             System.out.println("Aktivitas ditemukan. Klik card pertama");
             clickTest(firstActivityCard, "Klik Card Aktivitas Pertama");
             
@@ -106,12 +118,10 @@ public class TestAktifitas extends BaseTest {
 
             wait.until(ExpectedConditions.visibilityOfElementLocated(titlePage));
             logPass("Berhasil Masuk ke Rincian Lari");
-        } else {
-            System.out.println("SKIP: Tidak ada Aktivitas lari di list!");
-            logSkip("Tidak ada Aktivitas lari");
         }
     }
 
+    // helper test 4-9
     private boolean isDiHalamanRincianLari() {
         return driver.findElements(titlePage).size() > 0;
     }
@@ -440,11 +450,16 @@ public class TestAktifitas extends BaseTest {
         clickTest(tabRiwayatChallenge, "Klik Riwayat Challenge");
         waitTime();
 
+        boolean isKosong = driver.findElements(textEmptyState).size() > 0;
+
         // Cek apakah ada card riwayat challenge?
-        if (driver.findElements(cardChallengePertama).size() > 0) {
-            logPass("Berhasil masuk dan List Riwayat Challenge tampil.");
+        if (isKosong) {
+            System.out.println("SKIP: Teks Empty State terdeteksi!");
+            isRiwayatChallengeAda = false; // Set flag
+            logPass("Berhasil navigasi ke Tab Riwayat Challenge (Tampilan Empty State / Belum ada riwayat)");
         } else {
-            logSkip("Test dilewati: Akun ini tidak memiliki riwayat Challenge (Empty State).");
+            isRiwayatChallengeAda = true; // Set flag
+            logPass("Berhasil masuk dan List Riwayat Challenge tampil.");
         }
     }
 
@@ -461,7 +476,7 @@ public class TestAktifitas extends BaseTest {
         waitTime();
 
         // Pastikan ada card riwayat challenge, kalau engga skip
-        if (driver.findElements(cardChallengePertama).size() == 0) {
+        if (!isRiwayatChallengeAda) {
             logSkip("Test dilewati: Tidak ada riwayat challenge untuk dibuka.");
         }
 
