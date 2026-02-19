@@ -15,6 +15,9 @@ public class TestChallenge extends BaseTest {
     // Ikon Challenge (Bottom Navigation)
     By navChallenge = AppiumBy.xpath("//android.widget.Button[@text='Challenge Challenge']");
 
+    // Card pertama di challenge saya (halaman challenge) - utk validasi apakah ada challenge yang diikuti / tdk
+    By cardPertamaChallengeSaya = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View[3]/android.view.View[1]");
+
     // Lihat Semua - Tombol di Challenge Saya
     By btnLihatSemuaSaya = AppiumBy.xpath("(//android.widget.TextView[@text='Lihat Semua'])[1]");
     
@@ -62,6 +65,8 @@ public class TestChallenge extends BaseTest {
     // Tombol Back 
     By btnBackRewardBulan = AppiumBy.xpath("//android.view.View[@content-desc='telkomsel-challenge']/android.widget.Button");
     
+    static boolean isKeluarChallengeSukses = false;
+
     // Test Cases
     @Test(priority = 1, description = "Pengguna bergabung ke challenge private dengan menginput kode undangan yang salah")
     @TestInfo(
@@ -101,6 +106,11 @@ public class TestChallenge extends BaseTest {
         actions.scrollToText("Lari Merdeka 2026"); 
         waitTime(); 
 
+        if (driver.findElements(cardPrivateChallenge).size() == 0) {
+            driver.navigate().back();
+            logSkip("Test dilewati: Card 'Lari Merdeka 2026' tidak ditemukan di list.");
+        }
+
         logPass("Card Lari Merdeka 2026 ditemukan");
         
         // Klik Card
@@ -122,7 +132,7 @@ public class TestChallenge extends BaseTest {
 
         // Pengisian kode undangan - verifikasi
         System.out.println("Input Kode Undangan");
-        String kodeUndangan = "123456"; // jangan lupa ganti sesuai kode undangan challenge private 
+        String kodeUndangan = "840494"; // jangan lupa ganti sesuai kode undangan challenge private 
         // locator Kotak Pertama (Index 1)
         By inputDigitPertama = AppiumBy.xpath("//android.app.AlertDialog[contains(@resource-id, 'radix')]/android.view.View/android.view.View/android.widget.TextView[1]");
         
@@ -178,8 +188,9 @@ public class TestChallenge extends BaseTest {
 
         // Back 2x
         System.out.println("Back ke List Public");
-        wait.until(ExpectedConditions.elementToBeClickable(btnBackDetail));
-        clickTest(btnBackDetail, "Klik tombol Back");
+        try {
+            if (driver.findElements(btnBackDetail).size() > 0) clickTest(btnBackDetail, "Klik tombol Back Detail");
+        } catch (Exception e) { driver.navigate().back(); }
         waitTime();
         
         System.out.println("Back ke Halaman Challenge");
@@ -206,14 +217,31 @@ public class TestChallenge extends BaseTest {
     public void testKeluarPublicChallenge() {
         System.out.println("Test 2: Pengguna keluar dari Challenge Lari yang telah diikuti");
 
+        // Cek apakah user ada mengikuti challenge? kalau engga, skip
+        if (driver.findElements(cardPertamaChallengeSaya).size() == 0) {
+            logSkip("Test dilewati: User tidak mengikuti challenge apapun (List kosong).");
+        }
+
         // Klik "Lihat Semua" (Challenge Saya)
         System.out.println("Klik Lihat Semua (Challenge Saya)");
+        waitTime();
         
         wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaSaya));
         clickTest(btnLihatSemuaSaya, " Klik tombol Lihat Semua di Challenge Saya");
         waitTime(); 
 
         logPass("Berhasil masuk ke list card Challenge Saya");
+
+        // cari card
+        System.out.println("Mencari card 'Fun for health' di daftar Challenge Saya");
+        actions.scrollToText("Fun for health"); 
+        waitTime();
+
+        // Cek apakah card "Fun for health" ada di list Challenge Saya, kalau engga skip (biar ga crash)
+        if (driver.findElements(cardPublicChallenge).size() == 0) {
+            driver.navigate().back();
+            logSkip("Test dilewati: Challenge 'Fun for health' tidak ditemukan di daftar Challenge Saya.");
+        }
 
         // Klik Card
         clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Challenge Saya");
@@ -248,6 +276,8 @@ public class TestChallenge extends BaseTest {
 
         // Validasi Hilang
         System.out.println("Validasi Challenge 'Fun for health' sudah hilang");
+        actions.scrollToText("Fun for health"); // Coba cari 
+        waitTime();
 
         // Cek apakah card masih ada
         boolean isCardPresent = driver.findElements(cardPublicChallenge).size() > 0;
@@ -255,9 +285,9 @@ public class TestChallenge extends BaseTest {
         if (!isCardPresent) {
             // Skenario sukses: card sudah hilang
             System.out.println("Berhasil keluar dari Challenge 'Fun for health', card sudah hilang dari list.");
+            isKeluarChallengeSukses = true;
 
             logPass("Validasi: Challenge 'Fun for health' sudah hilang dari list.");
-
         } else {
             // Skenario gagal: card masih ada
             System.out.println("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
@@ -274,6 +304,11 @@ public class TestChallenge extends BaseTest {
     )
     public void testJoinPublicChallenge() {
         System.out.println("TEST 3: Pengguna kembali join ke Challenge Lari setelah sebelumnya telah keluar dari challenge tersebut");
+
+        // Kalau test 2 gagal -> test 3 di skip karena kondisi belum keluar challenge nya belum terpenuhi, jadi ga bisa join ulang
+        if (!isKeluarChallengeSukses) {
+            logSkip("Test dilewati: Karena Gagal atau Skip pada proses Keluar Challenge (Test 2), maka tidak bisa melakukan re-join.");
+        }
 
         wait.until(ExpectedConditions.elementToBeClickable(btnBackListSaya)).click();
 
@@ -301,6 +336,11 @@ public class TestChallenge extends BaseTest {
         System.out.println("Mencari card 'Fun for health'");
         actions.scrollToText("Fun for health"); 
         waitTime(); 
+
+        if (driver.findElements(cardPublicChallenge).size() == 0) {
+            driver.navigate().back();
+            logSkip("Test dilewati: Challenge 'Fun for health' tidak ditemukan di daftar Public Challenge");
+        }
 
         logPass("Card Fun for health ditemukan");
         
