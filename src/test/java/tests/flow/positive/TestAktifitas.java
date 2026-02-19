@@ -123,7 +123,7 @@ public class TestAktifitas extends BaseTest {
         note = "",
         group = "Aktivitas"
     )
-    public void testtatistikUI() {
+    public void testStatistikUI() {
         System.out.println("TEST 4: Validasi Elemen Statistik");
 
         // Pastikan sedang di halaman rincian lari, kalau engga skip
@@ -194,7 +194,7 @@ public class TestAktifitas extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("TEST TEST YAAAA"); // Nama baru
+            input.sendKeys("TEST TEST OKI123"); // Nama baru
             waitTime();
             System.out.println("Ketik nama baru selesai.");
             
@@ -384,7 +384,8 @@ public class TestAktifitas extends BaseTest {
              logSkip("Grafik Ketinggian tidak dapat ditemukan");
         }
         waitTime();
-        actions.swipeVertical(0.9, 0.4); // scroll balik ke atas
+        // Scroll balik ke atas
+        actions.swipeVertical(0.1, 0.7);
     }
     
     @Test(priority = 9, description = "Navigasi Kembali ke List Riwayat Lari")
@@ -398,13 +399,12 @@ public class TestAktifitas extends BaseTest {
         System.out.println("TEST 9: Navigasi Kembali ke List Riwayat Lari");
 
         // Cek dulu apakah memang di halaman rincian (kalau engga, gausah back)
-        if (driver.findElements(btnBack).size() > 0) {
-            actions.swipeVertical(0.1, 0.7);
+        if (!isDiHalamanRincianLari()) {
+            logSkip("Test dilewati: Posisi sudah berada di luar halaman Rincian Lari.");
+        } else {
             clickTest(btnBack, "Klik Tombol Back");        
             waitTime();
             logPass("Berhasil kembali ke Halaman Aktivitas Utama.");
-        } else {
-            logSkip("Test dilewati: Posisi sudah berada di luar halaman Rincian Lari.");
         }
     }
 
@@ -460,7 +460,7 @@ public class TestAktifitas extends BaseTest {
 
         waitTime();
 
-        // Pastikan sedang di ada cardnya, kalau engga skip
+        // Pastikan ada card riwayat challenge, kalau engga skip
         if (driver.findElements(cardChallengePertama).size() == 0) {
             logSkip("Test dilewati: Tidak ada riwayat challenge untuk dibuka.");
         }
@@ -513,7 +513,10 @@ public class TestAktifitas extends BaseTest {
     public void testKembaliKeList() {
         System.out.println("TEST 12: Kembali ke List Riwayat Challenge");
 
-        if (driver.findElements(btnBack).size() > 0) {
+        // Pastikan benar-benar ada di dalam Detail Riwayat Challenge 
+        boolean isDiDetailChallenge = driver.findElements(btnDeskripsi).size() > 0;
+
+        if (isDiDetailChallenge) {
             clickTest(btnBack, "Klik Tombol Back");
             waitTime();
             logPass("Berhasil kembali ke List Riwayat Challenge");
