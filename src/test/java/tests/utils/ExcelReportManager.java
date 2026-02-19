@@ -27,7 +27,7 @@ public class ExcelReportManager {
     private static Map<String, String> lastGroupNames = new HashMap<>();
 
     // Styling
-    private static CellStyle headerStyle, groupHeaderStyle, passStyle, failStyle, textStyle;
+    private static CellStyle headerStyle, groupHeaderStyle, passStyle, failStyle, textStyle, skipStyle;
 
     // --- SETUP ---
     public static synchronized void setupExcel() {
@@ -106,7 +106,14 @@ public class ExcelReportManager {
         Row row = sheet.createRow(rowIndex);
         row.setHeightInPoints(220f); 
 
-        CellStyle statusStyle = status.equalsIgnoreCase("PASS") ? passStyle : failStyle;
+        CellStyle statusStyle;
+        if (status.equalsIgnoreCase("PASS")) {
+            statusStyle = passStyle;
+        } else if (status.equalsIgnoreCase("SKIP")) {
+            statusStyle = skipStyle;
+        } else {
+            statusStyle = failStyle;
+        }
 
         createCell(row, 0, String.valueOf(rowIndex), textStyle); // Fixed: Removed "-1" to keep logic simple
         createCell(row, 1, testName, textStyle);
@@ -217,6 +224,11 @@ public class ExcelReportManager {
         failStyle.cloneStyleFrom(textStyle);
         failStyle.setFillForegroundColor(IndexedColors.CORAL.getIndex());
         failStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        skipStyle = workbook.createCellStyle();
+        skipStyle.cloneStyleFrom(textStyle);
+        skipStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex()); 
+        skipStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
     }
 
     private static void setBorders(CellStyle style) {
