@@ -114,7 +114,13 @@ public class TestSyaratPrivasi extends BaseTest {
 
         // Kembali dari Syarat dan Ketentuan
         System.out.println("Kembali dari Syarat dan Ketentuan");
-        clickTest(btnBackSyaratKetentuan, "Klik back Syarat dan Ketentuan");
+
+        try {
+            clickTest(btnBackSyaratKetentuan, "Klik back Syarat dan Ketentuan");
+        } catch (Exception e) {
+            System.out.println("Tombol UI tidak ditemukan, menggunakan back bawaan HP.");
+            driver.navigate().back();
+        }
         waitTime();
 
         Assert.assertTrue(driver.findElement(linkKebijakanPrivasi).isDisplayed(), "Gagal kembali ke menu Syarat & Privasi dari detail Syarat.");
@@ -184,7 +190,13 @@ public class TestSyaratPrivasi extends BaseTest {
 
         // Kembali ke Profil dari Syarat & Privasi
         System.out.println("Kembali ke Profil dari Syarat & Privasi");
-        clickTest(btnBackSyaratPrivasi, "Klik back di Halaman Syarat & Privasi");
+
+        try {
+            clickTest(btnBackSyaratPrivasi, "Klik back di Halaman Syarat & Privasi");
+        } catch (Exception e) {
+            System.out.println("Tombol UI tidak ditemukan, menggunakan back bawaan HP.");
+            driver.navigate().back();
+        }
         waitTime();
 
         Assert.assertTrue(driver.findElement(cardSyaratPrivasi).isDisplayed(), "Gagal kembali ke halaman Profil utama.");

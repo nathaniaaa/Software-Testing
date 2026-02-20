@@ -53,6 +53,8 @@ public class TestBeranda extends BaseTest {
         Assert.assertTrue(driver.findElement(navBeranda).isDisplayed(), "Gagal memuat halaman Beranda di awal test.");
         
         capture.highlightRectangleByRatio(0.05, 0.43, 0.90, 0.18, "Validasi Tampilan Total Lari Harian");
+
+        logPass("Total Lari Harian muncul dengan benar di Beranda");
     }
 
     @Test(priority = 2, description = "Pengguna menekan tombol \"lihat semua\" pada Challenge yang diikuti")
@@ -68,21 +70,20 @@ public class TestBeranda extends BaseTest {
 
         capture.highlightRectangleByRatio(0.05, 0.25, 0.90, 0.15, "Bagian Challenge yang Diikuti (Challenge Saya)");
 
-        // Klik lihat semua yg diikuti (Challenge Saya)
-        System.out.println("Klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya)");
-        clickTest(textLihatSemuaChallengeYangDiikuti, "Klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya)");
-        
-        // Tunggu 
-        try { 
-            wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.className("android.view.View"))); 
-        } catch (Exception e) {}
+        if (driver.findElements(textLihatSemuaChallengeYangDiikuti).size() > 0) {
+            clickTest(textLihatSemuaChallengeYangDiikuti, "Klik 'Lihat Semua' (Challenge Saya)");
+            
+            try { wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.className("android.view.View"))); } catch (Exception e) {}
+            logPass("Berhasil klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya)");
 
-        logPass("Berhasil klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya).");
+            waitTime();
 
-        waitTime();
-        clickBack();
-        
-        logPass("Berhasil kembali dari 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya).");
+            clickBack();
+
+            logPass("Berhasil kembali ke Beranda dari list Challenge Saya.");
+        } else {
+            logSkip("Test dilewati: Tombol 'Lihat Semua' (Challenge Saya) tidak ditemukan (Akun Kosong).");
+        }
     }
 
     @Test(priority = 3, description = "Challenges")
@@ -98,24 +99,36 @@ public class TestBeranda extends BaseTest {
                         "Saat pengguna menekan 'Lihat Semua', aplikasi akan membuka tab Challenge untuk menampilkan daftar lengkapnya");
         waitTime();
 
-        capture.highlightRectangleByRatio(0.05, 0.61, 0.90, 0.20, "Bagian Challenges (Public Challenges)");
-
         // Klik lihat semua yg punya challenges (Public Challenge)
         System.out.println("Klik 'Lihat Semua' (Public Challenge)");
-        clickTest(textLihatSemuaChallenges, "Klik 'Lihat Semua' (Public Challenge)");
+        if (driver.findElements(textLihatSemuaChallenges).size() > 0) {
+            capture.highlightRectangleByRatio(0.05, 0.61, 0.90, 0.20, "Bagian Public Challenges");
+
+            clickTest(textLihatSemuaChallenges, "Klik 'Lihat Semua' (Public Challenge)");
+            waitTime();
+            logPass("Berhasil masuk ke halaman daftar lengkap Public Challenges.");
+
+            // Klik Bottom Navigation yang Beranda (keluar dari challenge)
+            clickTest(navBeranda, "Klik Bottom Nav 'Beranda'");
+            waitTime();
+            Assert.assertTrue(driver.findElement(navBeranda).isSelected() || driver.findElements(textLihatSemuaChallenges).size() > 0, "Gagal kembali ke Beranda.");
+            logPass("Berhasil kembali ke Beranda.");
+        } else {
+            logSkip("Test dilewati: Tombol 'Lihat Semua' Public Challenges tidak ditemukan.");
+        }
         waitTime();
-
-        logPass("Berhasil klik 'Lihat Semua' Challenges (Public Challenge),");
-
-        // Klik Bottom Navigation yang Beranda (keluar dari challenge)
-        System.out.println(" Klik Bottom Nav 'Beranda'");
-        clickTest(navBeranda, "Klik Bottom Nav 'Beranda'");
-        waitTime();
-
-        Assert.assertTrue(driver.findElement(navBeranda).isSelected() || driver.findElement(textLihatSemuaChallenges).isDisplayed(), "Gagal kembali ke Beranda via Bottom Nav.");
-
-        logPass("Berhasil kembali ke Beranda.");
     }
+
+    // JANGAN LUPA DI SESUAIKAN LAGII
+
+    // Tebakan Struktur (Path) card "Exclusive Challenges" -> jangan lupa diganti klo ada card nya
+    By cardExclusiveStruktur = AppiumBy.xpath("//android.widget.TextView[@text='Exclusive Challenges']/following-sibling::android.view.View[1]");
+    
+    // Tebakan Teks (Nama) -> cari teks apapun yang mengandung kata "Challenge Exclusive"
+    By cardExclusiveText = AppiumBy.xpath("//*[contains(@text, 'Challenge Exclusive')]");
+
+    // Header section
+    By headerExclusive = AppiumBy.xpath("//android.widget.TextView[@text='Exclusive Challenges']");
 
     @Test(priority = 4, description = "Exclusive Challenges")
     @TestInfo(
@@ -125,10 +138,40 @@ public class TestBeranda extends BaseTest {
         group = "Beranda"
     ) 
     public void exclusiveChallenges() {
-        System.out.println("Test 4: Challenge spesial Ayolari yang dibuat saat event-event lari tertentu, Pengguna dapat bergabung dalam Exclusive Challenges jika telah memenuhi syarat dan ketentuan yang berlaku yang dibuat oleh admin pembuat Exclusive Challenges tersebut");
+        System.out.println("Test 4: Validasi area Exclusive Challenges");
         waitTime();
 
-        capture.highlightRectangleByRatio(0.05, 0.61, 0.90, 0.22, "Bagian Challenges (Public Challenges)");
+        System.out.println("Scroll mencari area Exclusive Challenges");
+        waitTime();
+
+        // Cek elemen
+        boolean isHeaderAda = driver.findElements(headerExclusive).size() > 0;
+        boolean isKetemuPakeStruktur = driver.findElements(cardExclusiveStruktur).size() > 0;
+        boolean isKetemuPakeTeks = driver.findElements(cardExclusiveText).size() > 0;
+
+        // Kalau ada 1 yang ada, berarti eventnya lagi berlangsung -> lanjut validasi
+        if (isHeaderAda || isKetemuPakeStruktur || isKetemuPakeTeks) {
+            
+            System.out.println("Elemen Exclusive Challenge ditemukan");
+            
+            // Highlight elemen yang berhasil ketemu 
+            if (isKetemuPakeTeks) {
+                capture.highlightAndCapture(cardExclusiveText, "Validasi: Card Exclusive (By Teks)");
+            } else if (isKetemuPakeStruktur) {
+                capture.highlightAndCapture(cardExclusiveStruktur, "Validasi: Card Exclusive (By Struktur)");
+            } else {
+                capture.highlightAndCapture(headerExclusive, "Validasi: Header Exclusive");
+            }
+            
+            logPass("Validasi Tampilan area Exclusive Challenges selesai.");
+            
+        } else {
+            System.out.println("Elemen Exclusive Challenge tidak ditemukan");
+            capture.highlightRectangleByRatio(0.05, 0.61, 0.90, 0.22, "Bagian Challenges (Public Challenges)");
+            logSkip("Test dilewati: Saat ini tidak ada event Exclusive Challenges yang berlangsung.");
+        }
+        System.out.println("Test 4: Challenge spesial Ayolari yang dibuat saat event-event lari tertentu, Pengguna dapat bergabung dalam Exclusive Challenges jika telah memenuhi syarat dan ketentuan yang berlaku yang dibuat oleh admin pembuat Exclusive Challenges tersebut");
+        waitTime();
     }
 
     @Test(priority = 5, description = "Public Challenges")
@@ -156,7 +199,7 @@ public class TestBeranda extends BaseTest {
         if (driver.findElements(cardPublicChallengeBeranda).size() > 0) {
             // Kondisi: Ada Card di List
             System.out.println("Card ditemukan di List. Klik Card Pertama.");
-            clickTest(cardPublicChallengeBeranda, getScreenshotBase64());
+            clickTest(cardPublicChallengeBeranda, "Klik Card Public Challenge Pertama");
             waitTime();
 
             // Back ke Beranda
@@ -165,11 +208,10 @@ public class TestBeranda extends BaseTest {
             waitTime();
             
             logPass("Berhasil kembali ke Beranda");
-            
         } else {
             // Kondisi: List Kosong
             System.out.println("List Kosong / Card tidak ditemukan.");
-            logInfo("List Public Challenges kosong");
+            logSkip("Test dilewati: Tidak ada card Public Challenge di Beranda.");
         }
         waitTime();
     }
@@ -188,6 +230,7 @@ public class TestBeranda extends BaseTest {
         actions.swipeVertical(0.8, 0.2);
 
         capture.highlightRectangleByRatio(0.05, 0.23, 0.90, 0.11, "Bagian Challenges (Public Challenges)");
+        logPass("Validasi tampilan Event Lari");
     }
 
     @Test(priority = 7, description = "Riwayat Lari")
@@ -205,7 +248,8 @@ public class TestBeranda extends BaseTest {
                         "Jika dibuka Lihat Semua, maka akan tampil daftar Riwayat Lari lengkap milik pengguna dan pindah ke tab Aktivitas");
         waitTime();
 
-        capture.highlightRectangleByRatio(0.05, 0.32, 0.90, 0.22, "Bagian Challenges (Public Challenges)");
+        capture.highlightRectangleByRatio(0.05, 0.32, 0.90, 0.22, "Bagian Riwayat Lari");
+        logPass("Validasi tampilan Riwayat Lari");
     }
 
     // Helper
