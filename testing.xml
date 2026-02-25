@@ -7,14 +7,18 @@
     
     <test name="Flow Tests">
         <classes>
-            <class name="tests.creation.negative.ProfileTest" />
-            <!-- <class name="tests.flow.positive.TestChallenge" />
-            <class name="tests.flow.positive.TestAktifitas" /> -->
+            <class name="tests.creation.positive.TargetTest" />
             <class name="tests.flow.positive.TestBeranda" />
-            <!-- <class name="tests.flow.positive.TestAktifitas" />
-            <class name="tests.flow.positive.TestProfile" /> -->
-            <!-- <class name="tests.flow.negative.TestBeranda" /> -->
-            <!-- <class name="tests.flow.negative.TestChallenge" /> -->
+            <class name="tests.flow.positive.TestAktifitas" />
+            <class name="tests.creation.positive.ChallengeTest" />
+            <class name="tests.flow.positive.TestChallenge" />
+            <class name="tests.flow.positive.TestProfile" />
+            <class name="tests.flow.positive.TestSyaratPrivasi" />
+            <class name="tests.creation.positive.ProfileTest" />
+            <class name="tests.flow.negative.TestBeranda" />
+            <class name="tests.flow.negative.ChallengeTest" />
+            <class name="tests.creation.negative.ProfileTest" />
+            
         </classes>
     </test>
 </suite>

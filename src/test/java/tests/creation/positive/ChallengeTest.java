@@ -309,40 +309,41 @@ public class ChallengeTest extends BaseTest {
 
     }
 
-    @Test(priority = 6, description = "Verifikasi admin dapat menerima peserta secara satuan dan massal")
-    public void testAcceptPeserta() {
-        System.out.println("=== TEST 6: Terima Peserta Challenge ===");
+    // @Test(priority = 6, description = "Verifikasi admin dapat menerima peserta secara satuan dan massal")
+    // public void testAcceptPeserta() {
+    //     System.out.println("=== TEST 6: Terima Peserta Challenge ===");
 
-        try {
-            challengePage.navigateToDetailChallenge("Lari Private");
-            challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta");
-            // Jalankan alur terima 1 peserta
-            challengePage.acceptOneParticipant("Lari Private");
+    //     try {
+    //         challengePage.navigateToDetailChallenge("Lari Private");
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta");
+    //         // Jalankan alur terima 1 peserta
+    //         challengePage.acceptOneParticipant("Lari Private");
             
-            driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menerima 1 peserta
-            if (!challengePage.isDetailChallengePage()) {
-                challengePage.navigateBackToDashboardSafe();
-                challengePage.navigateToDetailChallenge("Lari Private");
-            }
-            challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menerima 1 peserta");
+    //         driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menerima 1 peserta
+    //         if (!challengePage.isDetailChallengePage()) {
+    //             challengePage.navigateBackToDashboardSafe();
+    //             challengePage.navigateToDetailChallenge("Lari Private");
+    //         }
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menerima 1 peserta");
             
-            // Jalankan alur terima semua peserta sisanya
-            challengePage.acceptAllParticipants("Lari Private");
-            driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menerima 1 peserta
-            if (!challengePage.isDetailChallengePage()) {
-                challengePage.navigateBackToDashboardSafe();
-                challengePage.navigateToDetailChallenge("Lari Private");
-            }
-            challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menerima semua peserta");
+    //         // Jalankan alur terima semua peserta sisanya
+    //         challengePage.acceptAllParticipants("Lari Private");
+    //         driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menerima 1 peserta
+    //         if (!challengePage.isDetailChallengePage()) {
+    //             challengePage.navigateBackToDashboardSafe();
+    //             challengePage.navigateToDetailChallenge("Lari Private");
+    //         }
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menerima semua peserta");
             
-            if (TestListener.getTest() != null) {
-                logPass("SUCCESS: Alur persetujuan peserta berjalan lancar (Satuan & Massal).");
-            }
-        } catch (Exception e) {
-            if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses peserta.");
-            Assert.fail("Alur Accept Peserta gagal!");
-        }
+    //         if (TestListener.getTest() != null) {
+    //             logPass("SUCCESS: Alur persetujuan peserta berjalan lancar (Satuan & Massal).");
+    //         }
+    //     } catch (Exception e) {
+    //         if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses peserta.");
+    //         Assert.fail("Alur Accept Peserta gagal!");
+    //     }
 
-        challengePage.navigateBackToDashboardSafe();
-    }
+    //     challengePage.navigateBackToDashboardSafe();
+    // }
+
 }

@@ -205,7 +205,7 @@ public class TestAktifitas extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("TEST TEST OKI123"); // Nama baru
+            input.sendKeys("TEST TEST INI TESTTT"); // Nama baru
             waitTime();
             System.out.println("Ketik nama baru selesai.");
             

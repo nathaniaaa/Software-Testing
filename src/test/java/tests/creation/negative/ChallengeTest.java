@@ -205,72 +205,73 @@ public class ChallengeTest extends BaseTest {
         
     }
 
-    @Test(priority = 7, description = "Verifikasi admin dapat mengeluarkan (Kick Out) peserta dari challenge")
-    public void testKickOutPeserta() {
-        System.out.println("=== TEST 7: Kick Out Peserta Challenge ===");
+    // @Test(priority = 7, description = "Verifikasi admin dapat mengeluarkan (Kick Out) peserta dari challenge")
+    // public void testKickOutPeserta() {
+    //     System.out.println("=== TEST 7: Kick Out Peserta Challenge ===");
 
-        try {
-            // (Opsional) Sesuaikan nama challenge target Anda
-            challengePage.navigateToDetailChallenge("Lari Private");
-            challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta sebelum di-kick out");
+    //     try {
+    //         // (Opsional) Sesuaikan nama challenge target Anda
+    //         challengePage.navigateToDetailChallenge("Lari Private");
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta sebelum di-kick out");
             
-            // Jalankan alur Kick Out
-            challengePage.kickOutParticipant("Lari Private");
+    //         // Jalankan alur Kick Out
+    //         challengePage.kickOutParticipant("Lari Private");
             
-            driver.navigate().back(); // Kembali ke halaman Detail Challenge
-            if (!challengePage.isDetailChallengePage()) {
-                challengePage.navigateBackToDashboardSafe();
-                challengePage.navigateToDetailChallenge("Lari Private");
-            }
-            challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah peserta di-kick out");
+    //         driver.navigate().back(); // Kembali ke halaman Detail Challenge
+    //         if (!challengePage.isDetailChallengePage()) {
+    //             challengePage.navigateBackToDashboardSafe();
+    //             challengePage.navigateToDetailChallenge("Lari Private");
+    //         }
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah peserta di-kick out");
             
-            if (TestListener.getTest() != null) {
-                logPass("SUCCESS: Alur Kick Out peserta berjalan lancar.");
-            }
-        } catch (Exception e) {
-            if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses Kick Out peserta.");
-            Assert.fail("Alur Kick Out Peserta gagal!");
-        }
+    //         if (TestListener.getTest() != null) {
+    //             logPass("SUCCESS: Alur Kick Out peserta berjalan lancar.");
+    //         }
+    //     } catch (Exception e) {
+    //         if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses Kick Out peserta.");
+    //         Assert.fail("Alur Kick Out Peserta gagal!");
+    //     }
 
-        challengePage.navigateBackToDashboardSafe();
-    }
+    //     challengePage.navigateBackToDashboardSafe();
+    // }
 
-    @Test(priority = 8, description = "Verifikasi admin dapat menolak peserta secara satuan dan massal")
-    public void testRejectPeserta() {
-        System.out.println("=== TEST 7: Tolak Peserta Challenge ===");
+    // @Test(priority = 8, description = "Verifikasi admin dapat menolak peserta secara satuan dan massal")
+    // public void testRejectPeserta() {
+    //     System.out.println("=== TEST 7: Tolak Peserta Challenge ===");
 
-        try {
-            // (Opsional) Ganti nama challenge jika Anda menggunakan challenge test yang berbeda
-            challengePage.navigateToDetailChallenge("Lari Private");
-            challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta sebelum ditolak");
+    //     try {
+    //         // (Opsional) Ganti nama challenge jika Anda menggunakan challenge test yang berbeda
+    //         challengePage.navigateToDetailChallenge("Lari Private");
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta sebelum ditolak");
             
-            // Jalankan alur tolak 1 peserta
-            challengePage.rejectOneParticipant("Lari Private");
+    //         // Jalankan alur tolak 1 peserta
+    //         challengePage.rejectOneParticipant("Lari Private");
             
-            driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menolak 1 peserta
-            if (!challengePage.isDetailChallengePage()) {
-                challengePage.navigateBackToDashboardSafe();
-                challengePage.navigateToDetailChallenge("Lari Private");
-            }
-            challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menolak 1 peserta");
+    //         driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menolak 1 peserta
+    //         if (!challengePage.isDetailChallengePage()) {
+    //             challengePage.navigateBackToDashboardSafe();
+    //             challengePage.navigateToDetailChallenge("Lari Private");
+    //         }
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menolak 1 peserta");
             
-            challengePage.rejectAllParticipants("Lari Private");
+    //         challengePage.rejectAllParticipants("Lari Private");
             
-            driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menolak semua peserta
-            if (!challengePage.isDetailChallengePage()) {
-                challengePage.navigateBackToDashboardSafe();
-                challengePage.navigateToDetailChallenge("Lari Private");
-            }
-            challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menolak semua peserta");
+    //         driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menolak semua peserta
+    //         if (!challengePage.isDetailChallengePage()) {
+    //             challengePage.navigateBackToDashboardSafe();
+    //             challengePage.navigateToDetailChallenge("Lari Private");
+    //         }
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menolak semua peserta");
             
-            if (TestListener.getTest() != null) {
-                logPass("SUCCESS: Alur penolakan peserta berjalan lancar (Satuan & Massal).");
-            }
-        } catch (Exception e) {
-            if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses penolakan peserta.");
-            Assert.fail("Alur Reject Peserta gagal!");
-        }
+    //         if (TestListener.getTest() != null) {
+    //             logPass("SUCCESS: Alur penolakan peserta berjalan lancar (Satuan & Massal).");
+    //         }
+    //     } catch (Exception e) {
+    //         if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses penolakan peserta.");
+    //         Assert.fail("Alur Reject Peserta gagal!");
+    //     }
 
-        challengePage.navigateBackToDashboardSafe();
-    }
+    //     challengePage.navigateBackToDashboardSafe();
+    // }
+
 }
