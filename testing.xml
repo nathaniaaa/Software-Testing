@@ -16,7 +16,7 @@
             <class name="tests.flow.positive.TestSyaratPrivasi" />
             <class name="tests.creation.positive.ProfileTest" />
             <class name="tests.flow.negative.TestBeranda" />
-            <class name="tests.flow.negative.ChallengeTest" />
+            <class name="tests.creation.negative.ChallengeTest" />
             <class name="tests.creation.negative.ProfileTest" />
             
         </classes>

@@ -37,7 +37,7 @@ public class ChallengeTest extends BaseTest {
         challengePage.navigateToCreateMenu();
         
         // 2. Prepare Data
-        String uniqueName = "Lari Merdeka " + (System.currentTimeMillis() % 10000);
+        String uniqueName = "Lari Privat " + (System.currentTimeMillis() % 10000);
         ChallengeData testData = new ChallengeData(
             uniqueName, 
             "10", 
@@ -87,7 +87,7 @@ public class ChallengeTest extends BaseTest {
         challengePage.navigateToCreateMenu();
         
         // 2. Prepare Data
-        String uniqueName = "Lari Merdeka " + (System.currentTimeMillis() % 10000);
+        String uniqueName = "Lari Publik " + (System.currentTimeMillis() % 10000);
         ChallengeData testData = new ChallengeData(
             uniqueName, 
             "10", 
@@ -228,7 +228,7 @@ public class ChallengeTest extends BaseTest {
         }
 
         // 2. Buat Nama Baru yang Unik & Ganti Nama Lama
-        String newChallengeName = "Lari Update " + (System.currentTimeMillis() % 10000);
+        String newChallengeName = "Lari Publik Update " + (System.currentTimeMillis() % 10000);
         
         if (TestListener.getTest() != null) {
             TestListener.getTest().info("Action: Mengganti Nama Challenge menjadi: " + newChallengeName);
@@ -285,7 +285,7 @@ public class ChallengeTest extends BaseTest {
         group = "Challenge - Share",
         testType = "Positive Cases"
     )
-    public void testShareChallengeToWhatsApp() {
+    public void testShareChallengeToWhatsAppPublic() {
         System.out.println("=== TEST 5: Share Challenge ke WhatsApp ===");
 
         // 1. Tentukan target kontak (Sesuaikan dengan nama persis di buku telepon HP/Emulator)
@@ -297,7 +297,37 @@ public class ChallengeTest extends BaseTest {
 
         // 2. Eksekusi fungsi Share
         // Fungsi ini sudah mencakup navigasi ke Kelola Challenge -> Klik Share -> Pilih WA -> Pilih Kontak -> Send
-        challengePage.shareChallengeToWhatsApp(targetContact, "Lari Merdeka 2026");
+        challengePage.shareChallengeToWhatsApp(targetContact, "Lari Publik");
+
+        if (TestListener.getTest() != null) {
+            TestListener.getTest().info("Action: Proses share selesai. Mencoba kembali ke aplikasi utama...");
+        }
+
+        logPass("Share berhasil.");
+
+        challengePage.navigateBackToDashboardSafe();
+
+    }
+
+        @Test(priority = 5, description = "Verifikasi admin dapat membagikan challenge ke kontak WhatsApp")
+    @TestInfo(
+        expected = "Challenge berhasil dibagikan ke WhatsApp dan sistem kembali ke aplikasi utama", 
+        group = "Challenge - Share",
+        testType = "Positive Cases"
+    )
+    public void testShareChallengeToWhatsAppPrivate() {
+        System.out.println("=== TEST 5: Share Challenge ke WhatsApp ===");
+
+        // 1. Tentukan target kontak (Sesuaikan dengan nama persis di buku telepon HP/Emulator)
+        String targetContact = "+62 821-1830-0442 (Anda)"; 
+        
+        if (TestListener.getTest() != null) {
+            TestListener.getTest().info("Action: Memulai proses Share Challenge ke WhatsApp target: " + targetContact);
+        }
+
+        // 2. Eksekusi fungsi Share
+        // Fungsi ini sudah mencakup navigasi ke Kelola Challenge -> Klik Share -> Pilih WA -> Pilih Kontak -> Send
+        challengePage.shareChallengeToWhatsApp(targetContact, "Lari Privat");
 
         if (TestListener.getTest() != null) {
             TestListener.getTest().info("Action: Proses share selesai. Mencoba kembali ke aplikasi utama...");
