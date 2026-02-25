@@ -26,50 +26,6 @@ public class ProfileTest extends BaseTest {
         profilePage = new ProfileActionHelper((AndroidDriver) driver);
     }
 
-    public void navigateToEditProfile() {
-        // From Dashboard to 
-        if (profilePage.isOnEditProfilePage()) {
-            return; 
-        }
-
-        try {
-            System.out.println("[SETUP] Navigating to Profile Tab...");
-            profilePage.navigateToProfileTab();
-            
-            Thread.sleep(2000); 
-
-            try {
-                logInfo("Setup: Profile Dashboard View (Before Editing)");
-            } catch (Exception e) {
-                TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
-            }
-
-            System.out.println("[SETUP] Entering Edit Mode...");
-            profilePage.enterEditMode();
-            
-            // Wait for the form to open
-            Thread.sleep(1000);
-
-        } catch (Exception e) {
-            System.out.println("[SETUP] CRITICAL: Navigation sequence failed. Attempting brute-force.");
-            // Fallback: Just click the buttons blindly to try and save the test run
-            try {
-                profilePage.navigateToProfileTab();
-                Thread.sleep(2000);
-
-                try {
-                    logInfo("Setup: Profile Dashboard View (Before Editing)");
-                } catch (Exception er) {
-                    TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
-                }
-
-                profilePage.enterEditMode();
-            } catch (Exception ex) {
-                System.out.println("[SETUP] FATAL: Could not recover.");
-            }
-        }
-    }   
-
     // GROUP A: HAPPY PATH & FUNCTIONAL
     @Test(priority = 1, description = "Pengguna mengedit data dirinya di profil lalu menyimpannya")
     @TestInfo(
@@ -81,9 +37,10 @@ public class ProfileTest extends BaseTest {
     public void testUpdateProfileSuccess() {
         TestListener.getTest().log(Status.INFO, "Starting Test: Happy Path Update");
         
-        navigateToEditProfile();
+        profilePage.navigateToEditProfile();
         
-        logInfo("Initial Profile State (Before Editing)");
+        TestListener.getTest().info("Initial Profile State (Before Editing)",
+            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
 
         // DATA ENTRY & LOGGING
         String uniqueName = "user.test." + (System.currentTimeMillis() % 10000);
@@ -131,8 +88,7 @@ public class ProfileTest extends BaseTest {
         TestListener.getTest().log(Status.INFO, "Starting Test: Upload via Gallery");
 
         // 1. Navigate to Profile > Edit
-        profilePage.navigateToProfileTab();
-        profilePage.enterEditMode();
+        profilePage.navigateToEditProfile();
 
         // 2. Perform Upload (Gallery)
         // This uses your generic coordinate logic
@@ -158,8 +114,7 @@ public class ProfileTest extends BaseTest {
         TestListener.getTest().log(Status.INFO, "Starting Test: Upload via Camera");
 
         // 1. Navigate to Profile > Edit
-        profilePage.navigateToProfileTab();
-        profilePage.enterEditMode();
+        profilePage.navigateToEditProfile();
 
         // 2. Perform Upload (Camera)
         // This uses your updated logic with the specific Samsung A14 bounds

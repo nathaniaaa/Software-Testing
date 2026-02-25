@@ -10,6 +10,7 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import tests.helper.CaptureHelper;
 import tests.utils.TestListener;
+import com.aventstack.extentreports.MediaEntityBuilder;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -32,13 +33,46 @@ public class ProfileActionHelper extends CreationActionHelper {
     
     // Specific Locator for the Date Input field specifically in Profile// The "trigger" is the box displaying the date, sibling to the Label
     private final By INPUT_DATE_DISPLAY = AppiumBy.xpath("//*[contains(@text, 'Tanggal Lahir')]/following-sibling::android.widget.Button");
-    private final By TITLE_EDIT_PROFILE = AppiumBy.xpath("//*[contains(@text, 'Edit Profil')]");
 
     // --- CAMERA LOCATORS ---
     private final By BTN_CAMERA_SHUTTER = AppiumBy.xpath("//android.widget.ImageView[@content-desc='Take picture']");
     private final By BTN_CAMERA_SWITCH  = AppiumBy.xpath("//android.widget.ImageView[@content-desc='Switch to front camera']");
     private final By BTN_CAMERA_OK      = AppiumBy.xpath("//android.widget.ImageView[@content-desc='Tap OK to go back to previous app']");
     private final By BTN_CAMERA_RETRY   = AppiumBy.xpath("//android.widget.ImageView[@content-desc='Tap retry to take picture again']");    
+
+    private final By PROFILE_PAGE = AppiumBy.xpath("//android.widget.TextView[@text=\"Profil Kamu\"]");
+    private final By TITLE_EDIT_PROFILE = AppiumBy.xpath("//*[contains(@text, 'Edit Profil')]");
+
+    public boolean isOnEditProfilePage() {
+        try {
+            // Wait up to 2 seconds explicitly for the Edit Profile title to be visible
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(2));
+            WebElement title = shortWait.until(ExpectedConditions.visibilityOfElementLocated(TITLE_EDIT_PROFILE));
+            
+            return title.isDisplayed();
+        } catch (Exception e) {
+            // TimeoutException means it wasn't found within 2 seconds. We safely return false.
+            return false; 
+        }
+    }
+
+    public boolean isOnProfilePage() {
+        System.out.println("--- DEBUG: Checking if on Profile Page ---");
+        try {
+            // 1. Does it even exist in the background XML?
+            WebElement element = driver.findElement(PROFILE_PAGE);
+
+            // 2. Is it actually visible on screen?
+            boolean visible = element.isDisplayed();
+
+            return visible;
+
+        } catch (org.openqa.selenium.NoSuchElementException e) {
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     // PAGE ACTIONS
     public void navigateToProfileTab() {
@@ -68,6 +102,57 @@ public class ProfileActionHelper extends CreationActionHelper {
         waitForLoading(1000);
     }
 
+        public void navigateToEditProfile() {
+        // From Dashboard to 
+        if (isOnEditProfilePage()) {
+            return; 
+        }
+
+        try {
+            System.out.println("[SETUP] Navigating to Profile Tab...");
+            if (!isOnProfilePage()) {
+                navigateToProfileTab();
+            } else {
+                System.out.println("[SETUP] Already on Profile Tab.");
+            }
+            Thread.sleep(2000); 
+
+            try {
+                TestListener.getTest().info("Setup: Profile Dashboard View (Before Editing)",
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build()
+                );
+            } catch (Exception e) {
+                TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
+            }
+
+            System.out.println("[SETUP] Entering Edit Mode...");
+            enterEditMode();
+            
+            // Wait for the form to open
+            Thread.sleep(1000);
+
+        } catch (Exception e) {
+            System.out.println("[SETUP] CRITICAL: Navigation sequence failed. Attempting brute-force.");
+            // Fallback: Just click the buttons blindly to try and save the test run
+            try {
+                navigateToProfileTab();
+                Thread.sleep(2000);
+
+                try {
+                    TestListener.getTest().info("Setup: Profile Dashboard View (Before Editing)",   
+                        MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build()
+                    );
+                } catch (Exception er) {
+                    TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
+                }
+
+                enterEditMode();
+            } catch (Exception ex) {
+                System.out.println("[SETUP] FATAL: Could not recover.");
+            }
+        }
+    } 
+
     public void tapBackArrow() {
         System.out.println("Step: Tapping App Back Arrow...");
 
@@ -78,23 +163,40 @@ public class ProfileActionHelper extends CreationActionHelper {
         try { Thread.sleep(500); } catch (InterruptedException e) {}
     }
 
-    public boolean isElementDisplayed(String text) {
-        // 1. Define the locator dynamically based on the name
-        // Use XPath to find the text. We don't wait here yet, let highlightAndCapture handle it.
-        By nameLocator = AppiumBy.xpath("//*[contains(@text, '" + text + "')]");
+    public boolean areElementsDisplayed(String... texts) {
+        if (texts == null || texts.length == 0) return false;
 
-        try {
-            // 2. Scroll to ensure it is visible before we try to highlight
-            if (driver.findElement(nameLocator).isDisplayed()) {
-                
-                // 3. FOUND: Only now do we trigger the screenshot/highlight
-                capture.highlightAndCapture(nameLocator, "Verified Element: " + text);
-                return true;
+        java.util.List<By> foundLocators = new java.util.ArrayList<>();
+        boolean allFound = true;
+
+        // 1. Loop through every text provided
+        for (String text : texts) {
+            By locator = AppiumBy.xpath("//*[contains(@text, '" + text + "')]");
+            try {
+                // 2. Check if this specific element is displayed
+                if (driver.findElement(locator).isDisplayed()) {
+                    foundLocators.add(locator); // Add to our "success" list
+                } else {
+                    allFound = false; // It exists in DOM but isn't visible
+                }
+            } catch (Exception e) {
+                allFound = false; // It doesn't exist at all
             }
-            return false;
-        } catch (Exception e) {
-            return false; 
         }
+
+        // 3. Highlight everything we managed to find
+        if (!foundLocators.isEmpty()) {
+            // Create a readable step detail: "Verified Elements: Text1, Text2"
+            String stepDetail = "Verified Elements: " + String.join(", ", texts);
+            
+            // Convert our List<By> back to an Array to pass into your Multiple Highlight method
+            capture.highlightAndCaptureMultiple(stepDetail, foundLocators.toArray(new By[0]));
+        } else {
+            System.out.println("WARN: None of the requested elements were found on screen.");
+        }
+
+        // 4. Return true ONLY if every single text requested was found
+        return allFound;
     }
 
     public void uploadProfilePhoto(String source) {
@@ -589,34 +691,26 @@ public class ProfileActionHelper extends CreationActionHelper {
         return parts;
     }
 
-    public boolean isOnEditProfilePage() {
-        try {
-            // Set implicit wait to 0 so we don't wait 10 seconds just to say "No"
-            driver.manage().timeouts().implicitlyWait(Duration.ofMillis(500));
-            boolean isDisplayed = driver.findElement(TITLE_EDIT_PROFILE).isDisplayed();
-            // Restore implicit wait (assuming default is 10s or 15s)
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-            return isDisplayed;
-        } catch (Exception e) {
-            // Restore implicit wait here too!
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-            return false; // Return FALSE instead of crashing
-        }
-    }
-
-    public boolean isSaveButtonEnabled() {
+    public boolean isSaveButtonEnabled(boolean screenshot) {
         try {
             scrollToText("Simpan");
             WebElement saveBtn = driver.findElement(BTN_SAVE);
             boolean isEnabled = saveBtn.isEnabled();
             String statusText = isEnabled ? "ENABLED (Aktif)" : "DISABLED (Tidak Aktif)";
 
-            capture.highlightAndCapture(BTN_SAVE, "Check Save Button: " + statusText);
-            
+            if (screenshot) {
+                capture.highlightAndCapture(BTN_SAVE, "Save Button is " + statusText);
+            } else {
+                System.out.println("   -> Save Button is currently: " + statusText);
+            }
             return isEnabled;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public boolean isSaveButtonEnabled() {
+        return isSaveButtonEnabled(false);
     }
 
     /**
