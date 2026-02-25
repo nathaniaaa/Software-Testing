@@ -731,7 +731,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
         
         // 3. Date & Time (Complex logic kept inside helper)
-        setDateRange(21, 28); 
+        setDateRange(26, 28); 
         setTimeConfiguration(2, 5);
 
         // 4. Description & Terms

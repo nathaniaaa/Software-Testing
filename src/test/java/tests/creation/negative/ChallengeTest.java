@@ -25,6 +25,11 @@ public class ChallengeTest extends BaseTest {
     }
 
     @Test(priority = 1, description = "Verifikasi pesan error muncul jika banner challenge > 5MB")
+    @TestInfo(
+        expected = "Sistem menolak upload dan menampilkan pesan error bahwa ukuran banner tidak boleh melebihi 5MB", 
+        group = "Challenge",
+        testType = "Negative Case"
+    )
     public void testCreateChallengeBannerExceeds5MB() {
         System.out.println("=== TEST 12: Upload Banner Challenge > 5MB ===");
 
@@ -61,7 +66,11 @@ public class ChallengeTest extends BaseTest {
     }
 
     @Test(priority = 2, description = "Verify Challenge can be created using the default badge")
-    @TestInfo(expected = "Challenge created successfully with the default badge", group = "Challenge")
+    @TestInfo(
+        expected = "Challenge created successfully with the default badge", 
+        group = "Challenge", 
+        testType = "Negative Case"
+    )
     public void testCreateChallengeDefaultBadge() {
         System.out.println("=== TEST 10: Create Challenge Default Badge ===");
 
@@ -106,8 +115,8 @@ public class ChallengeTest extends BaseTest {
     @Test(priority = 3, description = "Verifikasi tombol Buat Challenge disabled jika field wajib kosong")
     @TestInfo(
         expected = "Tombol submit dalam kondisi disable dan proses pembuatan tidak dapat dilanjutkan", 
-        group = "Challenge - Negative Cases",
-        testType = "Negative Cases"
+        group = "Challenge",
+        testType = "Negative Case"
     )
     public void testSubmitButtonDisabledOnEmptyFields() {
         System.out.println("=== TEST 11: Tombol Submit Disabled (Field Wajib Kosong) ===");
@@ -164,8 +173,8 @@ public class ChallengeTest extends BaseTest {
     @Test(priority = 4, description = "Verifikasi pesan error muncul jika rentang waktu Challenge tidak valid")
     @TestInfo(
         expected = "Sistem menolak input dan menampilkan pesan error penanda kesalahan rentang waktu", 
-        group = "Challenge - Negative Cases",
-        testType = "Negative Cases"
+        group = "Challenge",
+        testType = "Negative Case"
     )
     public void testCreateChallengeInvalidTimeRange() {
         System.out.println("=== TEST 6: Rentang Waktu Tidak Valid ===");

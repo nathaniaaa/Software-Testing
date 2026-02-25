@@ -46,6 +46,7 @@ public class BaseTest {
 
     @BeforeClass
     public void setUp() throws Exception {
+        System.out.println("--- STARTING NEW APPIUM SESSION FOR CLASS: " + this.getClass().getSimpleName() + " ---");
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
@@ -77,10 +78,20 @@ public class BaseTest {
         getScreenshotList().clear();
     }
 
-    @AfterClass
+    // @AfterClass
+    // public void tearDown() {
+    //     if (driver != null) {
+    //         driver.quit();
+    //     }
+    // }
+
+
+    @AfterClass(alwaysRun = true)
     public void tearDown() {
         if (driver != null) {
+            System.out.println("--- CLOSING APPIUM SESSION FOR CLASS: " + this.getClass().getSimpleName() + " ---");
             driver.quit();
+            driver = null; // Ensure driver is nulled out for the next class
         }
     }
 

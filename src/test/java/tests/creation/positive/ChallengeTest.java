@@ -29,7 +29,7 @@ public class ChallengeTest extends BaseTest {
     // ==========================================
 
     @Test(priority = 1, description = "Verify user can create a complete challenge")
-    @TestInfo(expected = "Challenge created successfully with all fields filled", group = "Challenge")
+    @TestInfo(expected = "Challenge created successfully with all fields filled", group = "Challenge", testType = "Positive Case")
     public void testCreateChallengePrivate() {
         System.out.println("=== TEST 1: Create Challenge Private ===");
 
@@ -75,11 +75,12 @@ public class ChallengeTest extends BaseTest {
         challengePage.navigateBackToDashboardSafe();
         challengePage.navigateToBeranda();
         challengePage.tapButtonByTextOrId(uniqueName, uniqueName);
+        driver.navigate().back();
         challengePage.navigateToChallengeDashboard();
     } 
 
     @Test(priority = 2, description = "Verify user can create a complete challenge")
-    @TestInfo(expected = "Challenge created successfully with all fields filled", group = "Challenge")
+    @TestInfo(expected = "Challenge created successfully with all fields filled", group = "Challenge", testType = "Positive Case")
     public void testCreateChallengePublic() {
         System.out.println("=== TEST 2: Create Challenge Public ===");
 
@@ -125,6 +126,7 @@ public class ChallengeTest extends BaseTest {
         challengePage.navigateBackToDashboardSafe();
         challengePage.navigateToBeranda();
         challengePage.tapButtonByTextOrId(uniqueName, uniqueName);
+        driver.navigate().back(); 
         challengePage.navigateToChallengeDashboard();
     }
 
@@ -279,11 +281,11 @@ public class ChallengeTest extends BaseTest {
         challengePage.navigateBackToDashboardSafe();
     }
 
-    @Test(priority = 5, description = "Verifikasi admin dapat membagikan challenge ke kontak WhatsApp")
+    @Test(priority = 6, description = "Verifikasi admin dapat membagikan challenge ke kontak WhatsApp")
     @TestInfo(
         expected = "Challenge berhasil dibagikan ke WhatsApp dan sistem kembali ke aplikasi utama", 
-        group = "Challenge - Share",
-        testType = "Positive Cases"
+        group = "Challenge",
+        testType = "Positive Case"
     )
     public void testShareChallengeToWhatsAppPublic() {
         System.out.println("=== TEST 5: Share Challenge ke WhatsApp ===");
@@ -309,11 +311,11 @@ public class ChallengeTest extends BaseTest {
 
     }
 
-        @Test(priority = 5, description = "Verifikasi admin dapat membagikan challenge ke kontak WhatsApp")
+    @Test(priority = 7, description = "Verifikasi admin dapat membagikan challenge ke kontak WhatsApp")
     @TestInfo(
         expected = "Challenge berhasil dibagikan ke WhatsApp dan sistem kembali ke aplikasi utama", 
-        group = "Challenge - Share",
-        testType = "Positive Cases"
+        group = "Challenge",
+        testType = "Positive Case"
     )
     public void testShareChallengeToWhatsAppPrivate() {
         System.out.println("=== TEST 5: Share Challenge ke WhatsApp ===");
