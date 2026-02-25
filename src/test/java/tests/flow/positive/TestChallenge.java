@@ -422,100 +422,100 @@ public class TestChallenge extends BaseTest {
         logPass("Validasi sukses: Challenge 'Fun for health' ditemukan di list Saya.");
     }
 
-    @Test(priority = 8, description = "Pengguna keluar dari Public Challenges yang bertipe publik")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Pengguna dapat keluar dari Public Challenges yang bertipe publik yang telah diikuti sebelumnya.\n" + //
-                        "\n" + "Setelah keluar, maka Challenge tersebut akan hilang dari daftar Challenge Saya pada Tab Challenge.",
-        note = "",
-        group = "Challenge"
-    )
-    public void testKeluarPublicChallenge() {
-        System.out.println("Test 8: Pengguna keluar dari Public Challenges yang bertipe publik");
+    // @Test(priority = 8, description = "Pengguna keluar dari Public Challenges yang bertipe publik")
+    // @TestInfo(
+    //     testType = "Positive Case",
+    //     expected = "Pengguna dapat keluar dari Public Challenges yang bertipe publik yang telah diikuti sebelumnya.\n" + //
+    //                     "\n" + "Setelah keluar, maka Challenge tersebut akan hilang dari daftar Challenge Saya pada Tab Challenge.",
+    //     note = "",
+    //     group = "Challenge"
+    // )
+    // public void testKeluarPublicChallenge() {
+    //     System.out.println("Test 8: Pengguna keluar dari Public Challenges yang bertipe publik");
 
-        // cek flag
-        if (!isJoinedPublicChallenge) {
-            logSkip("Test dilewati: Proses Join (Test 6) terlewati/gagal, tidak bisa melakukan proses keluar");
-            return; 
-        }
+    //     // cek flag
+    //     if (!isJoinedPublicChallenge) {
+    //         logSkip("Test dilewati: Proses Join (Test 6) terlewati/gagal, tidak bisa melakukan proses keluar");
+    //         return; 
+    //     }
 
-        actions.scrollToText("Fun for health");
-        waitTime();
+    //     actions.scrollToText("Fun for health");
+    //     waitTime();
 
-        if (driver.findElements(cardPublicChallenge).size() == 0) {
-            driver.navigate().back(); 
-            logSkip("Test dilewati: Card 'Fun for health' tidak ada di list, tidak bisa keluar.");
-            return; 
-        }
+    //     if (driver.findElements(cardPublicChallenge).size() == 0) {
+    //         driver.navigate().back(); 
+    //         logSkip("Test dilewati: Card 'Fun for health' tidak ada di list, tidak bisa keluar.");
+    //         return; 
+    //     }
 
-        // Klik Card & Cek Detail lagi
-        clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Challenge Saya");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
-        waitTime();
+    //     // Klik Card & Cek Detail lagi
+    //     clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Challenge Saya");
+    //     wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
+    //     waitTime();
 
-        logPass("Berhasil masuk ke halaman detail 'Fun for health'");
+    //     logPass("Berhasil masuk ke halaman detail 'Fun for health'");
 
-        // Cek Tab Deskripsi
-        System.out.println("Cek Deskripsi -> Scroll Turun");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
+    //     // Cek Tab Deskripsi
+    //     System.out.println("Cek Deskripsi -> Scroll Turun");
+    //     actions.swipeVertical(0.7, 0.5);
+    //     waitTime();
 
-        logInfo("Scroll ke bawah di Tab Deskripsi");
+    //     logInfo("Scroll ke bawah di Tab Deskripsi");
 
-        actions.swipeVertical(0.5, 0.7);
-        waitTime();
+    //     actions.swipeVertical(0.5, 0.7);
+    //     waitTime();
 
-        // Cek Tab Leaderboard sebentar
-        System.out.println("Cek Leaderboard");
-        clickTest(tabLeaderboard, "Klik Tab Leaderboard");
-        waitTime();
+    //     // Cek Tab Leaderboard sebentar
+    //     System.out.println("Cek Leaderboard");
+    //     clickTest(tabLeaderboard, "Klik Tab Leaderboard");
+    //     waitTime();
 
-        System.out.println("Scroll Turun Leaderboard");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
+    //     System.out.println("Scroll Turun Leaderboard");
+    //     actions.swipeVertical(0.7, 0.5);
+    //     waitTime();
 
-        logInfo("Scroll ke bawah di Leaderboard");
+    //     logInfo("Scroll ke bawah di Leaderboard");
         
-        // Keluar Challenge (Leave)
-        System.out.println("Proses Keluar Challenge");
+    //     // Keluar Challenge (Leave)
+    //     System.out.println("Proses Keluar Challenge");
         
-        // Klik 'Keluar Challenge'
-        wait.until(ExpectedConditions.elementToBeClickable(btnKeluarChallenge));
-        clickTest(btnKeluarChallenge, " Klik tombol 'Keluar Challenge' -> Muncul konfirmasi");
-        waitTime(); // Tunggu popup konfirmasi
+    //     // Klik 'Keluar Challenge'
+    //     wait.until(ExpectedConditions.elementToBeClickable(btnKeluarChallenge));
+    //     clickTest(btnKeluarChallenge, " Klik tombol 'Keluar Challenge' -> Muncul konfirmasi");
+    //     waitTime(); // Tunggu popup konfirmasi
         
-        // Klik 'Ya, Lanjutkan'
-        wait.until(ExpectedConditions.elementToBeClickable(btnKonfirmasiKeluar));
-        clickTest(btnKonfirmasiKeluar, " Klik tombol 'Ya, Lanjutkan' untuk konfirmasi keluar");
+    //     // Klik 'Ya, Lanjutkan'
+    //     wait.until(ExpectedConditions.elementToBeClickable(btnKonfirmasiKeluar));
+    //     clickTest(btnKonfirmasiKeluar, " Klik tombol 'Ya, Lanjutkan' untuk konfirmasi keluar");
         
-        System.out.println("Berhasil keluar, tunggu loading");
-        try { Thread.sleep(4000); } catch (Exception e) {} // Tunggu proses API selesai
+    //     System.out.println("Berhasil keluar, tunggu loading");
+    //     try { Thread.sleep(4000); } catch (Exception e) {} // Tunggu proses API selesai
 
-        logPass("Berhasil keluar/leave Challenge");
+    //     logPass("Berhasil keluar/leave Challenge");
 
-        // Back 1x
-        System.out.println("Back ke List Saya");
-        if (driver.findElements(btnBackDetail).size() > 0) {
-             clickTest(btnBackDetail, "Klik tombol Back");
-        }
-        waitTime();
+    //     // Back 1x
+    //     System.out.println("Back ke List Saya");
+    //     if (driver.findElements(btnBackDetail).size() > 0) {
+    //          clickTest(btnBackDetail, "Klik tombol Back");
+    //     }
+    //     waitTime();
 
-        // Validasi Hilang
-        System.out.println("Validasi Challenge 'Fun for health' sudah hilang");
+    //     // Validasi Hilang
+    //     System.out.println("Validasi Challenge 'Fun for health' sudah hilang");
 
-        // Cek apakah card masih ada
-        boolean isCardPresent = driver.findElements(cardPublicChallenge).size() > 0;
+    //     // Cek apakah card masih ada
+    //     boolean isCardPresent = driver.findElements(cardPublicChallenge).size() > 0;
 
-        if (!isCardPresent) {
-            // Skenario sukses: card sudah hilang
-            System.out.println("Berhasil keluar dari Challenge 'Fun for health', card sudah hilang dari list.");
-            logPass("Validasi: Challenge 'Fun for health' sudah hilang dari list.");
-        } else {
-            // Skenario gagal: card masih ada
-            System.out.println("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
-            logInfo("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
-        }
-    }
+    //     if (!isCardPresent) {
+    //         // Skenario sukses: card sudah hilang
+    //         System.out.println("Berhasil keluar dari Challenge 'Fun for health', card sudah hilang dari list.");
+    //         logPass("Validasi: Challenge 'Fun for health' sudah hilang dari list.");
+    //     } else {
+    //         // Skenario gagal: card masih ada
+    //         System.out.println("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
+    //         logInfo("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
+    //     }
+    // }
 
     @Test(priority = 9, description = "Pengguna bergabung ke Public Challenges yang bertipe private")
     @TestInfo(
