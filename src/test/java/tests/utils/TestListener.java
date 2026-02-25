@@ -25,7 +25,7 @@ public class TestListener implements ITestListener {
     // Map untuk menyimpan Parent Test (Supaya report HTML rapi per Class)
     private static Map<String, ExtentTest> classLevelTests = new HashMap<>();
 
-    // --- HELPER: Ambil data dari @TestInfo ---
+    // HELPER: Ambil data dari @TestInfo
     private String getExpectedResult(ITestResult result) {
         try {
             // Get the method that just ran
@@ -97,14 +97,14 @@ public class TestListener implements ITestListener {
     public void onTestSuccess(ITestResult result) {
         if (test.get() != null) test.get().log(Status.PASS, "Test Passed");
 
-        // --- WRITE TO EXCEL (ONE ROW) ---
+        // WRITE TO EXCEL (ONE ROW)
         String testName = result.getMethod().getDescription();
         if (testName == null) testName = result.getMethod().getMethodName();
 
         // 1. Get ALL screenshots collected during the test
         String expected = getExpectedResult(result);
         String group = getGroup(result);
-        String note = getNote(result); // <--- Get Note
+        String note = getNote(result); //  Get Note
         String testType = getTestType(result);
         String actual = "Test Passed Successfully";
         List<String> screenshots = BaseTest.getScreenshotList();
@@ -153,12 +153,27 @@ public class TestListener implements ITestListener {
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        if (test.get() != null) test.get().log(Status.SKIP, "Skipped");
+        // Log status di console
+        if (test.get() != null) test.get().log(Status.SKIP, "Test Skipped");
         
-        String testCaseName = result.getMethod().getMethodName();
+        String testName = result.getMethod().getDescription();
+        if (testName == null) testName = result.getMethod().getMethodName();
+
         String group = getGroup(result);
-        String testType = getTestType(result);
-        ExcelReportManager.logToExcel(testType, group, testCaseName, "-", "Test dilewati (Skipped)", "-", null, "SKIP");
+        String testType = getTestType(result); 
+        String expected = getExpectedResult(result);
+        
+        // Ambil pesan dari logSkip()
+        String note = "-";
+        if (result.getThrowable() != null) {
+            note = result.getThrowable().getMessage();
+        }
+
+        // Ambil screenshot terakhir (karena logSkip tadi nyimpen screenshot)
+        List<String> screenshots = BaseTest.getScreenshotList();
+
+        // Tulis ke Excel dengan status SKIP
+        ExcelReportManager.logToExcel(testType, group, testName, expected, "Test Dilewati (Skipped)", note, screenshots, "SKIP");
     }
 
     @Override
