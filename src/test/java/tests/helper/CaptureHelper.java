@@ -17,6 +17,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import org.openqa.selenium.Point;
+import org.openqa.selenium.Dimension;
 
 import com.aventstack.extentreports.MediaEntityBuilder; 
 import tests.BaseTest;        
@@ -61,8 +66,8 @@ public class CaptureHelper {
             g.drawRect(x, y, w, h);
             
             // Draw Semi-transparent Red Fill
-            g.setColor(new Color(0, 0, 255, 40)); 
-            g.fillRect(x, y, w, h);
+            // g.setColor(new Color(0, 0, 255, 40)); 
+            // g.fillRect(x, y, w, h);
             
             g.dispose();
 
@@ -73,6 +78,37 @@ public class CaptureHelper {
         } catch (Exception e) {
             // Fallback to normal screenshot if image processing fails
             return getScreenshotBase64();
+        }
+    }
+
+    public String getScreenshotWithMultipleHighlights(List<WebElement> elements) {
+        try {
+            // 1. Ambil screenshot murni dari device
+            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            BufferedImage image = ImageIO.read(srcFile);
+
+            // 2. Siapkan alat gambar (Graphics2D)
+            Graphics2D g2d = image.createGraphics();
+            g2d.setColor(Color.BLUE);
+            g2d.setStroke(new BasicStroke(8)); // Ketebalan garis kotak (sesuaikan jika perlu)
+
+            // 3. Gambar kotak untuk SETIAP elemen yang ditemukan
+            for (WebElement element : elements) {
+                Point location = element.getLocation();
+                Dimension size = element.getSize();
+                g2d.drawRect(location.getX(), location.getY(), size.getWidth(), size.getHeight());
+            }
+            g2d.dispose(); // Selesai menggambar
+
+            // 4. Convert kembali ke Base64 String
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", os);
+            return Base64.getEncoder().encodeToString(os.toByteArray());
+
+        } catch (Exception e) {
+            System.out.println("Error drawing multiple highlights: " + e.getMessage());
+            // Fallback ke screenshot biasa jika gagal menggambar
+            return getScreenshotBase64(); 
         }
     }
 
@@ -142,6 +178,51 @@ public class CaptureHelper {
 
         } catch (Exception e) {
             System.err.println("Gagal highlight elemen: " + e.getMessage());
+            // Jika gagal highlight, ambil screenshot biasa sebagai backup
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(getScreenshotBase64());
+            }
+        }
+    }
+
+    public void highlightAndCaptureMultiple(String stepDetail, By... locators) {
+        try {
+            List<WebElement> elementsToHighlight = new ArrayList<>();
+
+            // 1. Find all elements provided in the parameters
+            for (By locator : locators) {
+                try {
+                    // Short wait for each element
+                    WebElement el = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+                    elementsToHighlight.add(el);
+                } catch (Exception e) {
+                    System.out.println("WARN: Could not find one of the elements to highlight: " + locator);
+                }
+            }
+
+            // If none were found, throw exception to trigger fallback
+            if (elementsToHighlight.isEmpty()) {
+                throw new Exception("No elements found to highlight.");
+            }
+
+            // 2. Ambil screenshot dengan BANYAK kotak merah
+            String evidence = getScreenshotWithMultipleHighlights(elementsToHighlight);
+
+            // 3. Masukkan ke list evidence (Excel)
+            if (BaseTest.getScreenshotList() != null) {
+                BaseTest.getScreenshotList().add(evidence);
+            }
+
+            // 4. Log ke HTML Report (Extent Report)
+            if (TestListener.getTest() != null) {
+                TestListener.getTest().info("Highlight: " + stepDetail, 
+                    com.aventstack.extentreports.MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+            }
+            
+            System.out.println("[HIGHLIGHT MULTIPLE] " + stepDetail);
+
+        } catch (Exception e) {
+            System.err.println("Gagal highlight multiple elemen: " + e.getMessage());
             // Jika gagal highlight, ambil screenshot biasa sebagai backup
             if (BaseTest.getScreenshotList() != null) {
                 BaseTest.getScreenshotList().add(getScreenshotBase64());
