@@ -13,17 +13,19 @@ import io.appium.java_client.android.nativekey.KeyEvent;
 public class TargetActionHelper extends CreationActionHelper {
 
     // --- LOCATORS (Specific to Target Only) ---
-    private final By BTN_ADD_TARGET = AppiumBy.xpath("//*[contains(@text, 'Target Pribadi')]/parent::*//android.widget.ImageView");
-    private final By BTN_RESET_TARGET = AppiumBy.accessibilityId("Reset Target");
+    private final By BTN_ADD_TARGET = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View[1]/android.widget.TextView[4]");
+    private final By BTN_RESET_TARGET = AppiumBy.xpath("//android.widget.TextView[@text=\"Reset Target\"]");
     private final By TARGET_PROGRESS_TEXT = AppiumBy.xpath("//*[contains(@text, 'km') and contains(@text, 'dari')]");
 
     // Modal Specifics
-    public final By TITLE_MODAL = AppiumBy.xpath("//*[@text='Atur Target Pribadi']");
+    public final By TITLE_MODAL = AppiumBy.xpath("//android.widget.TextView[@text=\"Atur Target Pribadi\"]");
     private final By FIELD_INPUT_KM = AppiumBy.className("android.widget.EditText");
     private final By RADIO_MINGGUAN = AppiumBy.xpath("//*[contains(@text, 'Mingguan')]");
+    private final By RADIO_HARIAN = AppiumBy.xpath("//*[contains(@text, 'Harian')]");
     
     // We override the generic submit button with the specific Target one
-   private final By BTN_SUBMIT_TARGET = AppiumBy.xpath("//*[@text='Atur Target']");
+   private final By BTN_SUBMIT_TARGET = AppiumBy.xpath("//android.widget.Button[@text=\"Atur Target\"]");
+   private final By BTN_SELANJUTNYA = AppiumBy.xpath("//android.widget.Button[@text=\"Selanjutnya\"]");
     private final By BTN_YA_RESET = AppiumBy.xpath("//*[contains(@text, 'Ya') or contains(@text, 'Reset')]");
 
     // --- CONSTRUCTOR ---
@@ -78,10 +80,11 @@ public class TargetActionHelper extends CreationActionHelper {
 
         // Specific logic for Radio button
         try {
-            tap(RADIO_MINGGUAN, "Select Option: Mingguan");
+            tap(RADIO_MINGGUAN, "Select Option: Mingguan",  false);
+            capture.highlightAndCapture(RADIO_MINGGUAN, "Highlight Option: Mingguan");
         } catch (Exception e) {
-            System.out.println("   -> Standard tap failed, trying center tap...");
-            tapElementCenter(RADIO_MINGGUAN); // Inherited from CreationActionHelper
+            System.out.println("   -> Tap failed, use default option...");
+            capture.highlightAndCapture(RADIO_HARIAN, "Highlight Option: Mingguan");    
         }
     }
 
@@ -92,8 +95,17 @@ public class TargetActionHelper extends CreationActionHelper {
             System.out.println("   -> Tap failed, trying robust submit...");
             tapAtScreenRatio(0.5, 0.88);  
         }
-        
-        
+    }
+
+    public void handleSuccessModal() {
+        try {
+            // 2. Click the 'Next' Button
+            // This takes ANOTHER screenshot with a BLUE box around the button, then clicks
+            tap(BTN_SELANJUTNYA, "Click Selanjutnya on Success Modal");
+        } catch (Exception e) {
+            System.out.println("   -> Tap failed, trying robust submit...");
+            tapAtScreenRatio(0.5, 0.88); 
+        }
     }
 
     public boolean isTargetProgressVisible() {

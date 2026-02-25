@@ -65,7 +65,7 @@ public class TargetTest extends BaseTest {
     public void testResetTarget() {
         TestListener.getTest().log(Status.INFO, "Starting Test: Update Target to 10 km");
 
-        logInfo("Dashboard state before reset target");
+        TestListener.getTest().info("Dashboard state before reset target");
         
         targetPage.cleanUpExistingTarget();
 
@@ -74,6 +74,6 @@ public class TargetTest extends BaseTest {
         Assert.assertFalse(isTargetStillThere, "FAILED: Target reset failed. Target text or reset button is still visible.");
         
         // Success Screenshot
-        logPass("Target reset successfully to set new target.");
+       logPass("Target reset successfully to set new target.");
     }
 }
