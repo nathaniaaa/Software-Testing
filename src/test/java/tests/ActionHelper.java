@@ -50,35 +50,63 @@ public class ActionHelper {
         }
     }
 
-    /**
-     * Finds element, Highlights it red, Screenshots it, Logs to Excel/HTML, then Clicks.
-     * @param locator The element locator (By.id, By.xpath, etc.)
-     * @param stepDetail Description for the report (e.g., "Click Save Button")
-     */
+    // ==========================================
+    // 1. FUNGSI DEFAULT (Backward Compatibility)
+    // Otomatis mengambil screenshot (takeScreenshot = true)
+    // ==========================================
+
+    public void tap(By locator, String stepDetail) {
+        tap(locator, stepDetail, true); 
+    }
+
     public void tap(WebElement element, String stepDetail) {
+        tap(element, stepDetail, true); 
+    }
+
+    // ==========================================
+    // 2. FUNGSI INTI (Dengan Kontrol Screenshot)
+    // ==========================================
+
+    public void tap(By locator, String stepDetail, boolean takeScreenshot) {
+        // 1. Wait for element using the default class wait (10s)
+        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
+        
+        // 2. Lempar ke fungsi inti WebElement dengan parameter takeScreenshot
+        tap(element, stepDetail, takeScreenshot); 
+    }
+
+    public void tap(WebElement element, String stepDetail, boolean takeScreenshot) {
         try {
-            // --- LOGIC STARTS HERE ---
-            // 1. Capture Screenshot with Red Highlight
-            String evidence = capture.getScreenshotWithHighlight(element);
+            // Cek apakah parameter meminta screenshot
+            if (takeScreenshot) {
+                // --- LOGIC STARTS HERE ---
+                // 1. Capture Screenshot with Red Highlight
+                String evidence = capture.getScreenshotWithHighlight(element);
 
-            // 2. Add to Excel Report List
-            if (BaseTest.getScreenshotList() != null) {
-                BaseTest.getScreenshotList().add(evidence);
+                // 2. Add to Excel Report List
+                if (BaseTest.getScreenshotList() != null) {
+                    BaseTest.getScreenshotList().add(evidence);
+                }
+
+                // 3. Log to HTML Report
+                if (TestListener.getTest() != null) {
+                    TestListener.getTest().info("Tapping: " + stepDetail,
+                        MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
+                }
+            } else {
+                // --- JANGAN AMBIL SCREENSHOT (HANYA TEKS) ---
+                if (TestListener.getTest() != null) {
+                    TestListener.getTest().info("Tapping: " + stepDetail);
+                }
             }
 
-            // 3. Log to HTML Report
-            if (TestListener.getTest() != null) {
-                TestListener.getTest().info("Tapping: " + stepDetail,
-                    MediaEntityBuilder.createScreenCaptureFromBase64String(evidence).build());
-            }
-
-            // 4. Perform Click
+            // 4. Perform Click (Selalu dieksekusi)
             element.click();
             System.out.println("[SUCCESS] " + stepDetail);
             // --- LOGIC ENDS HERE ---
 
         } catch (Exception e) {
-            // Failure handling (Standard screenshot)
+            // Failure handling (Selalu ambil screenshot jika terjadi error!)
             try {
                 String errorEvidence = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
                 if (BaseTest.getScreenshotList() != null) BaseTest.getScreenshotList().add(errorEvidence);
@@ -89,13 +117,6 @@ public class ActionHelper {
             } catch (Exception ex) {}
             throw e; 
         }
-    }
-
-    public void tap(By locator, String stepDetail) {
-        // 1. Wait for element using the default class wait (10s)
-        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
-        // 2. Reuse the tap(WebElement, String) method
-        tap(element, stepDetail); 
     }
 
     public void pressKeyboard(String text) {

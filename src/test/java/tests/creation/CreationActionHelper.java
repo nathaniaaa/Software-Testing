@@ -85,6 +85,7 @@ public class CreationActionHelper extends ActionHelper{
             // try { driver.hideKeyboard(); } catch (Exception ignored) {}
         } catch (Exception e) {
             System.out.println("   -> Failed to fill input: " + locator);
+            throw new RuntimeException("Input failed"); // Throw so fallback can catch it
         }
     }
 
