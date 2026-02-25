@@ -9,7 +9,7 @@
         <classes>
             <!-- <class name="tests.flow.positive.TestChallenge" />
             <class name="tests.flow.positive.TestAktifitas" /> -->
-            <class name="tests.flow.negative.TestBeranda" />
+            <class name="tests.flow.positive.TestBeranda" />
             <!-- <class name="tests.flow.positive.TestAktifitas" />
             <class name="tests.flow.positive.TestProfile" /> -->
             <!-- <class name="tests.flow.negative.TestBeranda" /> -->

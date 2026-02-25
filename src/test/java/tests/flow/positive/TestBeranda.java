@@ -97,6 +97,8 @@ public class TestBeranda extends BaseTest {
         System.out.println("Test 2: Pengguna menekan tombol \"lihat semua\" pada Challenge yang diikuti");
         waitTime();
 
+        capture.highlightAndCapture(headerChallengeSaya, "Bagian Challenge yang Diikuti");
+
         boolean isAkunKosong = driver.findElements(textBelumAdaChallenge).size() > 0;
 
         if (isAkunKosong) {
@@ -141,11 +143,11 @@ public class TestBeranda extends BaseTest {
                         "Saat pengguna menekan 'Lihat Semua', aplikasi akan membuka tab Challenge untuk menampilkan daftar lengkapnya");
         waitTime();
 
+        capture.highlightAndCapture(headerPublicChallenge, "Bagian Public Challenges");
+
         // Klik lihat semua yg punya challenges (Public Challenge)
         System.out.println("Klik 'Lihat Semua' (Public Challenge)");
         if (driver.findElements(textLihatSemuaChallenges).size() > 0) {
-            capture.highlightAndCapture(headerPublicChallenge, "Bagian Public Challenges");
-
             clickTest(textLihatSemuaChallenges, "Klik 'Lihat Semua' (Public Challenge)");
             waitTime();
             logPass("Berhasil masuk ke halaman daftar lengkap Public Challenges.");
@@ -271,6 +273,8 @@ public class TestBeranda extends BaseTest {
 
         actions.swipeVertical(0.8, 0.2);
 
+        capture.highlightAndCapture(headerEventLari, "Bagian Event Lari");
+
         boolean isAkunKosong = driver.findElements(textBelumAdaEvent).size() > 0;
 
         if (isAkunKosong) {
@@ -303,6 +307,8 @@ public class TestBeranda extends BaseTest {
                         "\n" + //
                         "Jika dibuka Lihat Semua, maka akan tampil daftar Riwayat Lari lengkap milik pengguna dan pindah ke tab Aktivitas");
         waitTime();
+
+        capture.highlightAndCapture(headerRiwayatLari, "Bagian Riwayat Lari");
 
         boolean isAkunKosong = driver.findElements(textBelumAdaRiwayatLari).size() > 0;
 
