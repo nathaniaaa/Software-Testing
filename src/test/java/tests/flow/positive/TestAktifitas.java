@@ -48,7 +48,8 @@ public class TestAktifitas extends BaseTest {
     By btnCompass = AppiumBy.accessibilityId("Reset bearing to north");
     
     // Element Grafik 
-    By grafikAreaLocator = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[2]/android.view.View/android.view.View[2]/android.view.View");
+    By grafikAreaApp = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[2]/android.view.View/android.view.View[2]/android.view.View");
+    By grafikAreaSmartwatch = AppiumBy.xpath("//android.view.View[@resource-id='root']/android.view.View/android.view.View[2]/android.view.View/android.view.View/android.widget.Image");
 
     By textEmptyState = AppiumBy.xpath("//*[contains(@text, 'Belum ada') or contains(@text, 'Tidak ada') or contains(@text, 'belum ada')]");
 
@@ -334,7 +335,7 @@ public class TestAktifitas extends BaseTest {
             
             logPass("Interaksi Peta Sudah Selesai Dilakukan");
         } else {
-            logSkip("Test dilewati: Peta tidak ditemukan (Kemungkinan lari manual / treadmill).");
+            logSkip("Test dilewati: Peta tidak ditemukan (kemungkinan record lari dengan smartwatch)");
         }        
     }
 
@@ -349,19 +350,31 @@ public class TestAktifitas extends BaseTest {
         System.out.println("TEST 8: Interaksi Grafik Ketinggian");
 
         // Pastikan sedang di halaman rincian lari, kalau engga skip
-        if (!isDiHalamanRincianLari()) logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
+        if (!isDiHalamanRincianLari()) {
+            logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
+            return; 
+        }
 
         actions.swipeVertical(0.4, 0.2);
         try { Thread.sleep(3000); } catch (Exception e) {}
 
-        if (driver.findElements(grafikAreaLocator).size() > 0) {
-             System.out.println("Grafik ditemukan!");
-             WebElement grafikContainer = driver.findElement(grafikAreaLocator);
+        // --- CEK MANA GRAFIK YANG MUNCUL ---
+        WebElement grafikContainer = null;
 
+        if (driver.findElements(grafikAreaApp).size() > 0) {
+            System.out.println("Grafik (versi App) ditemukan!");
+            grafikContainer = driver.findElement(grafikAreaApp);
+        } else if (driver.findElements(grafikAreaSmartwatch).size() > 0) {
+            System.out.println("Grafik (versi Smartwatch) ditemukan!");
+            grafikContainer = driver.findElement(grafikAreaSmartwatch);
+        }
+
+        // --- EKSEKUSI JIKA GRAFIK KETEMU ---
+        if (grafikContainer != null) {
+             
              int startX = grafikContainer.getLocation().getX();
              int totalWidth = grafikContainer.getSize().getWidth();
              int centerY = grafikContainer.getLocation().getY() + (grafikContainer.getSize().getHeight() / 2);
-             //  int endX = startX + totalWidth;
 
              // Tap tap Grafik
              System.out.println("Tap data grafik");
@@ -377,8 +390,8 @@ public class TestAktifitas extends BaseTest {
                  waitTime();
              }
 
-             // Drag horizontal
-             System.out.println("Drag horizontal di grafik (Scrubbing)");
+             // Drag horizontal (Scrubbing)
+             System.out.println("Drag horizontal di grafik");
              
              int dragStartX = startX + (int)(totalWidth * 0.15); 
              int dragEndX = startX + (int)(totalWidth * 0.85); 
@@ -388,11 +401,12 @@ public class TestAktifitas extends BaseTest {
              
              waitTime();
 
-             logPass("Intreaksi Grafik Ketinggian Selesai Dilakukan");
+             logPass("Interaksi Grafik Ketinggian Selesai Dilakukan");
         } else {
              System.out.println("SKIP: Grafik tidak ditemukan.");
              logSkip("Grafik Ketinggian tidak dapat ditemukan");
         }
+        
         waitTime();
         // Scroll balik ke atas
         actions.swipeVertical(0.1, 0.7);
