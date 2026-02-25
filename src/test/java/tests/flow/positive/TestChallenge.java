@@ -26,8 +26,8 @@ public class TestChallenge extends BaseTest {
     //  Public Challenge - Target: Fun for health - Klo mau ke card lain janlup diganti nama text nya sesuai kyk judul card
     By cardPublicChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Fun for health']");
 
-    // Private Challenge - Target: Lari Merdeka 2026 v2 - Klo mau ke card lain janlup diganti nama text nya sesuai kyk judul card
-    By cardPrivateChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Lari Merdeka 2026 v2']");
+    // Private Challenge - Target: Lari Merdeka 2026 v3 - Klo mau ke card lain janlup diganti nama text nya sesuai kyk judul card
+    By cardPrivateChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Lari Merdeka 2026 v3']");
 
     // Detail Page
     By tabDeskripsi = AppiumBy.xpath("//android.view.View[contains(@resource-id, 'trigger-deskripsi')]");
@@ -557,29 +557,29 @@ public class TestChallenge extends BaseTest {
 
         logPass("Berhasil masuk ke list card Public Challenge");
 
-        // Cari Card "Lari Merdeka 2026 v2" (Scroll To Text)
-        System.out.println("Mencari card 'Lari Merdeka 2026 v2'");
-        actions.scrollToText("Lari Merdeka 2026 v2"); 
+        // Cari Card "Lari Merdeka 2026 v3" (Scroll To Text)
+        System.out.println("Mencari card 'Lari Merdeka 2026 v3'");
+        actions.scrollToText("Lari Merdeka 2026 v3"); 
         waitTime(); 
 
         if (driver.findElements(cardPrivateChallenge).size() == 0) {
             driver.navigate().back();
-            logSkip("Test dilewati: Card 'Lari Merdeka 2026 v2' tidak ditemukan");
+            logSkip("Test dilewati: Card 'Lari Merdeka 2026 v3' tidak ditemukan");
             return; 
         }
 
-        logPass("Card Lari Merdeka 2026 v2 ditemukan");
+        logPass("Card Lari Merdeka 2026 v3 ditemukan");
         
         // Klik Card
         wait.until(ExpectedConditions.elementToBeClickable(cardPrivateChallenge));
-        clickTest(cardPrivateChallenge, "Klik card 'Lari Merdeka 2026 v2' di Public Challenge");
+        clickTest(cardPrivateChallenge, "Klik card 'Lari Merdeka 2026 v3' di Public Challenge");
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
         waitTime();
 
         // Validasi: Masuk detail
         Assert.assertTrue(driver.findElement(tabDeskripsi).isDisplayed(), "Gagal masuk detail challenge!");
 
-        logPass("Berhasil masuk detail 'Lari Merdeka 2026 v2'.");
+        logPass("Berhasil masuk detail 'Lari Merdeka 2026 v3'.");
         
         // Cek Tab Deskripsi
         System.out.println("Cek Deskripsi -> Scroll Turun");
@@ -610,7 +610,7 @@ public class TestChallenge extends BaseTest {
 
             // Pengisian kode undangan - verifikasi
             System.out.println("Input Kode Undangan");
-            String kodeUndangan = "195691"; // jangan lupa ganti sesuai kode undangan challenge private 
+            String kodeUndangan = "537545"; // jangan lupa ganti sesuai kode undangan challenge private 
             // locator Kotak Pertama (Index 1)
             By inputDigitPertama = AppiumBy.xpath("//android.app.AlertDialog[contains(@resource-id, 'radix')]/android.view.View/android.view.View/android.widget.TextView[1]");
 
@@ -705,8 +705,8 @@ public class TestChallenge extends BaseTest {
 
         logPass("Berhasil masuk ke list card Challenge Saya");
 
-        // Cari & Validasi "Lari Merdeka 2026 v2" ada di list
-        System.out.println("Mencari 'Lari Merdeka 2026 v2' di list");
+        // Cari & Validasi "Lari Merdeka 2026 v3" ada di list
+        System.out.println("Mencari 'Lari Merdeka 2026 v3' di list");
         waitTime();
         
         boolean isCardPresent = driver.findElements(cardPrivateChallenge).size() > 0;
@@ -714,7 +714,7 @@ public class TestChallenge extends BaseTest {
         if (isCardPresent) {
             System.out.println("Validasi Sukses: Challenge ditemukan.");
             isPrivateChallengeApproved = true; // set true karena sudah di-approve (card sudah muncul di list)
-            logPass("Validasi SUKSES: Challenge 'Lari Merdeka 2026 v2' ditemukan di list Saya.");
+            logPass("Validasi SUKSES: Challenge 'Lari Merdeka 2026 v3' ditemukan di list Saya.");
         } else {
             System.out.println("Validasi Gagal: Challenge tidak ada di list.");
             isPrivateChallengeApproved = false; // set false karena belum di-approve (card belum muncul di list)
@@ -763,17 +763,17 @@ public class TestChallenge extends BaseTest {
             return;
         }
 
-        actions.scrollToText("Lari Merdeka 2026 v2");
+        actions.scrollToText("Lari Merdeka 2026 v3");
         waitTime();
 
         boolean isCardExist = driver.findElements(cardPrivateChallenge).size() > 0;
 
         if (isCardExist) {
-            // Card Lari Merdeka 2026 v2 ada di list
+            // Card Lari Merdeka 2026 v3 ada di list
             System.out.println("Card ditemukan. Menjalankan proses keluar");
             
             // Klik Card
-            clickTest(cardPrivateChallenge, "Klik card 'Lari Merdeka 2026 v2'");
+            clickTest(cardPrivateChallenge, "Klik card 'Lari Merdeka 2026 v3'");
             wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
             waitTime();
 
@@ -806,7 +806,7 @@ public class TestChallenge extends BaseTest {
             }
             waitTime();
 
-            actions.scrollToText("Lari Merdeka 2026 v2");
+            actions.scrollToText("Lari Merdeka 2026 v3");
             waitTime();
 
             // Validasi Hilang
@@ -817,8 +817,8 @@ public class TestChallenge extends BaseTest {
             }
 
         } else {
-            // Card Lari Merdeka 2026 v2 ga ada di list
-            System.out.println("Card 'Lari Merdeka 2026 v2' TIDAK ditemukan di list");
+            // Card Lari Merdeka 2026 v3 ga ada di list
+            System.out.println("Card 'Lari Merdeka 2026 v3' TIDAK ditemukan di list");
             logSkip("SKIP: Challenge private tidak ditemukan di list (Mungkin belum di setujui penyelenggara)");
         }
 

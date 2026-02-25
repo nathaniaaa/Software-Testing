@@ -202,6 +202,8 @@ public class TestSyaratPrivasi extends BaseTest {
         Assert.assertTrue(driver.findElement(cardSyaratPrivasi).isDisplayed(), "Gagal kembali ke halaman Profil utama.");
 
         logPass("Berhasil kembali ke halaman Profil utama.");
+
+        actions.swipeVertical(0.3, 0.8);
     }
 
     // Helper 
