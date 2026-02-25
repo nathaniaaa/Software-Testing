@@ -29,53 +29,6 @@ public class ProfileTest extends BaseTest {
         profilePage = new ProfileActionHelper((AndroidDriver) driver);
     }
 
-    public void navigateToEditProfile() {
-        // From Dashboard to 
-        if (profilePage.isOnEditProfilePage()) {
-            return; 
-        }
-
-        try {
-            System.out.println("[SETUP] Navigating to Profile Tab...");
-            profilePage.navigateToProfileTab();
-            
-            Thread.sleep(2000); 
-
-            try {
-                TestListener.getTest().info("Setup: Profile Dashboard View (Before Editing)",
-                    MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-            } catch (Exception e) {
-                TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
-            }
-
-            System.out.println("[SETUP] Entering Edit Mode...");
-            profilePage.enterEditMode();
-            
-            // Wait for the form to open
-            Thread.sleep(1000);
-
-        } catch (Exception e) {
-            System.out.println("[SETUP] CRITICAL: Navigation sequence failed. Attempting brute-force.");
-            // Fallback: Just click the buttons blindly to try and save the test run
-            try {
-                profilePage.navigateToProfileTab();
-                Thread.sleep(2000);
-
-                try {
-                    TestListener.getTest().info("Setup: Profile Dashboard View (Before Editing)",
-                        MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-                } catch (Exception er) {
-                    TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
-                }
-
-
-                profilePage.enterEditMode();
-            } catch (Exception ex) {
-                System.out.println("[SETUP] FATAL: Could not recover.");
-            }
-        }
-    }
-
     @Test(priority = 1, description = "Pengguna tekan tombol back setelah selesai edit profil dan tidak tekan tombol simpan")
     @TestInfo(
         testType = "Negative Case",
@@ -87,8 +40,7 @@ public class ProfileTest extends BaseTest {
         TestListener.getTest().log(Status.INFO, "Starting Test: Discard Changes via Back Button");
 
         // 1. GET ORIGINAL VALUE (Baseline)
-        profilePage.navigateToProfileTab();
-        profilePage.enterEditMode();
+        profilePage.navigateToEditProfile();
         
         // We read what is currently in the box before touching it
         String originalName = profilePage.getInputValue("Nama"); 
@@ -102,7 +54,7 @@ public class ProfileTest extends BaseTest {
         TestListener.getTest().info("Action: Pressing Back Button...");
         profilePage.tapBackArrow();
 
-        boolean isOriginalNamePresent = profilePage.isElementDisplayed(originalName);
+        boolean isOriginalNamePresent = profilePage.areElementsDisplayed(originalName);
 
         if (!isOriginalNamePresent) {
             String errorMsg = "FAILED: The original name '" + originalName + "' is NOT visible on the dashboard anymore!";
@@ -111,7 +63,7 @@ public class ProfileTest extends BaseTest {
         }
 
         // Check 2: Is Temp Name There? (It shouldn't be)
-        boolean isTempNamePresent = profilePage.isElementDisplayed(tempName);
+        boolean isTempNamePresent = profilePage.areElementsDisplayed(tempName);
         if (isTempNamePresent) {
             String errorMsg = "FAILED: The temporary name '" + tempName + "' IS visible! The app saved it!";
             logFail(errorMsg);   // 1. Take Screenshot & Log Red
@@ -119,7 +71,7 @@ public class ProfileTest extends BaseTest {
         }
 
         // 5. SUCCESS
-        logPass("SUCCESS: Original name '" + originalName + "' is still displayed correctly.");
+        TestListener.getTest().log(Status.PASS, "SUCCESS: Original name '" + originalName + "' is still displayed correctly.");
     }
 
     // --- TEST: SAVE BUTTON DISABLED (EMPTY FIELDS) ---
@@ -132,14 +84,12 @@ public class ProfileTest extends BaseTest {
     public void testSaveWithEmptyFields() {
 
         // 1. NAVIGATE & EDIT
-        profilePage.navigateToProfileTab();
-        profilePage.enterEditMode();
+        profilePage.navigateToEditProfile();
 
         // logInfo("Starting Test: Check Save Button State with Empty Fields");
 
         // 2. CLEAR FIELDS (Trigger Validation)
-        // We assume fillInputAndReadBack handles clearing if passed an empty string
-        TestListener.getTest().log(Status.INFO, "Action: Clearing all mandatory fields...");
+         TestListener.getTest().log(Status.INFO, "Action: Clearing all mandatory fields...");
         profilePage.fillInputAndReadBack("Nama", "");
         profilePage.fillInputAndReadBack("Tinggi Badan", "");
         profilePage.fillInputAndReadBack("Berat Badan", "");
@@ -148,11 +98,11 @@ public class ProfileTest extends BaseTest {
         try { driver.hideKeyboard(); } catch (Exception ignored) {}
 
         // 3. VERIFY BUTTON STATE (Must be Disabled)
-        boolean isEnabled = profilePage.isSaveButtonEnabled();
+        boolean isEnabled = profilePage.isSaveButtonEnabled(true);
 
         if (!isEnabled) {
             // SUCCESS: Button is grayed out/disabled
-            logPass("SUCCESS: Tombol Simpan DISABLE (Tidak bisa ditekan) sesuai ekspektasi.");
+            TestListener.getTest().log(Status.PASS, "SUCCESS: Tombol Simpan DISABLE (Tidak bisa ditekan) sesuai ekspektasi.");
         } else {
             // FAILURE: Button is active
             String msg = "FAILED: Tombol Simpan MASIH AKTIF (Enabled) padahal field kosong!";
@@ -164,10 +114,18 @@ public class ProfileTest extends BaseTest {
 
         // 4. VERIFY ERROR MESSAGES (Dynamic Validation)
         // Check each error text matches your app's actual validation messages
-        profilePage.isElementDisplayed("Nama harus memiliki minimal 3 karakter"); // Adjust text if app differs
-        profilePage.isElementDisplayed("Tinggi badan harus berupa angka"); // Adjust text if app differs
-        profilePage.isElementDisplayed("Berat badan harus berupa angka"); // Adjust text if app differs
-
+        // Checks if both texts exist, takes ONE screenshot highlighting both
+        boolean isScreenValid = profilePage.areElementsDisplayed(
+            "Nama harus memiliki minimal 3 karakter", 
+            "Tinggi badan harus berupa angka",
+            "Berat badan harus berupa angka"
+        );
+        if (isScreenValid) {
+            TestListener.getTest().log(Status.PASS, "SUCCESS: All expected error messages are displayed for empty fields.");
+        } else {
+            String msg = "FAILED: Expected error messages for empty fields are NOT displayed!";
+            TestListener.getTest().log(Status.WARNING, msg);
+        }
         // 5. FINAL ASSERTION
         Assert.assertFalse(isEnabled, "Tombol Simpan seharusnya Disable!");
 
@@ -189,8 +147,7 @@ public class ProfileTest extends BaseTest {
         String expectedErrorText = "Nama sudah dipakai, coba yang lain"; 
 
         // 2. NAVIGASI & EDIT
-        profilePage.navigateToProfileTab();
-        profilePage.enterEditMode();
+        profilePage.navigateToEditProfile();
 
         // 3. INPUT NAMA DUPLIKAT
         TestListener.getTest().log(Status.INFO, "Action: Menginput nama yang sudah terdaftar: '" + existingUsername + "'");
@@ -199,10 +156,10 @@ public class ProfileTest extends BaseTest {
         try { driver.hideKeyboard(); } catch (Exception ignored) {}
 
         // 4. KLIK SIMPAN
-        boolean isSaveEnabled = profilePage.isSaveButtonEnabled();
+        boolean isSaveEnabled = profilePage.isSaveButtonEnabled(true);
         TestListener.getTest().log(Status.INFO, "Is Save Button Enabled: " + isSaveEnabled);
         // 5. VERIFIKASI PESAN ERROR
-        boolean isErrorMessageDisplayed = profilePage.isElementDisplayed(expectedErrorText);
+        boolean isErrorMessageDisplayed = profilePage.areElementsDisplayed(expectedErrorText);
         TestListener.getTest().log(Status.INFO, "Is Error Message Displayed: " + isErrorMessageDisplayed);
 
         if (!isSaveEnabled) {      
@@ -253,8 +210,7 @@ public class ProfileTest extends BaseTest {
         String expectedErrorPart = "angka"; // Keyword umum error (misal: "Format angka salah", "Hanya boleh angka")
 
         // 2. NAVIGASI & EDIT
-        profilePage.navigateToProfileTab();
-        profilePage.enterEditMode();
+        profilePage.navigateToEditProfile();
 
         // 3. INPUT DATA DESIMAL
         TestListener.getTest().log(Status.INFO, "Action: Menginput Tinggi '" + invalidHeight + "' dan Berat '" + invalidWeight + "'");
@@ -277,7 +233,7 @@ public class ProfileTest extends BaseTest {
         }
 
         // 5. VALIDASI 2: CEK TOMBOL SIMPAN & ERROR (Jika desimal masuk)
-        boolean isSaveEnabled = profilePage.isSaveButtonEnabled();
+        boolean isSaveEnabled = profilePage.isSaveButtonEnabled(true);
 
         TestListener.getTest().log(Status.INFO, "Decimal Persisted. Button Enabled: " + isSaveEnabled);
 
@@ -311,8 +267,7 @@ public class ProfileTest extends BaseTest {
         String unreasonableWeight = "600"; // 600 kg
         
         // 2. NAVIGASI & EDIT
-        profilePage.navigateToProfileTab();
-        profilePage.enterEditMode();
+        profilePage.navigateToEditProfile();
 
         // 3. INPUT DATA TIDAK WAJAR
         TestListener.getTest().log(Status.INFO, "Action: Menginput Tinggi '" + unreasonableHeight + "' dan Berat '" + unreasonableWeight + "'");
@@ -323,9 +278,8 @@ public class ProfileTest extends BaseTest {
         try { driver.hideKeyboard(); } catch (Exception ignored) {}
 
         // 4. VERIFIKASI: TOMBOL & ERROR
-        boolean isSaveEnabled = profilePage.isSaveButtonEnabled();
-        boolean isErrorMsgDisplayed = profilePage.isElementDisplayed("Tinggi badan harus antara 50 cm dan 300 cm") &&
-                                    profilePage.isElementDisplayed("Berat badan harus antara 20 kg dan 500 kg");
+        boolean isSaveEnabled = profilePage.isSaveButtonEnabled(true);
+        boolean isErrorMsgDisplayed = profilePage.areElementsDisplayed("Tinggi badan harus antara 50 cm dan 300 cm", "Berat badan harus antara 20 kg dan 500 kg");
         TestListener.getTest().log(Status.INFO, "Error Displayed: " + isErrorMsgDisplayed);
 
 
