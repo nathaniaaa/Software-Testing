@@ -1,24 +1,21 @@
 package tests.creation;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
+import com.aventstack.extentreports.MediaEntityBuilder;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import tests.helper.CaptureHelper;
 import tests.utils.TestListener;
-
-import com.aventstack.extentreports.MediaEntityBuilder;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-
-import org.apache.commons.io.filefilter.FalseFileFilter;
 
 public class ProfileActionHelper extends CreationActionHelper {
 
@@ -282,196 +279,7 @@ public class ProfileActionHelper extends CreationActionHelper {
         wait.until(ExpectedConditions.visibilityOfElementLocated(BTN_EDIT_PROFIL));
     }
 
-    public boolean checkYearInPickerAndHighlight(String targetYear) {
-        System.out.println("Step: Checking availability of year: " + targetYear);
-
-        String[] currentDateParts = getCurrentDateFromUi(); 
-        String currentYearUi = currentDateParts[2]; 
-
-        // 2. OPEN PICKER (Logic from updateDateOfBirth)
-        try {
-            tap(INPUT_DATE_DISPLAY, "Open Date Picker");
-        } catch (Exception e) {
-            clickByLabelOffset("Tanggal Lahir");
-        }
-
-        // 3. SWITCH TO YEAR VIEW (Logic from updateDateOfBirth)
-        try {
-            // Try tapping the text we read from the UI earlier
-            tapByExactText(currentYearUi);
-        } catch (Exception e) {
-                System.out.println("WARN: Could not switch to Year View.");
-                driver.navigate().back();
-                return false;
-        }
-
-        // 4. SCROLL & SEARCH (Logic from updateDateOfBirth)
-        try {
-            // Use your specific scroll helper
-            scrollToText(targetYear, 7); 
-            
-            By targetEl = AppiumBy.xpath("//android.widget.TextView[@text='" + targetYear + "']");
-        
-            if (driver.findElements(targetEl).size() > 0) {
-                capture.highlightAndCapture(targetEl, "FAILED: Year " + targetYear + " is AVAILABLE!");
-                
-                // Logic: "Close with driver navigate back if its found"
-                driver.navigate().back(); 
-                return true; 
-            }
-
-        } catch (Exception e) {
-            // --- NOT FOUND (Test Pass) ---
-            System.out.println("   -> Year " + targetYear + " not found (Good). Capturing limits...");
-            
-            // CAPTURE MIN & MAX EVIDENCE
-            try {
-                // 1. Get all TextView elements
-                java.util.List<WebElement> allTexts = driver.findElements(AppiumBy.className("android.widget.TextView"));
-                
-                // 2. Filter & Store TEXTS (Strings) of valid years
-                java.util.List<String> validYearTexts = new java.util.ArrayList<>();
-                
-                for (WebElement el : allTexts) {
-                    String txt = el.getText();
-                    // Regex: Exactly 4 digits (avoids headers/days)
-                    if (txt.matches("^\\d{4}$")) {
-                        validYearTexts.add(txt);
-                    }
-                }
-
-                // 3. Create Locators for Min and Max
-                if (!validYearTexts.isEmpty()) {
-                    String minText = validYearTexts.get(0);
-                    String maxText = validYearTexts.get(validYearTexts.size() - 1);
-                    
-                    // Convert Text back to By Locator for your helper
-                    By minLocator = AppiumBy.xpath("//android.widget.TextView[@text='" + minText + "']");
-                    By maxLocator = AppiumBy.xpath("//android.widget.TextView[@text='" + maxText + "']");
-
-                    capture.highlightAndCapture(minLocator, "Range Check (Min): " + minText);
-                    capture.highlightAndCapture(maxLocator, "Range Check (Max): " + maxText);
-                } else {
-                    System.out.println("WARN: No 4-digit years found visible.");
-                }
-
-            } catch (Exception ex) {
-                System.out.println("Error capturing bounds: " + ex.getMessage());
-            }
-
-            driver.navigate().back(); 
-            return false; 
-        }
-
-        // Fallback cleanup
-        try { driver.navigate().back(); } catch (Exception ignored) {}
-        return false;
-    }
-    
-
-    // public boolean checkYearInPickerAndHighlight(String targetYear) {
-    //     System.out.println("Step: Checking availability of year: " + targetYear);
-
-    //     // 1. READ CURRENT DATE (To know what to click to switch to Year View)
-    //     String[] currentDateParts = getCurrentDateFromUi();
-    //     String currentYear = currentDateParts[2]; 
-        
-    //     // 2. OPEN PICKER
-    //     try {
-    //        tap(INPUT_DATE_DISPLAY, "Open Date Picker");
-    //     } catch (Exception e) {
-    //         clickByLabelOffset("Tanggal Lahir");
-    //     }
-        
-
-    //     // 3. SWITCH TO YEAR VIEW
-    //     try {
-    //         tapByExactText(currentYear);
-    //     } catch (Exception e) {
-    //         try {
-    //             driver.findElement(AppiumBy.id("android:id/date_picker_header_year")).click();
-    //         } catch (Exception ex) {
-    //             driver.navigate().back();
-    //             return false;
-    //         }
-    //     }
-
-    //     // 4. TRY TO FIND TARGET YEAR
-    //     try {
-    //         scrollToText(targetYear, 7); 
-            
-    //         // Check visibility
-    //         WebElement targetEl = driver.findElement(AppiumBy.xpath("//android.widget.TextView[@text='" + targetYear + "']"));
-            
-    //         if (targetEl.isDisplayed()) {
-    //             // --- CASE A: YEAR FOUND ---
-    //             capture.highlightAndCapture(
-    //                 AppiumBy.xpath("//android.widget.TextView[@text='" + targetYear + "']"), 
-    //                 "Year FOUND: " + targetYear
-    //             );
-    //             driver.navigate().back(); 
-    //             return true;
-    //         }
-
-    //     } catch (Exception e) {
-    //         // --- CASE B: YEAR NOT FOUND (Capture Range) ---
-    //         System.out.println("   -> Year " + targetYear + " not found. Capturing Min and Max...");
-            
-    //         try {
-    //                 try {
-    //                     tap(INPUT_DATE_DISPLAY, "Open Date Picker");
-    //                     } catch (Exception er) {
-    //                         clickByLabelOffset("Tanggal Lahir");
-    //                     }
-                        
-
-    //                     // 3. SWITCH TO YEAR VIEW
-    //                     try {
-    //                         tapByExactText(currentYear);
-    //                     } catch (Exception er) {
-    //                         try {
-    //                             driver.findElement(AppiumBy.id("android:id/date_picker_header_year")).click();
-    //                         } catch (Exception ex) {
-    //                             driver.navigate().back();
-    //                             return false;
-    //                         }
-    //                     }
-    //             // Get all visible text views (The years list)
-    //             java.util.List<WebElement> visibleYears = driver.findElements(AppiumBy.className("android.widget.TextView"));
-                
-    //             if (!visibleYears.isEmpty()) {
-    //                 // 1. Get Text of First and Last Element
-    //                 String minYearText = visibleYears.get(0).getText();
-    //                 String maxYearText = visibleYears.get(visibleYears.size() - 1).getText();
-                    
-    //                 // 2. Capture MINIMUM Year (Top of list)
-    //                 capture.highlightAndCapture(
-    //                     AppiumBy.xpath("//android.widget.TextView[@text='" + minYearText + "']"), 
-    //                     "Range Check (Min): " + minYearText
-    //                 );
-
-    //                 // 3. Capture MAXIMUM Year (Bottom of list)
-    //                 capture.highlightAndCapture(
-    //                     AppiumBy.xpath("//android.widget.TextView[@text='" + maxYearText + "']"), 
-    //                     "Range Check (Max): " + maxYearText
-    //                 );
-    //             }
-    //         } catch (Exception ex) {
-    //             System.out.println("Failed to capture bounds: " + ex.getMessage());
-    //         }
-    //     }
-
-    //     // 5. CLEANUP & RETURN FALSE
-    //     try { driver.navigate().back(); } catch (Exception ignored) {} 
-    //     return false;
-    // }
-
-    /**
-     * Membuka date picker, mencari tahun, dan mencoba memilihnya.
-     * Mengembalikan true jika tahun ditemukan dan dipilih.
-     * Mengembalikan false jika tahun tidak ada di dalam list (terblokir).
-     */
-    public boolean attemptToSelectYearOnly(String targetYear) {
+    public boolean attemptToSelectYearOnly(String targetYear, boolean screenshot) {
         System.out.println("Step: Checking Year Only -> " + targetYear);
 
         // 1. READ UI STATE (Untuk mengetahui teks tahun apa yang harus diklik di header)
@@ -484,25 +292,13 @@ public class ProfileActionHelper extends CreationActionHelper {
         } catch (Exception e) {
             clickByLabelOffset("Tanggal Lahir", false);
         }
-        
-        // Wait for Picker (Sesuai logikamu)
-        try {
-            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofMillis(2000));
-            shortWait.until(ExpectedConditions.or(
-                ExpectedConditions.visibilityOfElementLocated(AppiumBy.className("android.widget.DatePicker")),
-                ExpectedConditions.visibilityOfElementLocated(AppiumBy.id("android:id/datePicker"))
-            )); 
-        } catch (Exception e) {
-            System.out.println("WARN: Date picker did not open!");
-            return false;
-        }
 
         // 3. CHANGE YEAR LOGIC
         if (!currentYear.equals(targetYear)) {
             System.out.println("   -> Attempting to switch year to: " + targetYear);
             try {
                 // Buka list tahun
-                tapByExactText(currentYear);
+                tapByExactText(currentYear, screenshot);
                 
                 // Scroll mencari tahun target
                 scrollToText(targetYear, 7); 
@@ -516,7 +312,7 @@ public class ProfileActionHelper extends CreationActionHelper {
                 
                 // Jika ketemu, tap tahun tersebut
                 tap(yearEl, "Select Year: " + targetYear); 
-                System.out.println("   -> [FAILED FOR NEGATIVE TEST] Year '" + targetYear + "' WAS FOUND!");
+                System.out.println("   -> Year '" + targetYear + "' WAS FOUND!");
                 
                 // Tutup picker karena kita hanya cek tahun
                 driver.navigate().back(); 
@@ -545,6 +341,12 @@ public class ProfileActionHelper extends CreationActionHelper {
         driver.navigate().back();
         return true; 
     }
+
+    /**
+     * Membuka date picker, mencari tahun, dan mencoba memilihnya.
+     * Mengembalikan true jika tahun ditemukan dan dipilih.
+     * Mengembalikan false jika tahun tidak ada di dalam list (terblokir).
+     */
 
     public boolean updateDateOfBirth(String targetYear, String targetMonth, String targetDay) {
         System.out.println("Step: Date Update...");

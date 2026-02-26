@@ -2,6 +2,8 @@ package tests.creation.negative;
 
 import java.time.Year;
 
+import javax.swing.plaf.TreeUI;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.ScreenOrientation;
 import org.testng.Assert;
@@ -253,7 +255,7 @@ public class ProfileTest extends BaseTest {
     }
 
     // --- TEST: UNREASONABLE INPUT (Height & Weight) ---
-    @Test(priority = 7, description = "Pengguna memasukkan nilai tinggi badan dan berat badan tidak wajar")
+    @Test(priority = 5, description = "Pengguna memasukkan nilai tinggi badan dan berat badan tidak wajar")
     @TestInfo(
         testType = "Negative Case", 
         group = "Profile", 
@@ -316,64 +318,63 @@ public class ProfileTest extends BaseTest {
         }
     }
 
-// // --- TEST: AGE RESTRICTION (7 - 100 Years) ---
-//     @Test(priority = 8, description = "Pengguna memasukkan tanggal lahir dengan tahun yang tidak valid")
-//     @TestInfo(
-//         testType = "Negative", 
-//         group = "Profile", 
-//         expected = "Tahun lahir untuk umur < 7 atau > 80 tahun tidak akan tersedia di picker."
-//     )
-//     public void testAgeRestrictionInDatePicker() {
-//         TestListener.getTest().log(Status.INFO, "Starting Test: Age Restriction (7-80 Years)");
+// --- TEST: AGE RESTRICTION (7 - 100 Years) ---
+    @Test(priority = 6, description = "Pengguna memasukkan tanggal lahir dengan tahun yang tidak valid")
+    @TestInfo(
+        testType = "Negative", 
+        group = "Profile", 
+        expected = "Pengguna tidak bisa memasukkan tanggal lahir dengan tahun yang tidak valid, karna tahun lahir sudah diset minimal kelahiran 7 sampai 100 tahun kebelakang"
 
-//         // 1. KALKULASI TAHUN DINAMIS
-//         int currentYear = java.time.Year.now().getValue();
-//         int minAge = 7;
-//         int maxAge = 80;
+    )
+    public void testAgeRestrictionInDatePicker() {
+        TestListener.getTest().log(Status.INFO, "Starting Test: Age Restriction (7-80 Years)");
 
-//         // Hitung tahun yang DILARANG (Invalid)
-//         String tooYoungYear = String.valueOf(currentYear - (minAge - 1)); // Terlalu muda (misal: 6 tahun)
-//         String minYear = String.valueOf(currentYear - minAge); // Tepat batas bawah (7 tahun)
-//         String tooOldYear   = String.valueOf(currentYear - (maxAge + 1)); // Terlalu tua (misal: 81 tahun)
-//         String maxYear = String.valueOf(currentYear - maxAge); // Tepat batas atas
+        // 1. KALKULASI TAHUN DINAMIS
+        int currentYear = java.time.Year.now().getValue();
+        int minAge = 7;
+        int maxAge = 100;
+
+        // Hitung tahun yang DILARANG (Invalid)
+        String tooYoungYear = String.valueOf(currentYear - (minAge - 1)); // Terlalu muda (misal: 6 tahun)
+        String minYear = String.valueOf(currentYear - minAge); // Tepat batas bawah (7 tahun)
+        String tooOldYear   = String.valueOf(currentYear - (maxAge + 1)); // Terlalu tua (misal: 81 tahun)
+        String maxYear = String.valueOf(currentYear - maxAge); // Tepat batas atas
         
-//         TestListener.getTest().log(Status.INFO, "Testing Restricted Years: " + tooYoungYear + " (Terlalu Muda) & " + tooOldYear + " (Terlalu Tua)");
+        TestListener.getTest().log(Status.INFO, "Testing Restricted Years: " + tooYoungYear + " (Terlalu Muda) & " + tooOldYear + " (Terlalu Tua)");
 
-//         // 2. NAVIGASI
-//         profilePage.navigateToEditProfile();
+        // 2. NAVIGASI
+        profilePage.navigateToEditProfile(false);
 
-//         // 3. CEK TAHUN TERLALU MUDA (Harapannya: Ditolak/Return False)
-//         TestListener.getTest().log(Status.INFO, "Action: Mencoba memilih tahun terlarang: " + tooYoungYear);
-//         boolean isTooYoungSelected = profilePage.attemptToSelectYearOnly(tooYoungYear);
+        // 3. CEK TAHUN TERLALU MUDA (Expected: Ditolak/Return False)
+        TestListener.getTest().log(Status.INFO, "Action: Mencoba memilih tahun terlarang: " + tooYoungYear);
+        boolean isTooYoungSelected = profilePage.attemptToSelectYearOnly(tooYoungYear, true);
 
-//         if (!isTooYoungSelected) {
-//             // Karena tidak ditemukan (false), maka skenario negatif BERHASIL
-//             TestListener.getTest().log(Status.PASS, "SUCCESS: Sistem menolak/menyembunyikan tahun " + tooYoungYear + " (Validasi Minimal 7 tahun OK).");
-//             profilePage.navigateToEditProfile();
-//             profilePage.attemptToSelectYearOnly(minYear);
-//         } else {
-//             String failMsg = "FAILED: Sistem MENGIZINKAN pemilihan tahun " + tooYoungYear + "!";
-//             TestListener.getTest().log(Status.FAIL, failMsg);
-//             Assert.fail(failMsg);
-//         }
+        if (!isTooYoungSelected) {
+            TestListener.getTest().log(Status.PASS, "SUCCESS: Sistem menolak/menyembunyikan tahun " + tooYoungYear + " (Validasi Minimal 7 tahun OK).");
+            profilePage.navigateToEditProfile(false);
+            profilePage.attemptToSelectYearOnly(minYear, false);
+        } else {
+            String failMsg = "FAILED: Sistem MENGIZINKAN pemilihan tahun " + tooYoungYear + "!";
+            TestListener.getTest().log(Status.FAIL, failMsg);
+            Assert.fail(failMsg);
+        }
         
-//         profilePage.navigateToEditProfile();
+        profilePage.navigateToEditProfile();
 
-//         // 4. CEK TAHUN TERLALU TUA (Harapannya: Ditolak/Return False)
-//         TestListener.getTest().log(Status.INFO, "Action: Mencoba memilih tahun terlarang: " + tooOldYear);
-//         boolean isTooOldSelected = profilePage.attemptToSelectYearOnly(tooOldYear);
+        // 4. CEK TAHUN TERLALU TUA (Expected: Ditolak/Return False)
+        TestListener.getTest().log(Status.INFO, "Action: Mencoba memilih tahun terlarang: " + tooOldYear);
+        boolean isTooOldSelected = profilePage.attemptToSelectYearOnly(tooOldYear, false);
 
-//         if (!isTooOldSelected) {
-//             // Karena tidak ditemukan (false), maka skenario negatif BERHASIL
-//             TestListener.getTest().log(Status.PASS, "SUCCESS: Sistem menolak/menyembunyikan tahun " + tooOldYear + " (Validasi Maksimal 80 tahun OK).");
-//             profilePage.navigateToEditProfile();
-//             profilePage.attemptToSelectYearOnly(maxYear);
-//         } else {
-//             String failMsg = "FAILED: Sistem MENGIZINKAN pemilihan tahun " + tooOldYear + "!";
-//             TestListener.getTest().log(Status.FAIL, failMsg);
-//             Assert.fail(failMsg);
-//         }
-    // }
+        if (!isTooOldSelected) {
+            TestListener.getTest().log(Status.PASS, "SUCCESS: Sistem menolak/menyembunyikan tahun " + tooOldYear + " (Validasi Maksimal 100 tahun OK).");
+            profilePage.navigateToEditProfile(false);
+            profilePage.attemptToSelectYearOnly(maxYear, false);
+        } else {
+            String failMsg = "FAILED: Sistem MENGIZINKAN pemilihan tahun " + tooOldYear + "!";
+            TestListener.getTest().log(Status.FAIL, failMsg);
+            Assert.fail(failMsg);
+        }
+    }
 }
 
 
