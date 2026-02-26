@@ -173,13 +173,13 @@ public class ActionHelper {
      * Tap pada koordinat spesifik (X, Y).
      * SANGAT PENTING untuk kasus CHART/GRAFIK MyTelkomsel.
      */
-    public void tapByCoordinates(int x, int y) {
+    public void tapByCoordinates(int x, int y, boolean screenshot) {
         try {
             // 1. CAPTURE & HIGHLIGHT (Draw a Circle at X, Y)
             String evidence = capture.getScreenshotWithCoordinateHighlight(x, y);
 
             // 2. Add to Excel List
-            if (BaseTest.getScreenshotList() != null) {
+            if (screenshot && BaseTest.getScreenshotList() != null) {
                 BaseTest.getScreenshotList().add(evidence);
             }
 
@@ -203,6 +203,10 @@ public class ActionHelper {
             System.err.println("   -> Failed to tap by coordinates: " + e.getMessage());
             // Fail safely (optional: take regular screenshot here)
         }
+    }
+
+    public void tapByCoordinates(int x, int y) {
+            tapByCoordinates(x, y, true); // Default: Ambil screenshot
     }
 
     public void doubleTap(WebElement element) {
@@ -249,7 +253,7 @@ public class ActionHelper {
      * Tap layar berdasarkan RASIO (Persentase).
      * Contoh: xRatio 0.5 (Tengah), yRatio 0.2 (Atas).
      */
-    public void tapAtScreenRatio(double xRatio, double yRatio) {
+    public void tapAtScreenRatio(double xRatio, double yRatio, boolean screenshot) {
         try {
             // 1. Boundary Check: Ensure ratios are valid (0.0 to 1.0) to prevent coordinate errors
             if (xRatio < 0 || xRatio > 1 || yRatio < 0 || yRatio > 1) {
@@ -263,7 +267,7 @@ public class ActionHelper {
 
             System.out.println("  -> Tapping at Ratio: " + xRatio + ", " + yRatio + " (Pixel: " + x + ", " + y + ")");
 
-            tapByCoordinates(x, y);
+            tapByCoordinates(x, y, screenshot); // Reuse existing method with screenshot control
 
         } catch (Exception e) {
             // 5. Error Handling
@@ -272,11 +276,15 @@ public class ActionHelper {
         }
     }
 
+    public void tapAtScreenRatio(double xRatio, double yRatio) {
+        tapAtScreenRatio(xRatio, yRatio, true); // Default: Ambil screenshot
+    }
+
     /**
      * Finds text on screen, gets its position, and taps the center pixel.
      * Bypasses 'clickable=false' or layout blocking issues.
      */
-    public void tapByTextPosition(String visibleText) {
+    public void tapByTextPosition(String visibleText, boolean screenshot) {
         try {
             System.out.println("   -> [Sniper] Searching for text: '" + visibleText + "'...");
             
@@ -293,14 +301,18 @@ public class ActionHelper {
             System.out.println("   -> Found at [" + centerX + "," + centerY + "]. Tapping...");
             
             // Ensure this calls your modern W3C implementation
-            tapByCoordinates(centerX, centerY); 
+            tapByCoordinates(centerX, centerY, screenshot); 
 
         } catch (Exception e) {
             System.err.println("   -> Failed to tap text '" + visibleText + "': " + e.getMessage());
         }
     }
 
-    protected void tapByExactText(String exactText) {
+    public void tapByTextPosition(String visibleText) {
+        tapByTextPosition(visibleText, true); // Default: Ambil screenshot
+    }
+
+    protected void tapByExactText(String exactText, boolean screenshot) {
         try {
             System.out.println("   -> [Sniper Exact] Searching for exact text: '" + exactText + "'...");
 
@@ -318,11 +330,15 @@ public class ActionHelper {
             System.out.println("   -> Found exact match at [" + centerX + "," + centerY + "]. Tapping...");
 
             // 3. W3C Action (Replaces actions.tapByCoordinates)
-            tapByCoordinates(centerX, centerY);
+            tapByCoordinates(centerX, centerY, screenshot);
 
         } catch (Exception e) {
             System.err.println("   -> Failed to tap exact text '" + exactText + "': " + e.getMessage());
         }
+    }
+
+    public void tapByExactText(String exactText) {
+        tapByExactText(exactText, true); // Default: Ambil screenshot
     }
 
     protected void tapElementCenter(WebElement element) {
