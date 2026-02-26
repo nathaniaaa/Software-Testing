@@ -41,6 +41,9 @@ public class TestBeranda extends BaseTest {
     By textLihatSemuaChallenges = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
 
     By textLihatSemuaRiwayatLari = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
+
+    // container public challenge
+    By wadahPublicChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Public Challenges']/following-sibling::android.view.View[1]");
     
     // Card Public Challenge - dari beranda
     By cardPublicChallengeBeranda = AppiumBy.xpath("//android.widget.TextView[@text='Public Challenges']/following-sibling::android.view.View[1]");
@@ -78,12 +81,9 @@ public class TestBeranda extends BaseTest {
             System.out.println("INFO: Target Progress tidak ada. Y Offset normal (0.0)");
         }
 
-        logInfo("Tampilan awal Beranda");
         Assert.assertTrue(driver.findElement(navBeranda).isDisplayed(), "Gagal memuat halaman Beranda di awal test.");
 
         capture.highlightAndCapture(headerTotalLari, "Validasi Tampilan Total Lari Harian");
-
-        logPass("Total Lari Harian muncul dengan benar di Beranda");
     }
 
     @Test(priority = 2, description = "Pengguna menekan tombol \"lihat semua\" pada Challenge yang diikuti")
@@ -106,19 +106,14 @@ public class TestBeranda extends BaseTest {
             System.out.println("Kondisi: User belum mengikuti challenge apapun");
             
             capture.highlightAndCapture(textBelumAdaChallenge, "Validasi: Teks Empty State Challenge Saya");
-            
-            logPass("Daftar challenges kosong. Teks peringatan berhasil divalidasi sesuai Expected Result.");
         } else {
             // skenario 2 -> ada challenge 
             System.out.println("Kondisi: User memiliki challenge yang diikuti.");
             
-            capture.highlightAndCapture(headerChallengeSaya, "Bagian Challenge yang Diikuti (Challenge Saya)");
-
             if (driver.findElements(textLihatSemuaChallengeYangDiikuti).size() > 0) {
                 clickTest(textLihatSemuaChallengeYangDiikuti, "Klik 'Lihat Semua' (Challenge Saya)");
                 
                 try { wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.className("android.view.View"))); } catch (Exception e) {}
-                logPass("Berhasil klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya)");
 
                 waitTime();
                 clickBack();
@@ -150,7 +145,6 @@ public class TestBeranda extends BaseTest {
         if (driver.findElements(textLihatSemuaChallenges).size() > 0) {
             clickTest(textLihatSemuaChallenges, "Klik 'Lihat Semua' (Public Challenge)");
             waitTime();
-            logPass("Berhasil masuk ke halaman daftar lengkap Public Challenges.");
 
             // Klik Bottom Navigation yang Beranda (keluar dari challenge)
             clickTest(navBeranda, "Klik Bottom Nav 'Beranda'");
@@ -206,9 +200,6 @@ public class TestBeranda extends BaseTest {
             } else {
                 capture.highlightAndCapture(headerExclusive, "Validasi: Header Exclusive");
             }
-            
-            logPass("Validasi Tampilan area Exclusive Challenges selesai.");
-            
         } else {
             System.out.println("Elemen Exclusive Challenge tidak ditemukan");
             capture.highlightAndCapture(headerPublicChallenge, "Bagian Public Challenges (tidak ada Exclusive Challenge)");
@@ -226,35 +217,33 @@ public class TestBeranda extends BaseTest {
         group = "Beranda"
     ) 
     public void publicChallenges() {
-        logInfo("Tampilan awal");
+        if (driver.findElements(wadahPublicChallenge).size() > 0) {
+            System.out.println("Card ditemukan di List. Mengatur swipe dinamis");
+            
+            // swipe dinamis
+            org.openqa.selenium.WebElement wadah = driver.findElement(wadahPublicChallenge);
+            int centerY = wadah.getLocation().getY() + (wadah.getSize().getHeight() / 2);
+            int screenHeight = driver.manage().window().getSize().getHeight();
+            double dynamicYRatio = (double) centerY / screenHeight;
+            
+            // Swipe pakai rasio 
+            actions.swipeHorizontal(0.9, 0.1, dynamicYRatio);
+            waitTime();
+            actions.swipeHorizontal(0.1, 0.9, dynamicYRatio);
+            waitTime();
+            
 
-        // Scroll horizontal di Challenges (Public Challenge)
-        System.out.println("Scroll Horizontal 'Public Challenges'");
-        actions.swipeHorizontal(0.9, 0.1, 0.7 + yOffset);
-        waitTime();
-
-        actions.swipeHorizontal(0.1, 0.9, 0.7 + yOffset);
-        waitTime();
-
-        // Klik card Public Challenges (card di Beranda)
-        System.out.println(" Klik Salah Satu Card 'Public Challenges' di Beranda");
-        
-        // LOGIC: Cek apakah Card Pertama (Index 2) Ada?
-        if (driver.findElements(cardPublicChallengeBeranda).size() > 0) {
-            // Kondisi: Ada Card di List
-            System.out.println("Card ditemukan di List. Klik Card Pertama.");
+            // klik card pertama
             clickTest(cardPublicChallengeBeranda, "Klik Card Public Challenge Pertama");
             waitTime();
 
-            // Back ke Beranda
             System.out.println("Back ke Beranda");
-            clickBack(); // Back dari Detail
+            clickBack();
             waitTime();
-            
             logPass("Berhasil kembali ke Beranda");
         } else {
-            // Kondisi: List Kosong
             System.out.println("List Kosong / Card tidak ditemukan.");
+            capture.highlightAndCapture(headerPublicChallenge, "Validasi: Header Public Challenges");
             logSkip("Test dilewati: Tidak ada card Public Challenge di Beranda.");
         }
         waitTime();
@@ -282,14 +271,10 @@ public class TestBeranda extends BaseTest {
             System.out.println("Kondisi: Tidak ada event lari yang sedang berlangsung");
             
             capture.highlightAndCapture(textBelumAdaEvent, "Validasi: Teks Empty State Event Lari");
-            
-            logPass("Daftar event lari kosong. Teks peringatan berhasil divalidasi sesuai Expected Result.");
         } else {
             // skenario 2 -> ada event lari
-            System.out.println("Kondisi: User memiliki riwayat lari.");
-            
-            capture.highlightAndCapture(headerRiwayatLari, "Bagian Event Lari");
-            logPass("Validasi tampilan Event Lari");
+            System.out.println("Kondisi: ada event lari yang sedang berlangsung");
+            logPass("event lari ditemukan");
         }
     }
 
@@ -317,12 +302,9 @@ public class TestBeranda extends BaseTest {
             System.out.println("Kondisi: User belum memiliki Riwayat Lari apapun");
             
             capture.highlightAndCapture(textBelumAdaRiwayatLari, "Validasi: Teks Empty State Riwayat Lari");
-            
-            logPass("Daftar riwayat lari kosong. Teks peringatan berhasil divalidasi sesuai Expected Result.");
         } else {
             // skenario 2 -> ada riwayat lari 
             System.out.println("Kondisi: User memiliki riwayat lari.");
-            logPass("Validasi tampilan Riwayat Lari");
         }
         actions.swipeVertical(0.2, 0.8);
     }

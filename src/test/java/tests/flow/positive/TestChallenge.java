@@ -284,8 +284,6 @@ public class TestChallenge extends BaseTest {
         actions.swipeVertical(0.8, 0.5); 
         waitTime();
 
-        logPass("Section Public Challenge ditemukan");
-
         // Klik "Lihat Semua" punya Public
         System.out.println("Klik Lihat Semua (Public)");
         try {
@@ -361,7 +359,6 @@ public class TestChallenge extends BaseTest {
             try { Thread.sleep(4000); } catch (Exception e) {} 
             
             isJoinedPublicChallenge = true; // set flag berhasil join 
-            logPass("Berhasil Join Challenge.");
         } else {
             isJoinedPublicChallenge = true; // flag true karena user sudah join sebelumnya
             logInfo("Tombol Join tidak ada (mungkin user sudah bergabung sebelumnya)");
@@ -408,8 +405,6 @@ public class TestChallenge extends BaseTest {
         wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaSaya));
         clickTest(btnLihatSemuaSaya, " Klik tombol Lihat Semua di Challenge Saya");
         waitTime(); 
-
-        logPass("Berhasil masuk ke list card Challenge Saya");
 
         // Cari & Validasi "Fun for health" ada di list
         System.out.println("Mencari 'Fun for health' di list");
@@ -542,8 +537,6 @@ public class TestChallenge extends BaseTest {
         actions.swipeVertical(0.8, 0.5); 
         waitTime();
 
-        logPass("Section Public Challenge ditemukan");
-
         // Klik "Lihat Semua" punya Public
         System.out.println("Klik Lihat Semua (Public)");
         try {
@@ -554,8 +547,6 @@ public class TestChallenge extends BaseTest {
             clickTest(alternatifLihatSemuaPublic, "Klik tombol Lihat Semua di Public Challenge - Alternatif");
         }
         waitTime();
-
-        logPass("Berhasil masuk ke list card Public Challenge");
 
         // Cari Card "Lari Merdeka 2026 v3" (Scroll To Text)
         System.out.println("Mencari card 'Lari Merdeka 2026 v3'");
@@ -654,7 +645,6 @@ public class TestChallenge extends BaseTest {
             
             if (isSudahJoin || isMenunggu) {
                 isJoinedPrivateChallenge = true; // aman
-                logPass("User sudah bergabung (sudah di-acc atau sedang menunggu persetujuan)");
             } else {
                 isJoinedPrivateChallenge = false; // gagal
                 logSkip("Tombol Join tidak ada, tapi user belum bergabung (mungkin UI error)");
@@ -703,8 +693,6 @@ public class TestChallenge extends BaseTest {
         clickTest(btnLihatSemuaSaya, "Klik tombol Lihat Semua di Challenge Saya");
         waitTime(); 
 
-        logPass("Berhasil masuk ke list card Challenge Saya");
-
         // Cari & Validasi "Lari Merdeka 2026 v3" ada di list
         System.out.println("Mencari 'Lari Merdeka 2026 v3' di list");
         waitTime();
@@ -714,7 +702,7 @@ public class TestChallenge extends BaseTest {
         if (isCardPresent) {
             System.out.println("Validasi Sukses: Challenge ditemukan.");
             isPrivateChallengeApproved = true; // set true karena sudah di-approve (card sudah muncul di list)
-            logPass("Validasi SUKSES: Challenge 'Lari Merdeka 2026 v3' ditemukan di list Saya.");
+            capture.highlightAndCapture(cardPrivateChallenge, "Validasi SUKSES: Challenge 'Lari Merdeka 2026 v3' ditemukan di list Saya");
         } else {
             System.out.println("Validasi Gagal: Challenge tidak ada di list.");
             isPrivateChallengeApproved = false; // set false karena belum di-approve (card belum muncul di list)
@@ -865,21 +853,7 @@ public class TestChallenge extends BaseTest {
 
         Assert.assertTrue(driver.findElements(textGlobal).size() > 0, "Data Leaderboard (Global) tidak muncul!");
 
-        logPass("Berhaisl masuk dan memuat data Leaderboard");
-
-        // Scroll ke bawah dan atas 
-        System.out.println("Scroll Turun");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
-        
-        logInfo("Scroll ke bawah daftar Leaderboard");
-
-        System.out.println("Scroll Naik");
-        actions.swipeVertical(0.5, 0.7);
-        waitTime();
-
-        logInfo("Scroll ke atas daftar Leaderboard");
-        System.out.println("Selesai cek Leaderboard.");
+        logPass("Berhasil masuk dan memuat data Leaderboard");
     }
 
     // **** BAGIAN TAB REWARDS ****
