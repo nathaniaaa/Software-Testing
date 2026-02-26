@@ -67,8 +67,6 @@ public class TestAktifitas extends BaseTest {
     public void testNavigasiAktivitas() {
         System.out.println("TEST 1: Navigasi ke Aktivitas");
 
-        logInfo("Tampilan awal di Beranda.");
-
         // Klik ikon Aktivitas di Bottom Navigation
         System.out.println("Klik ikon Aktivitas");
         clickTest(navAktivitas, "Klik ikon Aktivitas");
@@ -92,8 +90,6 @@ public class TestAktifitas extends BaseTest {
 
         clickTest(tabRiwayatLari, "Klik Tab Riwayat Lari");
         waitTime();
-
-        logPass("Berhasil klik Tab Riwayat Lari");
     }
 
     @Test(priority = 3, description = "Pengguna menekan salah satu Riwayat Lari dari hasil record dan atau dari hasil sync smartwatch")
@@ -170,7 +166,6 @@ public class TestAktifitas extends BaseTest {
         if (driver.findElements(btnUnduh).size() > 0) {
             System.out.println("Tombol Unduh ada. Klik");
             clickTest(btnUnduh, "Klik Tombol Unduh");
-            logPass("Berhasil mengunduh data aktivitas");
             waitTime();
         } else {
             System.out.println("SKIP: Tombol Unduh tidak ditemukan.");
@@ -269,8 +264,6 @@ public class TestAktifitas extends BaseTest {
 
         // Kalau ada peta, lanjut interaksi, kalau engga skip
         if(driver.findElements(mapAreaLocator).size() > 0) {
-            logPass("Container Peta muncul.");
-            
             // Zoom In
             if(driver.findElements(btnZoomIn).size() > 0) {
                 System.out.println("Klik Zoom In");
@@ -459,8 +452,6 @@ public class TestAktifitas extends BaseTest {
     )
     public void testNavigasiKeListChallenge() {
         System.out.println("TEST 10: Navigasi ke List Riwayat Challenge");
-
-        logInfo("Tampilan awal di Aktivitas.");
 
         // Klik Riwayat Challenge di header
         System.out.println("Klik Riwayat Challenge");

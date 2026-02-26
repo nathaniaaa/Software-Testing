@@ -57,8 +57,6 @@ public class TestSyaratPrivasi extends BaseTest {
         actions.swipeVertical(0.8, 0.3);
         waitTime();
 
-        logPass("Berhasil scroll ke bawah cari menu Syarat & Privasi.");
-
         // Klik Card Syarat & Privasi
         System.out.println("Klik Card Syarat & Privasi");
         clickTest(cardSyaratPrivasi, "Klik Card Syarat & Privasi");
@@ -91,8 +89,6 @@ public class TestSyaratPrivasi extends BaseTest {
         System.out.println("Validasi: Halaman Syarat dan Ketentuan muncul.");
 
         Assert.assertTrue(driver.findElement(btnBackSyaratKetentuan).isDisplayed(), "Gagal masuk ke detail Syarat & Ketentuan.");
-
-        logPass("Berhasil masuk ke detail Syarat & Ketentuan.");
 
         actions.scrollAndCapture(13, 0.8, 0.2, "Baca Syarat & Ketentuan");
         
@@ -147,8 +143,6 @@ public class TestSyaratPrivasi extends BaseTest {
         System.out.println("Validasi: Halaman Kebijakan Privasi muncul.");
 
         Assert.assertTrue(driver.findElement(searchKebijakanPrivasi).isDisplayed(), "Gagal masuk ke detail Kebijakan Privasi.");
-
-        logPass("Berhasil masuk ke detail Kebijakan Privasi.");
 
         actions.scrollAndCapture(13, 0.8, 0.2, "Baca Kebijakan Privasi");
 

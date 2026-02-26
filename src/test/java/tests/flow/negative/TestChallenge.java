@@ -86,8 +86,6 @@ public class TestChallenge extends BaseTest {
         actions.swipeVertical(0.8, 0.5); 
         waitTime();
 
-        logPass("Section Public Challenge ditemukan");
-
         // Klik "Lihat Semua" punya Public
         System.out.println("Klik Lihat Semua (Public)");
         try {
@@ -230,8 +228,6 @@ public class TestChallenge extends BaseTest {
         clickTest(btnLihatSemuaSaya, " Klik tombol Lihat Semua di Challenge Saya");
         waitTime(); 
 
-        logPass("Berhasil masuk ke list card Challenge Saya");
-
         // cari card
         System.out.println("Mencari card 'Fun for health' di daftar Challenge Saya");
         actions.scrollToText("Fun for health"); 
@@ -248,8 +244,6 @@ public class TestChallenge extends BaseTest {
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
         waitTime();
 
-        logPass("Berhasil masuk ke halaman detail 'Fun for health'");
-
         // Keluar Challenge (Leave)
         System.out.println("Proses Keluar Challenge");
         
@@ -264,8 +258,6 @@ public class TestChallenge extends BaseTest {
         
         System.out.println("Berhasil keluar, tunggu loading");
         try { Thread.sleep(4000); } catch (Exception e) {} // Tunggu proses API selesai
-
-        logPass("Berhasil keluar/leave Challenge");
 
         // Back 1x
         System.out.println("Back ke List Saya");
@@ -317,8 +309,6 @@ public class TestChallenge extends BaseTest {
         actions.swipeVertical(0.8, 0.5); 
         waitTime();
 
-        logPass("Section Public Challenge ditemukan");
-
         // Klik "Lihat Semua" punya Public
         System.out.println("Klik Lihat Semua (Public)");
         try {
@@ -330,8 +320,6 @@ public class TestChallenge extends BaseTest {
         }
         waitTime();
 
-        logPass("Berhasil masuk ke list card Public Challenge");
-
         // Cari Card "Fun for health" (Scroll To Text)
         System.out.println("Mencari card 'Fun for health'");
         actions.scrollToText("Fun for health"); 
@@ -341,8 +329,6 @@ public class TestChallenge extends BaseTest {
             driver.navigate().back();
             logSkip("Test dilewati: Challenge 'Fun for health' tidak ditemukan di daftar Public Challenge");
         }
-
-        logPass("Card Fun for health ditemukan");
         
         // Klik Card
         wait.until(ExpectedConditions.elementToBeClickable(cardPublicChallenge));
@@ -352,8 +338,6 @@ public class TestChallenge extends BaseTest {
 
         // Validasi: Masuk detail
         Assert.assertTrue(driver.findElement(tabDeskripsi).isDisplayed(), "Gagal masuk detail challenge!");
-
-        logPass("Berhasil masuk detail 'Fun for health'.");
 
         // JOIN CHALLENGE (2 Langkah)
         // Klik 'Join Challenge'

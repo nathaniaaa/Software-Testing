@@ -78,12 +78,9 @@ public class TestBeranda extends BaseTest {
             System.out.println("INFO: Target Progress tidak ada. Y Offset normal (0.0)");
         }
 
-        logInfo("Tampilan awal Beranda");
         Assert.assertTrue(driver.findElement(navBeranda).isDisplayed(), "Gagal memuat halaman Beranda di awal test.");
 
         capture.highlightAndCapture(headerTotalLari, "Validasi Tampilan Total Lari Harian");
-
-        logPass("Total Lari Harian muncul dengan benar di Beranda");
     }
 
     @Test(priority = 2, description = "Pengguna menekan tombol \"lihat semua\" pada Challenge yang diikuti")
@@ -106,19 +103,14 @@ public class TestBeranda extends BaseTest {
             System.out.println("Kondisi: User belum mengikuti challenge apapun");
             
             capture.highlightAndCapture(textBelumAdaChallenge, "Validasi: Teks Empty State Challenge Saya");
-            
-            logPass("Daftar challenges kosong. Teks peringatan berhasil divalidasi sesuai Expected Result.");
         } else {
             // skenario 2 -> ada challenge 
             System.out.println("Kondisi: User memiliki challenge yang diikuti.");
             
-            capture.highlightAndCapture(headerChallengeSaya, "Bagian Challenge yang Diikuti (Challenge Saya)");
-
             if (driver.findElements(textLihatSemuaChallengeYangDiikuti).size() > 0) {
                 clickTest(textLihatSemuaChallengeYangDiikuti, "Klik 'Lihat Semua' (Challenge Saya)");
                 
                 try { wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.className("android.view.View"))); } catch (Exception e) {}
-                logPass("Berhasil klik 'Lihat Semua' di Challenge yang Diikuti (Challenge Saya)");
 
                 waitTime();
                 clickBack();
@@ -150,7 +142,6 @@ public class TestBeranda extends BaseTest {
         if (driver.findElements(textLihatSemuaChallenges).size() > 0) {
             clickTest(textLihatSemuaChallenges, "Klik 'Lihat Semua' (Public Challenge)");
             waitTime();
-            logPass("Berhasil masuk ke halaman daftar lengkap Public Challenges.");
 
             // Klik Bottom Navigation yang Beranda (keluar dari challenge)
             clickTest(navBeranda, "Klik Bottom Nav 'Beranda'");
@@ -206,9 +197,6 @@ public class TestBeranda extends BaseTest {
             } else {
                 capture.highlightAndCapture(headerExclusive, "Validasi: Header Exclusive");
             }
-            
-            logPass("Validasi Tampilan area Exclusive Challenges selesai.");
-            
         } else {
             System.out.println("Elemen Exclusive Challenge tidak ditemukan");
             capture.highlightAndCapture(headerPublicChallenge, "Bagian Public Challenges (tidak ada Exclusive Challenge)");
@@ -226,8 +214,6 @@ public class TestBeranda extends BaseTest {
         group = "Beranda"
     ) 
     public void publicChallenges() {
-        logInfo("Tampilan awal");
-
         // Scroll horizontal di Challenges (Public Challenge)
         System.out.println("Scroll Horizontal 'Public Challenges'");
         actions.swipeHorizontal(0.9, 0.1, 0.7 + yOffset);
@@ -282,14 +268,10 @@ public class TestBeranda extends BaseTest {
             System.out.println("Kondisi: Tidak ada event lari yang sedang berlangsung");
             
             capture.highlightAndCapture(textBelumAdaEvent, "Validasi: Teks Empty State Event Lari");
-            
-            logPass("Daftar event lari kosong. Teks peringatan berhasil divalidasi sesuai Expected Result.");
         } else {
             // skenario 2 -> ada event lari
-            System.out.println("Kondisi: User memiliki riwayat lari.");
-            
-            capture.highlightAndCapture(headerRiwayatLari, "Bagian Event Lari");
-            logPass("Validasi tampilan Event Lari");
+            System.out.println("Kondisi: ada event lari yang sedang berlangsung");
+            logPass("event lari ditemukan");
         }
     }
 
@@ -317,12 +299,9 @@ public class TestBeranda extends BaseTest {
             System.out.println("Kondisi: User belum memiliki Riwayat Lari apapun");
             
             capture.highlightAndCapture(textBelumAdaRiwayatLari, "Validasi: Teks Empty State Riwayat Lari");
-            
-            logPass("Daftar riwayat lari kosong. Teks peringatan berhasil divalidasi sesuai Expected Result.");
         } else {
             // skenario 2 -> ada riwayat lari 
             System.out.println("Kondisi: User memiliki riwayat lari.");
-            logPass("Validasi tampilan Riwayat Lari");
         }
         actions.swipeVertical(0.2, 0.8);
     }

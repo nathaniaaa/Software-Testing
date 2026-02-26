@@ -46,8 +46,6 @@ public class TestProfile extends BaseTest {
             
             capture.highlightRectangleByRatio(0.05, 0.27, 0.90, 0.15, 
                 "Validasi Tampilan Statistik (Jarak, Durasi, Aktivitas)");
-
-            logPass("Statistik Profil muncul dengan benar.");
         } else {
             // Elemen tidak ditemukan - Gagal
             System.err.println("Gagal: Statistik Profil tidak muncul!");

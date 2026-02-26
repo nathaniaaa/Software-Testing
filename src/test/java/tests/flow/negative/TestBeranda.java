@@ -58,6 +58,9 @@ public class TestBeranda extends BaseTest {
     public void testEmptyStateChallengeSaya() {
         System.out.println("TEST 1: Pengguna tidak mengikuti challenges apapun");
 
+        actions.swipeVertical(0.5, 0.9); // pastikan scroll ke atas dulu
+        waitTime();
+
         // Wait dulu sampai halaman benar2 sudah muncul
         wait.until(ExpectedConditions.visibilityOfElementLocated(textLihatSemuaChallengeYangDiikuti));
         waitTime();
