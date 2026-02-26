@@ -86,6 +86,8 @@ public class ProfileActionHelper extends CreationActionHelper {
         
         // Optional: Wait for the profile page header to load
         waitForLoading(1000); 
+
+        scrollToTop();
     }
 
     public void enterEditMode() {
@@ -161,42 +163,6 @@ public class ProfileActionHelper extends CreationActionHelper {
         tapByCoordinates(80, 148);
         
         try { Thread.sleep(500); } catch (InterruptedException e) {}
-    }
-
-    public boolean areElementsDisplayed(String... texts) {
-        if (texts == null || texts.length == 0) return false;
-
-        java.util.List<By> foundLocators = new java.util.ArrayList<>();
-        boolean allFound = true;
-
-        // 1. Loop through every text provided
-        for (String text : texts) {
-            By locator = AppiumBy.xpath("//*[contains(@text, '" + text + "')]");
-            try {
-                // 2. Check if this specific element is displayed
-                if (driver.findElement(locator).isDisplayed()) {
-                    foundLocators.add(locator); // Add to our "success" list
-                } else {
-                    allFound = false; // It exists in DOM but isn't visible
-                }
-            } catch (Exception e) {
-                allFound = false; // It doesn't exist at all
-            }
-        }
-
-        // 3. Highlight everything we managed to find
-        if (!foundLocators.isEmpty()) {
-            // Create a readable step detail: "Verified Elements: Text1, Text2"
-            String stepDetail = "Verified Elements: " + String.join(", ", texts);
-            
-            // Convert our List<By> back to an Array to pass into your Multiple Highlight method
-            capture.highlightAndCaptureMultiple(stepDetail, foundLocators.toArray(new By[0]));
-        } else {
-            System.out.println("WARN: None of the requested elements were found on screen.");
-        }
-
-        // 4. Return true ONLY if every single text requested was found
-        return allFound;
     }
 
     public void uploadProfilePhoto(String source) {
