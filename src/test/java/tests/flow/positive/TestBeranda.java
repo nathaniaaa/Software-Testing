@@ -322,10 +322,9 @@ public class TestBeranda extends BaseTest {
         } else {
             // skenario 2 -> ada riwayat lari 
             System.out.println("Kondisi: User memiliki riwayat lari.");
-            
-            capture.highlightAndCapture(headerRiwayatLari, "Bagian Riwayat Lari");
             logPass("Validasi tampilan Riwayat Lari");
         }
+        actions.swipeVertical(0.2, 0.8);
     }
 
     // Helper

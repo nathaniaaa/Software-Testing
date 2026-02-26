@@ -87,6 +87,9 @@ public class TestAktifitas extends BaseTest {
     public void testMasukKeRiwayatLari() {
         System.out.println("TEST 2: Riwayat Lari");
 
+        actions.swipeVertical(0.3, 0.8); 
+        waitTime();
+
         clickTest(tabRiwayatLari, "Klik Tab Riwayat Lari");
         waitTime();
 
@@ -205,7 +208,7 @@ public class TestAktifitas extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("TEST TEST INI TESTTT"); // Nama baru
+            input.sendKeys("HAI INI NAMA BARU"); // Nama baru
             waitTime();
             System.out.println("Ketik nama baru selesai.");
             
@@ -355,10 +358,10 @@ public class TestAktifitas extends BaseTest {
             return; 
         }
 
-        actions.swipeVertical(0.4, 0.2);
+        actions.swipeVertical(0.40, 0.2);
         try { Thread.sleep(3000); } catch (Exception e) {}
 
-        // --- CEK MANA GRAFIK YANG MUNCUL ---
+        // Cek grafik mana yang muncul
         WebElement grafikContainer = null;
 
         if (driver.findElements(grafikAreaApp).size() > 0) {
@@ -369,7 +372,7 @@ public class TestAktifitas extends BaseTest {
             grafikContainer = driver.findElement(grafikAreaSmartwatch);
         }
 
-        // --- EKSEKUSI JIKA GRAFIK KETEMU ---
+        // Interaksi jika grafik ditemukan
         if (grafikContainer != null) {
              
              int startX = grafikContainer.getLocation().getX();
