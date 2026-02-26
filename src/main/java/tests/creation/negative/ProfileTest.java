@@ -321,7 +321,7 @@ public class ProfileTest extends BaseTest {
 // --- TEST: AGE RESTRICTION (7 - 100 Years) ---
     @Test(priority = 6, description = "Pengguna memasukkan tanggal lahir dengan tahun yang tidak valid")
     @TestInfo(
-        testType = "Negative", 
+        testType = "Negative Case", 
         group = "Profile", 
         expected = "Pengguna tidak bisa memasukkan tanggal lahir dengan tahun yang tidak valid, karna tahun lahir sudah diset minimal kelahiran 7 sampai 100 tahun kebelakang"
 

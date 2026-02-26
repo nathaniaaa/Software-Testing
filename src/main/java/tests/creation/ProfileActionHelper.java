@@ -301,7 +301,7 @@ public class ProfileActionHelper extends CreationActionHelper {
                 tapByExactText(currentYear, screenshot);
                 
                 // Scroll mencari tahun target
-                scrollToText(targetYear, 7); 
+                scrollToText(targetYear, 10); 
                 
                 driver.manage().timeouts().implicitlyWait(Duration.ofMillis(500));
                 

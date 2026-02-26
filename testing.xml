@@ -19,7 +19,6 @@
             <class name="tests.creation.negative.ChallengeTest" />
             <class name="tests.flow.negative.TestChallenge" />
             <class name="tests.creation.negative.ProfileTest" />
-            
         </classes>
     </test>
 </suite>

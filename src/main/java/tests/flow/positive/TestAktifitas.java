@@ -203,7 +203,7 @@ public class TestAktifitas extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("HAI INI NAMA BARU"); // Nama baru
+            input.sendKeys("HALO TEST GANTI NAMA"); // Nama baru
             waitTime();
             System.out.println("Ketik nama baru selesai.");
             

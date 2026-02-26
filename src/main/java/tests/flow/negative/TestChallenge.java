@@ -25,7 +25,7 @@ public class TestChallenge extends BaseTest {
     By btnLihatSemuaPublic = AppiumBy.xpath("(//android.view.View[@content-desc='Lihat Semua'])[2]");
 
     //  Public Challenge - Target: Fun for health - Klo mau ke card lain janlup diganti nama text nya sesuai kyk judul card
-    By cardPublicChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Fun for health']");
+    By TIPEcardPublicChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Fun for health']");
 
     // Private Challenge - Target: Lari Merdeka 2026 v3 - Klo mau ke card lain janlup diganti nama text nya sesuai kyk judul card
     By cardPrivateChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Lari Merdeka 2026 v3']");
@@ -234,13 +234,13 @@ public class TestChallenge extends BaseTest {
         waitTime();
 
         // Cek apakah card "Fun for health" ada di list Challenge Saya, kalau engga skip (biar ga crash)
-        if (driver.findElements(cardPublicChallenge).size() == 0) {
+        if (driver.findElements(TIPEcardPublicChallenge).size() == 0) {
             driver.navigate().back();
             logSkip("Test dilewati: Challenge 'Fun for health' tidak ditemukan di daftar Challenge Saya.");
         }
 
         // Klik Card
-        clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Challenge Saya");
+        clickTest(TIPEcardPublicChallenge, "Klik card 'Fun for health' di Challenge Saya");
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
         waitTime();
 
@@ -272,7 +272,7 @@ public class TestChallenge extends BaseTest {
         waitTime();
 
         // Cek apakah card masih ada
-        boolean isCardPresent = driver.findElements(cardPublicChallenge).size() > 0;
+        boolean isCardPresent = driver.findElements(TIPEcardPublicChallenge).size() > 0;
 
         if (!isCardPresent) {
             // Skenario sukses: card sudah hilang
@@ -325,14 +325,14 @@ public class TestChallenge extends BaseTest {
         actions.scrollToText("Fun for health"); 
         waitTime(); 
 
-        if (driver.findElements(cardPublicChallenge).size() == 0) {
+        if (driver.findElements(TIPEcardPublicChallenge).size() == 0) {
             driver.navigate().back();
             logSkip("Test dilewati: Challenge 'Fun for health' tidak ditemukan di daftar Public Challenge");
         }
         
         // Klik Card
-        wait.until(ExpectedConditions.elementToBeClickable(cardPublicChallenge));
-        clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Public Challenge");
+        wait.until(ExpectedConditions.elementToBeClickable(TIPEcardPublicChallenge));
+        clickTest(TIPEcardPublicChallenge, "Klik card 'Fun for health' di Public Challenge");
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
         waitTime();
 
