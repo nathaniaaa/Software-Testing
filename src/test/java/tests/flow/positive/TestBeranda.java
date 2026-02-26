@@ -41,6 +41,9 @@ public class TestBeranda extends BaseTest {
     By textLihatSemuaChallenges = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
 
     By textLihatSemuaRiwayatLari = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
+
+    // container public challenge
+    By wadahPublicChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Public Challenges']/following-sibling::android.view.View[1]");
     
     // Card Public Challenge - dari beranda
     By cardPublicChallengeBeranda = AppiumBy.xpath("//android.widget.TextView[@text='Public Challenges']/following-sibling::android.view.View[1]");
@@ -214,33 +217,33 @@ public class TestBeranda extends BaseTest {
         group = "Beranda"
     ) 
     public void publicChallenges() {
-        // Scroll horizontal di Challenges (Public Challenge)
-        System.out.println("Scroll Horizontal 'Public Challenges'");
-        actions.swipeHorizontal(0.9, 0.1, 0.7 + yOffset);
-        waitTime();
+        if (driver.findElements(wadahPublicChallenge).size() > 0) {
+            System.out.println("Card ditemukan di List. Mengatur swipe dinamis");
+            
+            // swipe dinamis
+            org.openqa.selenium.WebElement wadah = driver.findElement(wadahPublicChallenge);
+            int centerY = wadah.getLocation().getY() + (wadah.getSize().getHeight() / 2);
+            int screenHeight = driver.manage().window().getSize().getHeight();
+            double dynamicYRatio = (double) centerY / screenHeight;
+            
+            // Swipe pakai rasio 
+            actions.swipeHorizontal(0.9, 0.1, dynamicYRatio);
+            waitTime();
+            actions.swipeHorizontal(0.1, 0.9, dynamicYRatio);
+            waitTime();
+            
 
-        actions.swipeHorizontal(0.1, 0.9, 0.7 + yOffset);
-        waitTime();
-
-        // Klik card Public Challenges (card di Beranda)
-        System.out.println(" Klik Salah Satu Card 'Public Challenges' di Beranda");
-        
-        // LOGIC: Cek apakah Card Pertama (Index 2) Ada?
-        if (driver.findElements(cardPublicChallengeBeranda).size() > 0) {
-            // Kondisi: Ada Card di List
-            System.out.println("Card ditemukan di List. Klik Card Pertama.");
+            // klik card pertama
             clickTest(cardPublicChallengeBeranda, "Klik Card Public Challenge Pertama");
             waitTime();
 
-            // Back ke Beranda
             System.out.println("Back ke Beranda");
-            clickBack(); // Back dari Detail
+            clickBack();
             waitTime();
-            
             logPass("Berhasil kembali ke Beranda");
         } else {
-            // Kondisi: List Kosong
             System.out.println("List Kosong / Card tidak ditemukan.");
+            capture.highlightAndCapture(headerPublicChallenge, "Validasi: Header Public Challenges");
             logSkip("Test dilewati: Tidak ada card Public Challenge di Beranda.");
         }
         waitTime();
