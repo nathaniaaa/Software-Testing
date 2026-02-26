@@ -75,18 +75,24 @@ public class CreationActionHelper extends ActionHelper{
         }
     }
 
-    public void fillInputField(By locator, String text) {
+    public void fillInputField(By locator, String text, boolean screenshot) {
         try {
             WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             input.click();
             input.clear();
             input.sendKeys(text);
-            capture.highlightAndCapture(locator, "Filling field with: " + text);
+            if (screenshot){
+                capture.highlightAndCapture(locator, "Filling field with: " + text);
+            }
             // try { driver.hideKeyboard(); } catch (Exception ignored) {}
         } catch (Exception e) {
             System.out.println("   -> Failed to fill input: " + locator);
             throw new RuntimeException("Input failed"); // Throw so fallback can catch it
         }
+    }
+
+    public void fillInputField(By locator, String text) {
+        fillInputField(locator, text, true);
     }
 
     public void handleSuccessModal() {
@@ -101,32 +107,42 @@ public class CreationActionHelper extends ActionHelper{
 
     // --- SNIPER LOGIC (Strategies for finding tricky elements) ---
 
-    public void tapButtonByTextOrId(String text, String accId) {
+    public void tapButtonByTextOrId(String text, String accId, boolean screenshot) {
         try {
             // Custom Fast Wait (3s)
             WebDriverWait fastWait = new WebDriverWait(driver, Duration.ofSeconds(3));
             WebElement el = fastWait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId(accId)));
             
-            tap(el, "Click via Access. ID: " + accId); 
+            tap(el, "Click via Access. ID: " + accId, screenshot); 
+            
             return;
         } catch (Exception ignored) {
             System.out.println("ID not found, trying text...");
         }
 
         try {
-            tap(AppiumBy.xpath("//*[contains(@text, '" + text + "')]"), "Click via Text: " + text);
+            tap(AppiumBy.xpath("//*[contains(@text, '" + text + "')]"), "Click via Text: " + text, screenshot); 
+            return;
         } catch (Exception e) {
-            tapByTextPosition(text);
+            tapByTextPosition(text, screenshot); // Final Sniper Attempt with Text Position
         }
     }
 
-    public void tapByAccessibilityId(String accId) {
+    public void tapButtonByTextOrId(String text, String accId) {
+        tapButtonByTextOrId(text, accId, true);
+    }
+
+    public void tapByAccessibilityId(String accId, boolean screenshot) {
         try {
-            tap(AppiumBy.accessibilityId(accId), "Tap Access ID: " + accId);
+            tap(AppiumBy.accessibilityId(accId), "Tap Access ID: " + accId, screenshot);
         } catch (Exception e) {
             System.out.println("   -> Standard click failed. Engaging Center Tap fallback...");
             tapElementCenter(AppiumBy.accessibilityId(accId));
         }
+    }
+
+    public void tapByAccessibilityId(String accId) {
+        tapByAccessibilityId(accId, true);
     }
 
     /**
@@ -148,7 +164,7 @@ public class CreationActionHelper extends ActionHelper{
         }
     }
 
-    public void clickByLabelOffset(String labelText) {
+    public void clickByLabelOffset(String labelText, boolean screenshot) {
         try {
             System.out.println("   -> [Sniper Click] Targeting box below label: '" + labelText + "'");
             WebElement label = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -161,7 +177,7 @@ public class CreationActionHelper extends ActionHelper{
             int targetY = label.getLocation().getY() + labelHeight + (int)(labelHeight * 1.5);
             
             System.out.println("   -> Tapping offset at Y[" + targetY + "]");
-            tapByCoordinates(targetX, targetY);
+            tapByCoordinates(targetX, targetY, screenshot); // Tap to focus the input below the label
             
             Thread.sleep(1000); // Wait for UI reaction
         } catch (Exception e) {
@@ -169,23 +185,11 @@ public class CreationActionHelper extends ActionHelper{
         }
     }
 
-        /**
-     * Specific method for Profile Page where inputs are Siblings of the Label
-     */
-    protected void fillInputByLabelSibling(String labelText, String valueToType) {
-        try {
-            String xpath = String.format("//*[@text='%s']/following-sibling::android.widget.EditText", labelText);
-            WebElement input = driver.findElement(AppiumBy.xpath(xpath));
-            input.click();
-            input.clear();
-            input.sendKeys(valueToType);
-            try { driver.hideKeyboard(); } catch (Exception e) {}
-        } catch (Exception e) {
-            System.out.println("   -> Input '" + labelText + "' not found.");
+        public void clickByLabelOffset(String labelText) {
+            clickByLabelOffset(labelText, true);
         }
-    }
 
-    public void fillInputByLabelOffset(String labelText, String valueToType) {
+    public void fillInputByLabelOffset(String labelText, String valueToType, boolean screenshot) {
         try {
             System.out.println("   -> [Sniper Offset] Targeting input below label: '" + labelText + "'");
             WebElement label = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -198,7 +202,7 @@ public class CreationActionHelper extends ActionHelper{
             int targetY = label.getLocation().getY() + labelHeight + (int)(labelHeight * 1.5);
 
             System.out.println("   -> Tapping offset at [" + targetY + "]");
-            tapByCoordinates(targetX, targetY);
+            tapByCoordinates(targetX, targetY, screenshot); // Tap to focus the input below the label
 
             Thread.sleep(500); // Focus wait
             
@@ -211,6 +215,10 @@ public class CreationActionHelper extends ActionHelper{
         }
     }
 
+    public void fillInputByLabelOffset(String labelText, String valueToType) {
+        fillInputByLabelOffset(labelText, valueToType, true);
+    }
+
     // --- DATA HELPERS ---
 
     public String getDefaultDateText(int daysToAdd) {
@@ -219,12 +227,12 @@ public class CreationActionHelper extends ActionHelper{
         return date.format(formatter);
     }
 
-    public String fillInputAndReadBack(String label, String valueToType) {
+    public String fillInputAndReadBack(String label, String valueToType, boolean screenshot) {
         try {
             String xpath = String.format(inputXpathTemplate, label);
             By locator = AppiumBy.xpath(xpath);
 
-            fillInputField(locator, valueToType);
+            fillInputField(locator, valueToType, screenshot);
 
             // Critical: Hide keyboard so the App triggers its "onBlur" or "Formatting" logic
             try { driver.hideKeyboard(); } catch (Exception ignored) {}
@@ -236,6 +244,10 @@ public class CreationActionHelper extends ActionHelper{
             System.out.println("Failed to interact with input: " + label);
             return "";
         }
+    }
+
+    public String fillInputAndReadBack(String label, String valueToType) {
+        return fillInputAndReadBack(label, valueToType, true);
     }
 
     /**
@@ -257,6 +269,40 @@ public class CreationActionHelper extends ActionHelper{
         }
     }
 
+        public boolean areElementsDisplayed(String... texts) {
+        if (texts == null || texts.length == 0) return false;
 
+        java.util.List<By> foundLocators = new java.util.ArrayList<>();
+        boolean allFound = true;
+
+        // 1. Loop through every text provided
+        for (String text : texts) {
+            By locator = AppiumBy.xpath("//*[contains(@text, '" + text + "')]");
+            try {
+                // 2. Check if this specific element is displayed
+                if (driver.findElement(locator).isDisplayed()) {
+                    foundLocators.add(locator); // Add to our "success" list
+                } else {
+                    allFound = false; // It exists in DOM but isn't visible
+                }
+            } catch (Exception e) {
+                allFound = false; // It doesn't exist at all
+            }
+        }
+
+        // 3. Highlight everything we managed to find
+        if (!foundLocators.isEmpty()) {
+            // Create a readable step detail: "Verified Elements: Text1, Text2"
+            String stepDetail = "Verified Elements: " + String.join(", ", texts);
+            
+            // Convert our List<By> back to an Array to pass into your Multiple Highlight method
+            capture.highlightAndCaptureMultiple(stepDetail, foundLocators.toArray(new By[0]));
+        } else {
+            System.out.println("WARN: None of the requested elements were found on screen.");
+        }
+
+        // 4. Return true ONLY if every single text requested was found
+        return allFound;
+    }
 
 }

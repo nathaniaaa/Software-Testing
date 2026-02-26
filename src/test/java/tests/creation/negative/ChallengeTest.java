@@ -19,22 +19,21 @@ public class ChallengeTest extends BaseTest {
 
     @BeforeClass
     public void setupPage() {
-        challengePage = new ChallengeActionHelper((AndroidDriver) driver);
-        // Ensure app is ready (e.g. handle ads if necessary)
-        // handleAds(); 
+        challengePage = new ChallengeActionHelper((AndroidDriver) driver); 
     }
 
-    @Test(priority = 1, description = "Verifikasi pesan error muncul jika banner challenge > 5MB")
+    @Test(priority = 1, description = "Buat Challenge Lari - Upload Banner challenge dengan file diatas 5MB")
     @TestInfo(
-        expected = "Sistem menolak upload dan menampilkan pesan error bahwa ukuran banner tidak boleh melebihi 5MB", 
+        expected = "Saat membuat Challenge Lari, jika banner yang diunggah berukuran lebih dari 5MB, proses upload gagal dan muncul pesan error sebagai penanda kesalahan", 
         group = "Challenge",
-        testType = "Negative Case"
+        testType = "Negative Case",
+        note = ""
     )
     public void testCreateChallengeBannerExceeds5MB() {
         System.out.println("=== TEST 12: Upload Banner Challenge > 5MB ===");
 
         // 1. Navigasi ke halaman Buat Challenge
-        challengePage.navigateToCreateMenu();
+        challengePage.navigateToCreateMenu(false);
         
         // 2. Klik Area Upload Foto Awal (Sesuaikan dengan locator tombol + upload Anda)
         // challengePage.tap(challengePage.BTN_UPLOAD_AREA, "Klik area Upload Banner");
@@ -43,7 +42,7 @@ public class ChallengeTest extends BaseTest {
         if (TestListener.getTest() != null) {
             TestListener.getTest().info("Action: Mengunggah gambar berukuran > 5MB via UI Koleksi...");
         }
-        challengePage.uploadPoster(3);
+        challengePage.uploadPoster(3, true);
 
         // 4. Verifikasi Pesan Error Muncul
         boolean isErrorVisible = challengePage.isImageSizeErrorDisplayed();
@@ -65,64 +64,18 @@ public class ChallengeTest extends BaseTest {
         challengePage.navigateBackToDashboardSafe();
     }
 
-    @Test(priority = 2, description = "Verify Challenge can be created using the default badge")
+        @Test(priority = 2, description = "Buat Challenge Lari - Tekan tombol (+) kemudian buat challenge lari dengan kondisi ada field informasi challenge yang kosong")
     @TestInfo(
-        expected = "Challenge created successfully with the default badge", 
-        group = "Challenge", 
-        testType = "Negative Case"
-    )
-    public void testCreateChallengeDefaultBadge() {
-        System.out.println("=== TEST 10: Create Challenge Default Badge ===");
-
-        // 1. Navigate
-        challengePage.navigateToCreateMenu();
-        
-        // 2. Prepare Data (Badge parameter is empty)
-        String uniqueName = "Lari Default " + (System.currentTimeMillis() % 10000);
-        ChallengeData testData = new ChallengeData(
-            uniqueName, 
-            "5", 
-            "Lari santai dengan badge bawaan sistem", 
-            "Jaga kesehatan dan selalu terhidrasi.", 
-            "",   
-            true  // Private Mode
-        );
-
-        // 3. ACTION: Fill the entire form in one line
-        challengePage.fillCreateChallengeForm(testData);
-
-        // 5. Submit & Confirm
-        boolean isCreated = challengePage.submitAndConfirm();
-
-        // 6. Assertions
-        if (isCreated) {
-            TestListener.getTest().pass("SUCCESS: Challenge '" + uniqueName + "' created with default badge.");
-            
-            // Validate we are on the Detail Page
-            Assert.assertTrue(challengePage.isTextVisible(uniqueName), "Detail page title mismatch");
-        } else {
-            TestListener.getTest().fail("FAILURE: Submit flow failed for default badge.");
-        }
-
-        Assert.assertTrue(isCreated, "Challenge Creation Failed!");
-
-        challengePage.scrollAndCapture(1, 0.8, 0.2, "Screeshot setelah submit Challenge dengan default badge");
-        challengePage.highlightBadgeResult(uniqueName);
-        // 7. Cleanup
-        challengePage.navigateBackToDashboardSafe();
-    }
-
-    @Test(priority = 3, description = "Verifikasi tombol Buat Challenge disabled jika field wajib kosong")
-    @TestInfo(
-        expected = "Tombol submit dalam kondisi disable dan proses pembuatan tidak dapat dilanjutkan", 
+        expected = "Saat membuat Challenge Lari dengan menekan tombol (+), jika terdapat field informasi wajib yang masih kosong, maka tombol \"Buat Challenge\" akan dalam kondisi disable dan proses pembuatan challenge tidak dapat dilanjutkan.", 
         group = "Challenge",
-        testType = "Negative Case"
+        testType = "Negative Case",
+        note = ""
     )
     public void testSubmitButtonDisabledOnEmptyFields() {
-        System.out.println("=== TEST 11: Tombol Submit Disabled (Field Wajib Kosong) ===");
+        System.out.println("=== TEST 2: Tombol Submit Disabled (Field Wajib Kosong) ===");
 
         // 1. Navigasi ke halaman Buat Challenge
-        challengePage.navigateToCreateMenu();
+        challengePage.navigateToCreateMenu(false);
         
         if (TestListener.getTest() != null) {
             TestListener.getTest().info("1. Berada di form Buat Challenge");
@@ -143,7 +96,7 @@ public class ChallengeTest extends BaseTest {
         if (TestListener.getTest() != null) {
             TestListener.getTest().info("Action: Mengisi form tetapi mengosongkan Nama dan Jarak...");
         }
-        challengePage.fillCreateChallengeForm(incompleteData);
+        challengePage.fillCreateChallengeForm(incompleteData, false);
 
         // 4. Verifikasi Status Tombol
         // Scroll ke bawah agar tombol Simpan / Buat Challenge terlihat di layar
@@ -170,17 +123,18 @@ public class ChallengeTest extends BaseTest {
         challengePage.navigateBackToDashboardSafe();
     }
 
-    @Test(priority = 4, description = "Verifikasi pesan error muncul jika rentang waktu Challenge tidak valid")
+    @Test(priority = 3, description = "Buat Challenge Lari - Pengguna mengatur rentang waktu yang tidak valid")
     @TestInfo(
-        expected = "Sistem menolak input dan menampilkan pesan error penanda kesalahan rentang waktu", 
+        expected = "Saat membuat Challenge Lari, jika rentang waktu yang dipilih tidak valid atau salah, maka akan ada pesan error sebagai penanda kesalahan", 
         group = "Challenge",
-        testType = "Negative Case"
+        testType = "Negative Case",
+        note = ""
     )
     public void testCreateChallengeInvalidTimeRange() {
-        System.out.println("=== TEST 6: Rentang Waktu Tidak Valid ===");
+        System.out.println("=== TEST 3: Rentang Waktu Tidak Valid ===");
 
         // 1. Navigasi ke halaman Buat Challenge
-        challengePage.navigateToCreateMenu();
+        challengePage.navigateToCreateMenu(false);
         
         if (TestListener.getTest() != null) {
             TestListener.getTest().info("1. Berada di form Buat Challenge");
@@ -192,7 +146,7 @@ public class ChallengeTest extends BaseTest {
         }
 
         challengePage.scrollToText("Jam (Opsional)");
-        challengePage.setTimeConfiguration(5, 2); 
+        challengePage.setTimeConfiguration(5, 2, true); 
 
          boolean isErrorVisible = challengePage.isTimeErrorDisplayed();
 
@@ -214,22 +168,121 @@ public class ChallengeTest extends BaseTest {
         
     }
 
-    // @Test(priority = 7, description = "Verifikasi admin dapat mengeluarkan (Kick Out) peserta dari challenge")
+    @Test(priority = 4, description = "Buat Challenge Lari - Tidak memilih badge untuk challenge lari atau badge tetap dalam keadaan kosong")
+    @TestInfo(
+        expected = "Challenge akan tetap bisa dibuat dengan menggunakan badge default", 
+        group = "Challenge", 
+        testType = "Negative Case",
+        note = ""
+    )
+    public void testCreateChallengeDefaultBadge() {
+        System.out.println("=== TEST 4: Create Challenge Default Badge ===");
+
+        // 1. Navigate
+        challengePage.navigateToCreateMenu(false);
+        
+        // 2. Prepare Data (Badge parameter is empty)
+        String uniqueName = "Lari Default " + (System.currentTimeMillis() % 10000);
+        ChallengeData testData = new ChallengeData(
+            uniqueName, 
+            "5", 
+            "Lari santai dengan badge bawaan sistem", 
+            "Jaga kesehatan dan selalu terhidrasi.", 
+            "",   
+            true  // Private Mode
+        );
+
+        // 3. ACTION: Fill the entire form in one line
+        challengePage.fillCreateChallengeForm(testData, false);
+
+        // 5. Submit & Confirm
+        boolean isCreated = challengePage.submitAndConfirm();
+
+        // 6. Assertions
+        if (isCreated) {
+            TestListener.getTest().pass("SUCCESS: Challenge '" + uniqueName + "' created with default badge.");
+            
+            // Validate we are on the Detail Page
+            Assert.assertTrue(challengePage.isTextVisible(uniqueName), "Detail page title mismatch");
+        } else {
+            TestListener.getTest().fail("FAILURE: Submit flow failed for default badge.");
+        }
+
+        Assert.assertTrue(isCreated, "Challenge Creation Failed!");
+
+        challengePage.scrollAndCapture(1, 0.8, 0.2, "Screeshot setelah submit Challenge dengan default badge");
+        challengePage.highlightBadgeResult(uniqueName);
+        // 7. Cleanup
+        challengePage.navigateBackToDashboardSafe();
+    }
+
+    // @Test(priority = 5, description = "Kelola Challenge di halaman Rincian Challenge - Pengguna admin challenge menolak permintaan bergabung peserta baru ke challengenya")
+    // @TestInfo(
+    //     expected = "Peserta yang ditolak oleh admin challenge akan menghilang dari daftar persetujuan kelola challenge, dan tidak akan masuk ke daftar peserta dan tidak bisa mengikuti challenge yang diadakan oleh admin", 
+    //     group = "Challenge",
+    //     testType = "Negative Case",
+    //     note = ""
+    // )
+    // public void testRejectPeserta() {
+    //     System.out.println("=== TEST 5: Tolak Peserta Challenge ===");
+
+    //     try {
+    //         // (Opsional) Ganti nama challenge jika Anda menggunakan challenge test yang berbeda
+    //         challengePage.navigateToDetailChallenge("Lari Privat", false);
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta sebelum ditolak");
+            
+    //         // Jalankan alur tolak 1 peserta
+    //         challengePage.rejectOneParticipant("Lari Privat", true);
+            
+    //         driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menolak 1 peserta
+    //         if (!challengePage.isDetailChallengePage()) {
+    //             challengePage.navigateBackToDashboardSafe();
+    //             challengePage.navigateToDetailChallenge("Lari Privat", false);
+    //         }
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menolak 1 peserta");
+            
+    //         challengePage.rejectAllParticipants("Lari Privat", true);
+            
+    //         driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menolak semua peserta
+    //         if (!challengePage.isDetailChallengePage()) {
+    //             challengePage.navigateBackToDashboardSafe();
+    //             challengePage.navigateToDetailChallenge("Lari Privat", false);
+    //         }
+    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menolak semua peserta");
+            
+    //         if (TestListener.getTest() != null) {
+    //             TestListener.getTest().pass("SUCCESS: Alur penolakan peserta berjalan lancar (Satuan & Massal).");
+    //         }
+    //     } catch (Exception e) {
+    //         if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses penolakan peserta.");
+    //         Assert.fail("Alur Reject Peserta gagal!");
+    //     }
+
+    //     challengePage.navigateBackToDashboardSafe();
+    // }
+
+    // @Test(priority = 6, description = "Kelola Challenge di halaman Rincian Challenge - Pengguna admin challenge mengeluarkan peserta yang ada di challengenya")
+    // @TestInfo(
+    //     expected = "Peserta yang dikeluarkan oleh admin akan menghilang dari daftar peserta di challenge tersebut, dan sudah tidak bisa mengikuti challenge yang diadakan oleh admin", 
+    //     group = "Challenge",
+    //     testType = "Negative Case",
+    //     note = ""
+    // )
     // public void testKickOutPeserta() {
-    //     System.out.println("=== TEST 7: Kick Out Peserta Challenge ===");
+    //     System.out.println("=== TEST 6: Kick Out Peserta Challenge ===");
 
     //     try {
     //         // (Opsional) Sesuaikan nama challenge target Anda
-    //         challengePage.navigateToDetailChallenge("Lari Private");
+    //         challengePage.navigateToDetailChallenge("Lari Privat", false);
     //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta sebelum di-kick out");
             
     //         // Jalankan alur Kick Out
-    //         challengePage.kickOutParticipant("Lari Private");
+    //         challengePage.kickOutParticipant("Lari Privat", true);
             
     //         driver.navigate().back(); // Kembali ke halaman Detail Challenge
     //         if (!challengePage.isDetailChallengePage()) {
     //             challengePage.navigateBackToDashboardSafe();
-    //             challengePage.navigateToDetailChallenge("Lari Private");
+    //             challengePage.navigateToDetailChallenge("Lari Privat", false);
     //         }
     //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah peserta di-kick out");
             
@@ -239,45 +292,6 @@ public class ChallengeTest extends BaseTest {
     //     } catch (Exception e) {
     //         if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses Kick Out peserta.");
     //         Assert.fail("Alur Kick Out Peserta gagal!");
-    //     }
-
-    //     challengePage.navigateBackToDashboardSafe();
-    // }
-
-    // @Test(priority = 8, description = "Verifikasi admin dapat menolak peserta secara satuan dan massal")
-    // public void testRejectPeserta() {
-    //     System.out.println("=== TEST 7: Tolak Peserta Challenge ===");
-
-    //     try {
-    //         // (Opsional) Ganti nama challenge jika Anda menggunakan challenge test yang berbeda
-    //         challengePage.navigateToDetailChallenge("Lari Private");
-    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi awal jumlah peserta sebelum ditolak");
-            
-    //         // Jalankan alur tolak 1 peserta
-    //         challengePage.rejectOneParticipant("Lari Private");
-            
-    //         driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menolak 1 peserta
-    //         if (!challengePage.isDetailChallengePage()) {
-    //             challengePage.navigateBackToDashboardSafe();
-    //             challengePage.navigateToDetailChallenge("Lari Private");
-    //         }
-    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menolak 1 peserta");
-            
-    //         challengePage.rejectAllParticipants("Lari Private");
-            
-    //         driver.navigate().back(); // Kembali ke halaman Kelola Challenge setelah menolak semua peserta
-    //         if (!challengePage.isDetailChallengePage()) {
-    //             challengePage.navigateBackToDashboardSafe();
-    //             challengePage.navigateToDetailChallenge("Lari Private");
-    //         }
-    //         challengePage.scrollAndCapture(1, 0.8, 0.2, "Kondisi setelah menolak semua peserta");
-            
-    //         if (TestListener.getTest() != null) {
-    //             logPass("SUCCESS: Alur penolakan peserta berjalan lancar (Satuan & Massal).");
-    //         }
-    //     } catch (Exception e) {
-    //         if (TestListener.getTest() != null) logFail("FAILURE: Terjadi kesalahan saat memproses penolakan peserta.");
-    //         Assert.fail("Alur Reject Peserta gagal!");
     //     }
 
     //     challengePage.navigateBackToDashboardSafe();

@@ -26,7 +26,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
     }
 
     // --- LOCATORS ---
-    private final By BTN_BERANDA_TAB = AppiumBy.xpath("//android.widget.Button[@text='Beranda']");
+    private final By BTN_BERANDA_TAB = AppiumBy.xpath("//android.widget.Button[@text=\"Beranda Beranda\"]");
     private final By BTN_CHALLENGE_TAB = AppiumBy.xpath("//android.widget.Button[@text='Challenge Challenge']");
     private final By BTN_TO_CREATE_MENU = AppiumBy.xpath("//android.view.View[@content-desc=\"create-run\"]");
     private final By BTN_SEE_ALL_CHALLENGES = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[1]");
@@ -107,7 +107,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         return isElementPresent(KELOLA_CHALLENGE_PAGE, 3);
     }
 
-    public void navigateToCreateMenu() {
+    public void navigateToCreateMenu(boolean screenshot) {
         System.out.println("   -> [Nav] Navigating to Create Challenge Menu...");
 
         // ALREADY THERE
@@ -119,7 +119,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // B. ON DASHBOARD?
         if (!isChallengeDashboard()) {
             System.out.println("   -> Not on Dashboard. Switching Tab...");
-            navigateToChallengeDashboard();
+            navigateToChallengeDashboard(screenshot);
         }
 
         // C. CLICK ADD BUTTON
@@ -127,13 +127,13 @@ public class ChallengeActionHelper extends CreationActionHelper {
         try {
             // Check if the floating button exists before clicking
             if (isElementPresent(BTN_TO_CREATE_MENU, 3)) {
-                tap(BTN_TO_CREATE_MENU, "Click (+) Button");
+                tap(BTN_TO_CREATE_MENU, "Click (+) Button", screenshot);
             } else {
                 throw new Exception("Button locator failed");
             }
         } catch (Exception e) {
             System.out.println("   -> (+) Button not found via Locator. Using Coordinate Fallback (0.85, 0.25).");
-            tapAtScreenRatio(0.85, 0.25); // Keeping your requested coordinates
+            tapAtScreenRatio(0.85, 0.25, screenshot); // Keeping your requested coordinates
         }
 
         // Final Check
@@ -142,23 +142,24 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
 
-    public void navigateToDetailChallenge(String partialName) {
+    public void navigateToDetailChallenge(String partialName, boolean screenshot) {
         System.out.println("   -> [Nav] Navigating to Edit Challenge Page...");
 
         if (isDetailChallengePage()) {
             System.out.println("   -> On Detail Page. Proceeding to click Edit...");
+            scrollToTop();
             return;
         }
 
         if (!isSeeAllChallengesPage()) {
             if (!isChallengeDashboard()) {
                 System.out.println("   -> Not on Dashboard. Navigating there first...");
-                navigateToChallengeDashboard(); 
+                navigateToChallengeDashboard(screenshot); 
             }
             
             System.out.println("   -> Clicking 'Lihat Semua' (See All)...");
             try {
-                tap(BTN_SEE_ALL_CHALLENGES, "Tap 'Lihat Semua' Challenges");
+                tap(BTN_SEE_ALL_CHALLENGES, "Tap 'Lihat Semua' Challenges", screenshot);
                 Thread.sleep(1500); // Brief wait for transition
             } catch (Exception e) {
                 System.out.println("WARN: Failed to click 'Lihat Semua'.");
@@ -170,13 +171,13 @@ public class ChallengeActionHelper extends CreationActionHelper {
         try {
             scrollToText(partialName); 
             
-            tapButtonByTextOrId(partialName, partialName);
+            tapButtonByTextOrId(partialName, partialName, screenshot);
             
             // tap(BTN_TO_DETAIL_CHALLENGE, "Tap Challenge Card");
             Thread.sleep(1500); // Brief wait for Detail Page to load
         } catch (Exception e) {
             System.out.println("WARN: Failed to click Challenge Card. Using Fallback.");
-            tapAtScreenRatio(0.50, 0.253); 
+            tapAtScreenRatio(0.50, 0.253, screenshot); // Fallback: Tap center of where the card should be
         }
         
         // Final Validation Check
@@ -185,30 +186,30 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
 
-    public void navigateToEditChallenge() {
+    public void navigateToEditChallenge(boolean screenshot) {
         System.out.println("   -> Navigating to Edit Page...");
         try {
-            tap(BTN_EDIT_CHALLENGE, "Click Edit Button");
+            tap(BTN_EDIT_CHALLENGE, "Click Edit Button", screenshot);
         } catch (Exception e) {
             System.out.println("   -> Standard edit button not found. Using fallback coordinates.");
-            tapAtScreenRatio(0.925, 0.061);
+            tapAtScreenRatio(0.925, 0.061, screenshot);
         }
     }
     
-    public void navigateToSeeAllChallengesPage() {
+    public void navigateToSeeAllChallengesPage(boolean screenshot) {
         System.out.println("   -> Navigating to See All Challenges Page...");
         try {
-            tap(BTN_SEE_ALL_CHALLENGES, "Tap See All Challenges Button");
+            tap(BTN_SEE_ALL_CHALLENGES, "Tap See All Challenges Button", screenshot);
         } catch (Exception e) {
             System.out.println("   -> See All Challenges button not found.");
         }
     }
 
-    public void navigateToChallengeDashboard() {
+    public void navigateToChallengeDashboard(boolean screenshot) {
         try {
-            tap(BTN_CHALLENGE_TAB, "Tap Challenge Tab");
+            tap(BTN_CHALLENGE_TAB, "Tap Challenge Tab", screenshot);
         } catch (Exception e) {
-            tapAtScreenRatio(0.65, 0.93); // Fallback for Tab
+            tapAtScreenRatio(0.65, 0.93, screenshot); // Fallback for Tab
         }
         
         // Wait for dashboard to load
@@ -218,13 +219,15 @@ public class ChallengeActionHelper extends CreationActionHelper {
         } catch (Exception e) {
             System.out.println("   -> Dashboard load check timed out (Non-fatal)");
         }
+
+        scrollToTop();
     }
 
-        public void navigateToBeranda() {
+        public void navigateToBeranda(boolean screenshot) {
         try {
-            tap(BTN_BERANDA_TAB, "Tap Beranda Tab");
+            tap(BTN_BERANDA_TAB, "Tap Beranda Tab", screenshot);
         } catch (Exception e) {
-            tapAtScreenRatio(0.25, 0.93); // Fallback for Tab
+            tapAtScreenRatio(0.100, 0.9567, screenshot); // Fallback for Tab
         }
         
         // Wait for dashboard to load
@@ -234,9 +237,11 @@ public class ChallengeActionHelper extends CreationActionHelper {
         } catch (Exception e) {
             System.out.println("   -> Dashboard load check timed out (Non-fatal)");
         }
+
+        scrollToTop();
     }
 
-    public void navigateToKelolaChallenge(String ChallengeName) {
+    public void navigateToKelolaChallenge(String ChallengeName, boolean screenshot) {
         System.out.println("   -> [Nav] Navigating to Kelola Challenge Page...");
 
         // 1. ALREADY THERE? (Menggunakan locator baru Anda)
@@ -248,7 +253,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 2. ON DETAIL PAGE?
         if (isDetailChallengePage()) {
             System.out.println("   -> On Detail Page. Proceeding to click Kelola...");
-            tap(BTN_KELOLA_CHALLENGE, "Tap Kelola Challenge Button");
+            tap(BTN_KELOLA_CHALLENGE, "Tap Kelola Challenge Button", screenshot);
             
             // Validasi setelah klik
             if (!isKelolaChallengePage()) {
@@ -259,11 +264,11 @@ public class ChallengeActionHelper extends CreationActionHelper {
 
         //  NEED TO START FROM DASHBOARD?
         if (!isSeeAllChallengesPage()) {
-            navigateToDetailChallenge(ChallengeName);
+            navigateToDetailChallenge(ChallengeName, screenshot);
         }
 
         // 5. FINALLY: Click Kelola Challenge
-        tap(BTN_KELOLA_CHALLENGE, "Tap Kelola Challenge Button");
+        tap(BTN_KELOLA_CHALLENGE, "Tap Kelola Challenge Button", screenshot);
         
         // 6. FINAL VALIDATION (Menggunakan locator baru Anda)
         if (!isKelolaChallengePage()) {
@@ -286,6 +291,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
             // 1. Check if we are already on the Dashboard
             if (isTextVisible("Challenge Saya") && isTextVisible("Challenge Lari")) {
                 System.out.println("      -> Arrived at Dashboard.");
+                scrollToTop();
                 return; // Success! Stop pressing back.
             }
 
@@ -298,6 +304,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
             
             attempt++;
         }
+
         
         System.out.println("WARN: Could not return to Dashboard after " + maxAttempts + " attempts.");
     }
@@ -315,11 +322,12 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
 
-    public void kickOutParticipant(String challengeName) {
+    public void kickOutParticipant(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Kick Out Peserta...");
 
         // 1. Pastikan berada di halaman Kelola Challenge
-        navigateToKelolaChallenge(challengeName);
+        navigateToDetailChallenge(challengeName, screenshot);
+        navigateToKelolaChallenge(challengeName, true);
 
         // 2. Berpindah ke Tab Peserta
         System.out.println("   -> Berpindah ke Tab Peserta...");
@@ -360,10 +368,12 @@ public class ChallengeActionHelper extends CreationActionHelper {
         
     }
 
-    public void acceptOneParticipant(String challengeName) {
+    public void acceptOneParticipant(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Accept 1 Peserta...");
 
-        navigateToKelolaChallenge(challengeName);
+        navigateToDetailChallenge(challengeName, screenshot);
+        navigateToKelolaChallenge(challengeName, true);
+
         // 2. Pastikan berada di Tab Persetujuan (Berjaga-jaga jika sebelumnya di tab lain)
         System.out.println("   -> Memastikan berada di Tab Persetujuan...");
         try {
@@ -393,10 +403,11 @@ public class ChallengeActionHelper extends CreationActionHelper {
         
     }
 
-    public void acceptAllParticipants(String challengeName) {
+    public void acceptAllParticipants(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Accept SEMUA Peserta...");
 
-        navigateToKelolaChallenge(challengeName);
+        navigateToDetailChallenge(challengeName, screenshot);
+        navigateToKelolaChallenge(challengeName, true);
 
         // 2. Pastikan berada di Tab Persetujuan (Sangat penting jika fungsi ini dipanggil setelah acceptOnePeserta)
         System.out.println("   -> Kembali/Memastikan berada di Tab Persetujuan...");
@@ -447,10 +458,11 @@ public class ChallengeActionHelper extends CreationActionHelper {
     // ACTION: KELOLA PESERTA (REJECT ONE)
     // ==========================================
 
-    public void rejectOneParticipant(String challengeName) {
+    public void rejectOneParticipant(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Reject 1 Peserta...");
 
-        navigateToKelolaChallenge(challengeName);
+        navigateToDetailChallenge(challengeName, screenshot);
+        navigateToKelolaChallenge(challengeName, true);
 
         // 2. Pastikan berada di Tab Persetujuan
         System.out.println("   -> Memastikan berada di Tab Persetujuan...");
@@ -487,11 +499,12 @@ public class ChallengeActionHelper extends CreationActionHelper {
     // ACTION: KELOLA PESERTA (REJECT ALL)
     // ==========================================
 
-    public void rejectAllParticipants(String challengeName) {
+    public void rejectAllParticipants(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Reject SEMUA Peserta...");
         
-        navigateToKelolaChallenge(challengeName);
-        
+        navigateToDetailChallenge(challengeName, screenshot);
+        navigateToKelolaChallenge(challengeName, true);
+
         // 2. Pastikan berada di Tab Persetujuan
         System.out.println("   -> Kembali/Memastikan berada di Tab Persetujuan...");
         try {
@@ -536,11 +549,12 @@ public class ChallengeActionHelper extends CreationActionHelper {
         try { Thread.sleep(2000); } catch (Exception ignored) {} 
     }
 
-    public void shareChallengeToWhatsApp(String ContactName, String ChallengeName) {
+    public void shareChallengeToWhatsApp(String contactName, String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai proses Share Challenge ke WhatsApp...");
 
         // 1. Pastikan berada di halaman Kelola Challenge
-        navigateToKelolaChallenge(ChallengeName);
+        navigateToDetailChallenge(challengeName, screenshot);
+        navigateToKelolaChallenge(challengeName, true);
 
         // 2. Klik tombol "Bagikan Challenge"
         System.out.println("   -> [Share] Mengklik tombol Bagikan Challenge...");
@@ -574,9 +588,9 @@ public class ChallengeActionHelper extends CreationActionHelper {
             // Transisi membuka aplikasi eksternal (WhatsApp) biasanya memakan waktu lebih lama
             Thread.sleep(3000); 
 
-            scrollToText(ContactName);
+            scrollToText(contactName);
 
-            tapButtonByTextOrId(ContactName, ContactName);
+            tapButtonByTextOrId(contactName, contactName);
 
         } catch (Exception e) {
             System.out.println("WARN: Gagal menemukan kontak di WhatsApp.");
@@ -599,19 +613,19 @@ public class ChallengeActionHelper extends CreationActionHelper {
     }
 
     public void uploadPoster() {
-        uploadPoster(1); 
+        uploadPoster(1, false); 
     }
 
-    public void uploadPoster(int photoIndex) {
+    public void uploadPoster(int photoIndex, boolean screenshot) {
         System.out.println("   -> [Action] Uploading Poster (Choice: " + photoIndex + ")...");
 
         // --- STEP 1: OPEN GALLERY ---
         try {
-            tap(FIELD_POSTER, "Tap Upload Poster Area");
+            tap(FIELD_POSTER, "Tap Upload Poster Area", screenshot);
         } catch (Exception e) {
             System.out.println("   -> 'Upload Poster' field not found via locator. Using Text Fallback.");
             try {
-                tapButtonByTextOrId("Upload Poster", "Tap 'Upload Poster' Text");
+                tapButtonByTextOrId("Upload Poster", "Upload Poster", screenshot);
             } catch (Exception ex) {
                 System.out.println("WARN: Could not open gallery. Skipping upload.");
                 return;
@@ -623,19 +637,19 @@ public class ChallengeActionHelper extends CreationActionHelper {
 
         // --- STEP 2: SELECT IMAGE BASED ON CHOICE ---
         try {
-            if (photoIndex == 2) {
+            if (photoIndex == 2 ) {
                 // Try Photo 2
                 if (isElementPresent(PICTURE_TWO, 3)) {
-                    tap(PICTURE_TWO, "Select Gallery Image (2)");
+                    tap(PICTURE_TWO, "Select Gallery Image (2)", screenshot);
                 } else {
-                    tapAtScreenRatio(0.50, 0.477);    
+                    tapAtScreenRatio(0.50, 0.477, screenshot); // Fallback: Tap Center of Gallery
                 }
             } else if (photoIndex == 1) {
                 // Default to Photo 1
                 if (isElementPresent(PICTURE_ONE, 3)) {
-                    tap(PICTURE_ONE, "Select Gallery Image (1)");
+                    tap(PICTURE_ONE, "Select Gallery Image (1)", screenshot);
                 } else {
-                    tapAtScreenRatio(0.166, 0.477);
+                    tapAtScreenRatio(0.166, 0.477, screenshot);
                 }
             } else if (photoIndex == 3) {
                 selectImageFromKoleksi();
@@ -643,7 +657,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         } catch (Exception e) {
             System.out.println("   -> Specific photo locator failed. Using Ratio Fallback.");
             // Fallback: Tap Center Screen (Generic selection)
-            tapAtScreenRatio(0.50, 0.63);
+            tapAtScreenRatio(0.50, 0.63, screenshot);
         }
 
         try { Thread.sleep(1000); } catch (Exception ignored) {}
@@ -651,13 +665,13 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // --- STEP 3: CONFIRM SELECTION ---
         try {
             if (isElementPresent(BTN_CONFIRM_POSTER, 3)) {
-                tap(BTN_CONFIRM_POSTER, "Tap 'Done' Button");
+                tap(BTN_CONFIRM_POSTER, "Tap 'Done' Button", screenshot);
             } else {
                 throw new Exception("Confirm button not found");
             }
         } catch (Exception e) {
             System.out.println("   -> Confirm button locator failed. Using Ratio Fallback.");
-            tapAtScreenRatio(0.83, 0.91); // Bottom Right
+            tapAtScreenRatio(0.83, 0.91, screenshot); // Bottom Right
         }
     }
 
@@ -712,45 +726,59 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
 
-    public void fillCreateChallengeForm(ChallengeData data) {
+    public void fillCreateChallengeForm(ChallengeData data, boolean screenshot) {
         System.out.println("   -> [Action] Filling Challenge Form...");
 
         // 1. Upload Poster (using your smart logic)
-        uploadPoster();
-
+        uploadPoster(1, screenshot);
+        
+        scrollToExactText("Nama Challenge");
         try {
-            fillInputField(FIELD_NAMA, data.name);
+            fillInputField(FIELD_NAMA, data.name, screenshot);
         } catch (Exception e) {
-            fillInputByLabelOffset("Nama Challenge", data.name); // Fallback if locator fails
+            fillInputByLabelOffset("Nama Challenge", data.name, screenshot); // Fallback if locator fails
         }
 
+        try { driver.hideKeyboard(); } catch (Exception ignored) {}
+
+        scrollToExactText("Jarak Lari (km)");
         try {
-            fillInputField(FIELD_JARAK, data.distance);    
+            fillInputField(FIELD_JARAK, data.distance, screenshot);    
         } catch (Exception e) {
-            fillInputByLabelOffset("Jarak Lari (km)", data.distance); 
+            fillInputByLabelOffset("Jarak Lari (km)", data.distance, screenshot); 
         }
+        
+        try { driver.hideKeyboard(); } catch (Exception ignored) {}
         
         // 3. Date & Time (Complex logic kept inside helper)
-        setDateRange(26, 28); 
-        setTimeConfiguration(2, 5);
+        scrollToExactText("Tanggal");
+        setDateRange(26, 28, screenshot); 
+        scrollToText("Jam (Opsional)");
+        setTimeConfiguration(2, 5, screenshot);
 
         // 4. Description & Terms
-        try {
-            fillInputField(FIELD_DESCRIPTION, data.description);
-        } catch (Exception e) {
-            fillInputByLabelOffset("Deskripsi", data.description);
-        }
+        scrollToExactText("Deskripsi");
+        // try {
+        //     fillInputField(FIELD_DESCRIPTION, data.description, screenshot);
+        // } catch (Exception e) {
+            fillInputByLabelOffset("Deskripsi", data.description, screenshot);
+        // }
 
-        try {
-            fillInputField(FIELD_TERMS, data.terms);
-        } catch (Exception e) {
-            fillInputByLabelOffset("Syarat dan Ketentuan", data.terms);
-        }
+        try { driver.hideKeyboard(); } catch (Exception ignored) {}
+
+        scrollToExactText("Syarat dan Ketentuan");
+        // try {
+        //     fillInputField(FIELD_TERMS, data.terms, screenshot);
+        // } catch (Exception e) {
+            fillInputByLabelOffset("Syarat dan Ketentuan", data.terms, screenshot);
+        // }
         
+        try { driver.hideKeyboard(); } catch (Exception ignored) {}
+
         // 5. Badge & Region
         // We keep these specific calls because they involve complex UI interactions
         if (data.badge != null && !data.badge.isEmpty()){
-            configureBadge(data.badge);
+            configureBadge(data.badge, screenshot);
         }
         else{
             System.out.println("   -> No badge specified in test data. Skipping badge configuration.");
@@ -763,20 +791,24 @@ public class ChallengeActionHelper extends CreationActionHelper {
 
         }
 
-        configureRegion("Regional", "Jawa Barat", "Bogor", "Bandung");
-
+        scrollToExactText("Visibilitas Challenge");
         // 6. Private Mode
         if (data.isPrivate) {
-            setPrivateMode(true);
+            setPrivateMode(true, screenshot);
+        } else{
+            setPrivateMode(false, screenshot);
         }
+        
+        scrollToExactText("Atur Area Challenge");
+        configureRegion(screenshot, "Regional", "Jawa Barat", "Bogor", "Bandung");
+
+        if (!screenshot) {
+            scrollToExactText("Buat Challenge Lari!");
+            scrollAndCapture(2, 0.946, 0.066, "Final view of filled form before submission");
+        }
+
     }
-
-    // ... inside ChallengeActionHelper class ...
-
-    /**
-     * Specific method for Editing that ensures the previous text is cleared.
-     * Uses the 'INPUT_NAME' locator defined at the top of this class.
-     */
+    
     public void updateChallengeName(String newName) {
         System.out.println("   -> [Action] Updating Name to: " + newName);
         try {
@@ -792,23 +824,28 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
     
-    public void setPrivateMode(boolean enable) {
+    public void setPrivateMode(boolean enable, boolean screenshot) {
         String labelText = "Atur Sebagai Mode Private";
         System.out.println("   -> [Action] Setting Private Mode to: " + enable);
 
         try {
             scrollToText(labelText);
             Thread.sleep(500); 
-
-            tap(TOGGLE_PRIVATE, "Toggle 'Mode Private'");
-
+            if (enable) {
+                tap(TOGGLE_PRIVATE, "Toggle 'Mode Private'", screenshot);
+            }
+            
+            capture.highlightAndCapture(TOGGLE_PRIVATE, "Interacted with Private Mode toggle");
         } catch (Exception e) {
             System.out.println("   -> Specific toggle locator failed. Trying dynamic fallback...");
             
             try {
                 By fallbackToggle = AppiumBy.xpath("//*[contains(@text, '" + labelText + "')]/following-sibling::*[1]");
-                tap(fallbackToggle, "Toggle 'Mode Private' (Fallback)");
+                if (enable) {
+                    tap(fallbackToggle, "Toggle 'Mode Private' (Fallback)", screenshot);
+                }
                 
+                capture.highlightAndCapture(fallbackToggle, "Interacted with Private Mode toggle using fallback locator");
             } catch (Exception ex) {
                 System.out.println("WARN: Completely failed to interact with Private Mode toggle.");
             }
@@ -840,55 +877,55 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
 
-    public void setDateRange(int startDay, int endDay) {
+    public void setDateRange(int startDay, int endDay, boolean screenshot) {
         System.out.println("   -> [Action] Setting Dates: " + startDay + " - " + endDay);
-        clickByLabelOffset("Tanggal"); // Opens Date Widget
+        clickByLabelOffset("Tanggal", screenshot); // Opens Date Widget
         
         try {
             Thread.sleep(1000);
             // 1. Pick Start Day
             scrollToExactText(String.valueOf(startDay));
-            tapButtonByTextOrId(String.valueOf(startDay), String.valueOf(startDay));
+            tapButtonByTextOrId(String.valueOf(startDay), String.valueOf(startDay), screenshot);
             
             // 2. Pick End Day (Simplified: Just clicking OK implies single day or auto range)
             // If you need to switch tabs, add tapButtonByTextOrId("Selesai", "Selesai") here.
             scrollToExactText("OK");
             // tapButtonByTextOrId("OK", "OK");
-            tap(CONFIRM_DATE_BTN, "Confirm Date Selection");
+            tap(CONFIRM_DATE_BTN, "Confirm Date Selection", screenshot);
         } catch (Exception e) {
             System.out.println("WARN: Date selection failed. Attempting force close.");
-            try { tapButtonByTextOrId("OK", "OK"); } catch (Exception ex) {}
+            try { tapButtonByTextOrId("OK", "OK", screenshot); } catch (Exception ex) {}
         }
     }
 
-    public void setTimeConfiguration(int startHourClicks, int endHourClicks) {
+    public void setTimeConfiguration(int startHourClicks, int endHourClicks, boolean screenshot) {
         System.out.println("   -> [Action] Setting Time...");
-        clickByLabelOffset("Jam (Opsional)");
+        clickByLabelOffset("Jam (Opsional)", screenshot);
         try {
             Thread.sleep(1000);
             // Use accessibility IDs to click Up/Down arrows
-            adjustTimeById("hour", startHourClicks); // Adjust Start
+            adjustTimeById("hour", startHourClicks, screenshot); // Adjust Start
             
-            tapButtonByTextOrId("Jam Selesai", "Jam Selesai"); // Switch Tab
-            adjustTimeById("hour", endHourClicks);   // Adjust End
+            tapButtonByTextOrId("Jam Selesai", "Jam Selesai", screenshot); // Switch Tab
+            adjustTimeById("hour", endHourClicks, screenshot);   // Adjust End
             
             // Confirm
-            try { tapByAccessibilityId("Confirm"); } 
-            catch (Exception e) { tapAtScreenRatio(0.858, 0.627); } // Ratio Fallback
+            try { tapByAccessibilityId("Confirm", screenshot); } 
+            catch (Exception e) { tapAtScreenRatio(0.858, 0.627, screenshot); } // Ratio Fallback
             
         } catch (Exception e) {
              System.out.println("WARN: Time set failed.");
-             tapButtonByTextOrId("Confirm", "Confirm");
+             tapButtonByTextOrId("Confirm", "Confirm", screenshot);
         }
     }
 
-    public void configureBadge(String badgeId) {
+    public void configureBadge(String badgeId, boolean screenshot) {
         System.out.println("   -> [Action] Configuring Badge & Region...");
         
         // 1. Badge
         scrollToText("Badge Pemenang");
-        tapButtonByTextOrId("Badge Pemenang", "Badge Pemenang");
-        selectBadgeRobust(badgeId);
+        tapButtonByTextOrId("Badge Pemenang", "Badge Pemenang", screenshot);
+        selectBadgeRobust(badgeId, screenshot);
     }
 
     /**
@@ -899,14 +936,14 @@ public class ChallengeActionHelper extends CreationActionHelper {
      * * @param regionType  "Nasional" or "Regional"
      * @param drillDowns  (Optional) Comma-separated list of locations (Province, City, District)
      */
-    public void configureRegion(String regionType, String... drillDowns) {
+    public void configureRegion(boolean screenshot, String regionType, String... drillDowns) {
         System.out.println("   -> [Action] Configuring Region: " + regionType);
 
         try {
             // 1. Select the Main Scope (Nasional / Regional)
             // We scroll to it just in case, then tap.
             scrollToExactText("Nasional");
-            tapButtonByTextOrId("Nasional", "Nasional");
+            tapButtonByTextOrId("Nasional", "Nasional", screenshot);
             
             // Wait for UI to react
             Thread.sleep(1000); 
@@ -920,9 +957,9 @@ public class ChallengeActionHelper extends CreationActionHelper {
             // 3. If Regional, Loop through the drill-downs
             if (drillDowns != null && drillDowns.length > 0) {
                 System.out.println("      -> Drilling down " + drillDowns.length + " locations...");
-                tapButtonByTextOrId("Regional", "Regional"); 
+                tapButtonByTextOrId("Regional", "Regional", screenshot); 
                 scrollToExactText("Aceh (NAD)");
-                tapButtonByTextOrId("Aceh (NAD)", "Aceh (NAD)"); // Example to open first level
+                tapButtonByTextOrId("Aceh (NAD)", "Aceh (NAD)", screenshot); // Example to open first level
                    
                 for (String location : drillDowns) {
                     try {
@@ -932,7 +969,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
                         scrollToExactText(location);
                         
                         // B. Tap the location
-                        tapButtonByTextOrId(location, location);
+                        tapButtonByTextOrId(location, location, screenshot);
                         
                         // C. Wait for the next list to load (API delay)
                         Thread.sleep(1500); 
@@ -1014,7 +1051,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
     
-    private void adjustTimeById(String unit, int clicks) {
+    private void adjustTimeById(String unit, int clicks, boolean screenshot) {
         if (clicks == 0) return;
         String action = (clicks > 0) ? "Increase" : "Decrease";
         String id = action + " " + unit;
@@ -1023,7 +1060,9 @@ public class ChallengeActionHelper extends CreationActionHelper {
         By buttonLocator = AppiumBy.accessibilityId(id);
 
         try {
-            capture.highlightAndCapture(buttonLocator, "Tap '" + id + "' " + count + " times");
+            if (screenshot) {
+                capture.highlightAndCapture(buttonLocator, "Tap '" + id + "' " + count + " times");
+            }
 
         for (int i = 0; i < count; i++) {
                 try {
@@ -1042,25 +1081,25 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
 
-    private void selectBadgeRobust(String badgeId) {
+    private void selectBadgeRobust(String badgeId, boolean screenshot) {
         try {
-            tap(AppiumBy.accessibilityId(badgeId), "Select Badge: " + badgeId);
+            tap(AppiumBy.accessibilityId(badgeId), "Select Badge: " + badgeId, screenshot);
         } catch (Exception e) {
             System.out.println("   -> Badge ID '" + badgeId + "' not found. Using coordinate fallback.");
             
             // Fallback: Click the first badge position
-            tapAtScreenRatio(0.15, 0.40);
+            tapAtScreenRatio(0.15, 0.40, screenshot);
         }
         try { 
             Thread.sleep(500); // Wait for selection animation
-            tapByExactText("Pilih");
+            tapByExactText("Pilih", screenshot);
             // tapButtonByTextOrId("Pilih", "Confirm Selection");
             
         } catch (Exception e) {
             System.out.println("   -> 'Pilih' text not found. Using coordinate fallback.");
             
             // Fallback: Click the "Select" button area
-            tapAtScreenRatio(0.50, 0.887); 
+            tapAtScreenRatio(0.50, 0.887, screenshot); 
         }
     }
 

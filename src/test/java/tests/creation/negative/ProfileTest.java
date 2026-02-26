@@ -90,12 +90,19 @@ public class ProfileTest extends BaseTest {
 
         // 2. CLEAR FIELDS (Trigger Validation)
          TestListener.getTest().log(Status.INFO, "Action: Clearing all mandatory fields...");
-        profilePage.fillInputAndReadBack("Nama", "");
-        profilePage.fillInputAndReadBack("Tinggi Badan", "");
-        profilePage.fillInputAndReadBack("Berat Badan", "");
+        profilePage.fillInputAndReadBack("Nama", "", false);
+        profilePage.fillInputAndReadBack("Tinggi Badan", "", false);
+        profilePage.fillInputAndReadBack("Berat Badan", "", false);
 
         // Hide keyboard to ensure we see the button and errors
         try { driver.hideKeyboard(); } catch (Exception ignored) {}
+
+        // 4. VERIFY ERROR MESSAGES (Dynamic Validation)
+        boolean isScreenValid = profilePage.areElementsDisplayed(
+            "Nama harus memiliki minimal 3 karakter", 
+            "Tinggi badan harus berupa angka",
+            "Berat badan harus berupa angka"
+        );
 
         // 3. VERIFY BUTTON STATE (Must be Disabled)
         boolean isEnabled = profilePage.isSaveButtonEnabled(true);
@@ -112,14 +119,7 @@ public class ProfileTest extends BaseTest {
             profilePage.tapButtonByTextOrId("Simpan", "Simpan");
         }
 
-        // 4. VERIFY ERROR MESSAGES (Dynamic Validation)
-        // Check each error text matches your app's actual validation messages
-        // Checks if both texts exist, takes ONE screenshot highlighting both
-        boolean isScreenValid = profilePage.areElementsDisplayed(
-            "Nama harus memiliki minimal 3 karakter", 
-            "Tinggi badan harus berupa angka",
-            "Berat badan harus berupa angka"
-        );
+
         if (isScreenValid) {
             TestListener.getTest().log(Status.PASS, "SUCCESS: All expected error messages are displayed for empty fields.");
         } else {
@@ -155,13 +155,14 @@ public class ProfileTest extends BaseTest {
 
         try { driver.hideKeyboard(); } catch (Exception ignored) {}
 
-        // 4. KLIK SIMPAN
-        boolean isSaveEnabled = profilePage.isSaveButtonEnabled(true);
-        TestListener.getTest().log(Status.INFO, "Is Save Button Enabled: " + isSaveEnabled);
         // 5. VERIFIKASI PESAN ERROR
         boolean isErrorMessageDisplayed = profilePage.areElementsDisplayed(expectedErrorText);
         TestListener.getTest().log(Status.INFO, "Is Error Message Displayed: " + isErrorMessageDisplayed);
 
+        // 4. KLIK SIMPAN
+        boolean isSaveEnabled = profilePage.isSaveButtonEnabled(true);
+        TestListener.getTest().log(Status.INFO, "Is Save Button Enabled: " + isSaveEnabled);
+        
         if (!isSaveEnabled) {      
             // --- SECONDARY CHECK: Error Message (UX Warning) ---
             if (isErrorMessageDisplayed) {
@@ -272,8 +273,8 @@ public class ProfileTest extends BaseTest {
         // 3. INPUT DATA TIDAK WAJAR
         TestListener.getTest().log(Status.INFO, "Action: Menginput Tinggi '" + unreasonableHeight + "' dan Berat '" + unreasonableWeight + "'");
         
-        profilePage.fillInputAndReadBack("Tinggi Badan", unreasonableHeight);
-        profilePage.fillInputAndReadBack("Berat Badan", unreasonableWeight);
+        profilePage.fillInputAndReadBack("Tinggi Badan", unreasonableHeight, false);
+        profilePage.fillInputAndReadBack("Berat Badan", unreasonableWeight, false);
 
         try { driver.hideKeyboard(); } catch (Exception ignored) {}
 
