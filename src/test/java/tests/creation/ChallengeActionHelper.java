@@ -41,7 +41,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
     private final By BTN_TO_ACCEPT_ALL = AppiumBy.xpath("(//android.widget.Button[@text=\"Semua\"])[2]");
     private final By BTN_TO_REJECT_ONE = AppiumBy.xpath("//android.view.View[@resource-id=\"radix-_r_i_-content-persetujuan\"]/android.widget.TextView[3]");
     private final By BTN_TO_REJECT_ALL = AppiumBy.xpath("(//android.widget.Button[@text=\"Semua\"])[1]");
-    private final By BTN_KICK_OUT = AppiumBy.xpath("//android.widget.Button[@text=\"Kick Out\"]");
+    private final By BTN_KICK_OUT = AppiumBy.xpath("(//android.widget.Button[@text=\"kick out\"])[1]");
     private final By BTN_CONFIRM_LANJUTKAN = AppiumBy.xpath("//android.widget.Button[@text=\"Ya, Lanjutkan\"]");
     private final By BTN_TO_TAB_PESERTA = AppiumBy.xpath("//android.view.View[@resource-id=\"radix-_r_c_-trigger-peserta\"]"); 
     private final By BTN_BUAT_CHALLENGE = AppiumBy.xpath("//android.widget.Button[@text=\"Buat Challenge\"]");
@@ -332,10 +332,10 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 2. Berpindah ke Tab Peserta
         System.out.println("   -> Berpindah ke Tab Peserta...");
         try {
-            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta");
+            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta", true);
         } catch (Exception e) {
             System.out.println("WARN: Gagal via locator. Using corrected Ratio untuk Tab Peserta.");
-            tapAtScreenRatio(0.723, 0.417);
+            tapAtScreenRatio(0.723, 0.417, true);
         }
         try { Thread.sleep(2000); } catch (Exception ignored) {} // Tunggu data me-render
 
@@ -345,7 +345,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
             tap(BTN_KICK_OUT, "Tap tombol Kick Out");
         } catch (Exception e) {
             System.out.println("WARN: Gagal via locator. Using corrected Ratio untuk Kick Out.");
-            tapAtScreenRatio(0.925, 0.507);
+            tapAtScreenRatio(0.925, 0.601);
         }
 
         // 4. Konfirmasi Modal 'Ya, Lanjutkan'
@@ -365,6 +365,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 5. Validasi Tab Peserta & Capture
         System.out.println("   -> Memvalidasi tampilan akhir Tab Peserta...");
         try { Thread.sleep(2000); } catch (Exception ignored) {} // Tunggu proses loading selesai
+        scrollAndCapture(0, 0.8, 0.8, "Setelah mengeluarkan satu peserta");
         
     }
 
@@ -377,9 +378,9 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 2. Pastikan berada di Tab Persetujuan (Berjaga-jaga jika sebelumnya di tab lain)
         System.out.println("   -> Memastikan berada di Tab Persetujuan...");
         try {
-            tap(BTN_TO_TAB_PERSETUJUAN, "Switch ke Tab Persetujuan");
+            tap(BTN_TO_TAB_PERSETUJUAN, "Switch ke Tab Persetujuan", false);
         } catch (Exception e) {
-            tapAtScreenRatio(0.276, 0.417);
+            tapAtScreenRatio(0.276, 0.417, false);
         }
         try { Thread.sleep(1500); } catch (Exception ignored) {}
 
@@ -395,12 +396,14 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 4. Validasi ke Tab Peserta & Capture
         System.out.println("   -> Berpindah ke Tab Peserta untuk validasi...");
         try {
-            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta");
+            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta", false);
         } catch (Exception e) {
-            tapAtScreenRatio(0.723, 0.417);
+            tapAtScreenRatio(0.723, 0.417, false);
         }
         
-        
+        try { Thread.sleep(2000); } catch (Exception ignored) {} 
+
+        scrollAndCapture(0, 0.8, 0.8, "Capture setelah menerima 1 peserta");
     }
 
     public void acceptAllParticipants(String challengeName, boolean screenshot) {
@@ -412,9 +415,9 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 2. Pastikan berada di Tab Persetujuan (Sangat penting jika fungsi ini dipanggil setelah acceptOnePeserta)
         System.out.println("   -> Kembali/Memastikan berada di Tab Persetujuan...");
         try {
-            tap(BTN_TO_TAB_PERSETUJUAN, "Switch ke Tab Persetujuan");
+            tap(BTN_TO_TAB_PERSETUJUAN, "Switch ke Tab Persetujuan", false);
         } catch (Exception e) {
-            tapAtScreenRatio(0.276, 0.417);
+            tapAtScreenRatio(0.276, 0.417, false);
         }
         try { Thread.sleep(1500); } catch (Exception ignored) {}
 
@@ -445,12 +448,14 @@ public class ChallengeActionHelper extends CreationActionHelper {
         System.out.println("   -> Berpindah ke Tab Peserta untuk validasi akhir...");
         try {
             Thread.sleep(2000); // Tunggu proses loading massal selesai
-            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta");
+            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta", false);
         } catch (Exception e) {
-            tapAtScreenRatio(0.723, 0.417);
+            tapAtScreenRatio(0.723, 0.417, false);
         }
         
         try { Thread.sleep(2000); } catch (Exception ignored) {} 
+
+        scrollAndCapture(0, 0.8, 0.8, "Sebelum menerima semua peserta");
          
     }
 
@@ -467,9 +472,9 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 2. Pastikan berada di Tab Persetujuan
         System.out.println("   -> Memastikan berada di Tab Persetujuan...");
         try {
-            tap(BTN_TO_TAB_PERSETUJUAN, "Switch ke Tab Persetujuan");
+            tap(BTN_TO_TAB_PERSETUJUAN, "Switch ke Tab Persetujuan", false);
         } catch (Exception e) {
-            tapAtScreenRatio(0.276, 0.417);
+            tapAtScreenRatio(0.276, 0.417, false);
         }
         try { Thread.sleep(1500); } catch (Exception ignored) {}
 
@@ -479,19 +484,21 @@ public class ChallengeActionHelper extends CreationActionHelper {
             tap(BTN_TO_REJECT_ONE, "Tap tombol Reject (Silang) untuk 1 peserta");
         } catch (Exception e) {
             System.out.println("WARN: Gagal via locator. Using corrected Ratio untuk Reject One.");
-            tapAtScreenRatio(0.818, 0.506); 
+            tapAtScreenRatio(0.819, 0.569);
         }
 
         // 4. Validasi Tab Peserta & Capture
         System.out.println("   -> Berpindah ke Tab Peserta untuk validasi...");
         try {
-            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta");
+            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta", false);
         } catch (Exception e) {
             tapAtScreenRatio(0.723, 0.417);
         }
         
         try { Thread.sleep(2000); } catch (Exception ignored) {} 
         
+        scrollAndCapture(0, 0.8, 0.8, "Sebelum menerima semua peserta");
+       
     }
 
 
@@ -508,9 +515,9 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 2. Pastikan berada di Tab Persetujuan
         System.out.println("   -> Kembali/Memastikan berada di Tab Persetujuan...");
         try {
-            tap(BTN_TO_TAB_PERSETUJUAN, "Switch ke Tab Persetujuan");
+            tap(BTN_TO_TAB_PERSETUJUAN, "Switch ke Tab Persetujuan", false);
         } catch (Exception e) {
-            tapAtScreenRatio(0.276, 0.417);
+            tapAtScreenRatio(0.276, 0.417, false);
         }
         try { Thread.sleep(1500); } catch (Exception ignored) {}
 
@@ -520,7 +527,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
             tap(BTN_TO_REJECT_ALL, "Tap tombol Tolak Semua");
         } catch (Exception e) {
             System.out.println("WARN: Gagal via locator. Using corrected Ratio untuk Reject All.");
-            tapAtScreenRatio(0.564, 0.429);
+            tapAtScreenRatio(0.564, 0.523);
         }
 
         // 4. Konfirmasi Modal 'Ya, Lanjutkan'
@@ -541,12 +548,13 @@ public class ChallengeActionHelper extends CreationActionHelper {
         System.out.println("   -> Berpindah ke Tab Peserta untuk validasi akhir...");
         try {
             Thread.sleep(2000); // Tunggu proses loading massal selesai
-            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta");
+            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta", false);
         } catch (Exception e) {
-            tapAtScreenRatio(0.723, 0.417);
+            tapAtScreenRatio(0.723, 0.417, false);
         }
         
         try { Thread.sleep(2000); } catch (Exception ignored) {} 
+        scrollAndCapture(0, 0.8, 0.8, "Sebelum menerima semua peserta");
     }
 
     public void shareChallengeToWhatsApp(String contactName, String challengeName, boolean screenshot) {

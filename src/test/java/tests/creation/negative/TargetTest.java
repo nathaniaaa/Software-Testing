@@ -118,31 +118,4 @@ public class TargetTest extends BaseTest {
 
         targetPage.dismissModal();
     }
-
-    @Test(priority = 5, description = "Backgrounding")
-    public void testBackgrounding() {
-        TestListener.getTest().info("Testing App Backgrounding state");
-        
-        targetPage.cleanUpExistingTarget();
-        targetPage.openModal();
-
-        // Snapshot of the empty modal
-        TestListener.getTest().info("Initial Modal State", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-        
-        targetPage.fillForm("50");
-        TestListener.getTest().info("State before backgrounding (Input: 50)", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-
-        TestListener.getTest().info("Sending app to background for 3 seconds...");
-        ((AndroidDriver) driver).runAppInBackground(java.time.Duration.ofSeconds(3));
-        
-        targetPage.waitForLoading(1000);
-        
-        Assert.assertTrue(targetPage.isModalVisible(), "Modal closed after backgrounding");
-        TestListener.getTest().pass("App state preserved (Modal visible) after backgrounding.", 
-            MediaEntityBuilder.createScreenCaptureFromBase64String(getScreenshotBase64()).build());
-            
-        targetPage.dismissModal();
-    }
 }

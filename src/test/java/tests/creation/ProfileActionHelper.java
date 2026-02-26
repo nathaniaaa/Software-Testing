@@ -6,15 +6,19 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import tests.helper.CaptureHelper;
 import tests.utils.TestListener;
+
 import com.aventstack.extentreports.MediaEntityBuilder;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+
+import org.apache.commons.io.filefilter.FalseFileFilter;
 
 public class ProfileActionHelper extends CreationActionHelper {
 
@@ -75,13 +79,13 @@ public class ProfileActionHelper extends CreationActionHelper {
     }
 
     // PAGE ACTIONS
-    public void navigateToProfileTab() {
+    public void navigateToProfileTab(boolean screenshot) {
         try {
-            tap(TAB_SAYA, "Click 'Saya' (Profile) Tab");
+            tap(TAB_SAYA, "Click 'Saya' (Profile) Tab", screenshot);
             wait.until(ExpectedConditions.visibilityOfElementLocated(TAB_SAYA)).click();
         } catch (Exception e) {
             System.out.println("   -> Standard navigation failed. Trying Fallback...");
-            tapByTextPosition("Saya");
+            tapByTextPosition("Saya", screenshot);
         }
         
         // Optional: Wait for the profile page header to load
@@ -90,21 +94,29 @@ public class ProfileActionHelper extends CreationActionHelper {
         scrollToTop();
     }
 
-    public void enterEditMode() {
+    public void navigateToProfileTab() {
+        navigateToProfileTab(true);
+    }
+
+    public void enterEditMode(boolean screenshot) {
         System.out.println("Step: Clicking 'Edit Profil' Button...");
         try {
-            tap(BTN_EDIT_PROFIL, "Click 'Edit Profil' Button");
+            tap(BTN_EDIT_PROFIL, "Click 'Edit Profil' Button", screenshot);
         } catch (Exception e) {
             // Coordinate fallback
             System.out.println("   -> Button not found via ID. Using Ratio Fallback...");
-            tapAtScreenRatio(0.56, 0.20);
+            tapAtScreenRatio(0.56, 0.20, screenshot);
         }
         
         // Optional: Wait for form to open
         waitForLoading(1000);
     }
 
-        public void navigateToEditProfile() {
+    public void enterEditMode() {
+        enterEditMode(true);
+    }
+
+    public void navigateToEditProfile(boolean screenshot) {
         // From Dashboard to 
         if (isOnEditProfilePage()) {
             return; 
@@ -113,7 +125,7 @@ public class ProfileActionHelper extends CreationActionHelper {
         try {
             System.out.println("[SETUP] Navigating to Profile Tab...");
             if (!isOnProfilePage()) {
-                navigateToProfileTab();
+                navigateToProfileTab(screenshot);
             } else {
                 System.out.println("[SETUP] Already on Profile Tab.");
             }
@@ -128,7 +140,7 @@ public class ProfileActionHelper extends CreationActionHelper {
             }
 
             System.out.println("[SETUP] Entering Edit Mode...");
-            enterEditMode();
+            enterEditMode(screenshot);
             
             // Wait for the form to open
             Thread.sleep(1000);
@@ -137,7 +149,7 @@ public class ProfileActionHelper extends CreationActionHelper {
             System.out.println("[SETUP] CRITICAL: Navigation sequence failed. Attempting brute-force.");
             // Fallback: Just click the buttons blindly to try and save the test run
             try {
-                navigateToProfileTab();
+                navigateToProfileTab(screenshot);
                 Thread.sleep(2000);
 
                 try {
@@ -148,12 +160,16 @@ public class ProfileActionHelper extends CreationActionHelper {
                     TestListener.getTest().warning("Setup: Failed to capture profile screenshot.");
                 }
 
-                enterEditMode();
+                enterEditMode(screenshot);
             } catch (Exception ex) {
                 System.out.println("[SETUP] FATAL: Could not recover.");
             }
         }
     } 
+
+    public void navigateToEditProfile() {
+        navigateToEditProfile(true);
+    }
 
     public void tapBackArrow() {
         System.out.println("Step: Tapping App Back Arrow...");
@@ -188,15 +204,23 @@ public class ProfileActionHelper extends CreationActionHelper {
                     tap(BTN_CAMERA_SWITCH, "Switch Camera Lens");
                 } catch (Exception e) {
                     System.out.println("   -> Switch locator failed. Using ratio fallback.");
-                    tapAtScreenRatio(0.84, 0.815);
+                    try {
+                        tapAtScreenRatio(0.84, 0.815);
+                    } catch (Exception er) {
+                        tapAtScreenRatio(0.833, 0.854);
+                    }
                 }
-
+                Thread.sleep(2000); // Wait for camera to switch
                 try {
                     // Uses Smart Tap: Highlights Shutter Button Blue & Screenshots
                     tap(BTN_CAMERA_SHUTTER, "Click Shutter Button");
                 } catch (Exception e) {
                     System.out.println("   -> Shutter locator failed. Using ratio fallback.");
-                    tapAtScreenRatio(0.5, 0.815);
+                    try {
+                        tapAtScreenRatio(0.5, 0.815);
+                    } catch (Exception er) {
+                        tapAtScreenRatio(0.500, 0.854);
+                    }
                 }
 
                 // Wait for image capture animation
@@ -208,7 +232,10 @@ public class ProfileActionHelper extends CreationActionHelper {
                     tap(BTN_CAMERA_OK, "Click OK to Confirm Photo");
                 } catch (Exception e) {
                     System.out.println("   -> OK button locator failed. Using ratio fallback.");
-                    tapAtScreenRatio(0.72, 0.86);
+                    try {tapAtScreenRatio(0.72, 0.86);
+                    } catch (Exception er) {
+                        tapAtScreenRatio(0.833, 0.854);
+                    }
                     //retry: 0.28, 0.86
                 }
             }
@@ -438,6 +465,86 @@ public class ProfileActionHelper extends CreationActionHelper {
     //     try { driver.navigate().back(); } catch (Exception ignored) {} 
     //     return false;
     // }
+
+    /**
+     * Membuka date picker, mencari tahun, dan mencoba memilihnya.
+     * Mengembalikan true jika tahun ditemukan dan dipilih.
+     * Mengembalikan false jika tahun tidak ada di dalam list (terblokir).
+     */
+    public boolean attemptToSelectYearOnly(String targetYear) {
+        System.out.println("Step: Checking Year Only -> " + targetYear);
+
+        // 1. READ UI STATE (Untuk mengetahui teks tahun apa yang harus diklik di header)
+        String[] currentDateParts = getCurrentDateFromUi();
+        String currentYear = currentDateParts[2];   
+
+        // 2. OPEN PICKER
+        try {
+            tap(INPUT_DATE_DISPLAY, "Open Date Picker", false);
+        } catch (Exception e) {
+            clickByLabelOffset("Tanggal Lahir", false);
+        }
+        
+        // Wait for Picker (Sesuai logikamu)
+        try {
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofMillis(2000));
+            shortWait.until(ExpectedConditions.or(
+                ExpectedConditions.visibilityOfElementLocated(AppiumBy.className("android.widget.DatePicker")),
+                ExpectedConditions.visibilityOfElementLocated(AppiumBy.id("android:id/datePicker"))
+            )); 
+        } catch (Exception e) {
+            System.out.println("WARN: Date picker did not open!");
+            return false;
+        }
+
+        // 3. CHANGE YEAR LOGIC
+        if (!currentYear.equals(targetYear)) {
+            System.out.println("   -> Attempting to switch year to: " + targetYear);
+            try {
+                // Buka list tahun
+                tapByExactText(currentYear);
+                
+                // Scroll mencari tahun target
+                scrollToText(targetYear, 7); 
+                
+                driver.manage().timeouts().implicitlyWait(Duration.ofMillis(500));
+                
+                WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(2));
+                WebElement yearEl = shortWait.until(ExpectedConditions.visibilityOfElementLocated(
+                    AppiumBy.androidUIAutomator("new UiSelector().text(\"" + targetYear + "\")")
+                ));
+                
+                // Jika ketemu, tap tahun tersebut
+                tap(yearEl, "Select Year: " + targetYear); 
+                System.out.println("   -> [FAILED FOR NEGATIVE TEST] Year '" + targetYear + "' WAS FOUND!");
+                
+                // Tutup picker karena kita hanya cek tahun
+                driver.navigate().back(); 
+                return true; // Tahun berhasil ditemukan dan dipilih
+
+            } catch (Exception e) {
+                // MASUK KE SINI JIKA TAHUN TIDAK DITEMUKAN (SCROLL GAGAL / ELEMENT TIDAK ADA)
+                System.out.println("   -> [SUCCESS] Year '" + targetYear + "' was NOT found.");
+                System.out.println("   -> Closing picker safely...");
+                
+                // Tutup list tahun
+                driver.navigate().back(); 
+                
+                // Tutup pickernya (Menggunakan Cancel/Back agar aman)
+                try {
+                    driver.findElement(AppiumBy.xpath("//*[@text='Batal' or @text='Cancel']")).click();
+                } catch (Exception ex) {
+                    driver.navigate().back();
+                }
+                
+                return false; // Tahun diblokir / tidak ditemukan
+            }
+        }
+
+        // Fallback jika targetYear == currentYear
+        driver.navigate().back();
+        return true; 
+    }
 
     public boolean updateDateOfBirth(String targetYear, String targetMonth, String targetDay) {
         System.out.println("Step: Date Update...");

@@ -50,7 +50,7 @@ public class BaseTest {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setAutomationName("UiAutomator2")
-                .setUdid("2ab55c03")
+                .setUdid("R9CW1010R2P")
                 .setDeviceName("Sam Biru")
                 .setAdbExecTimeout(Duration.ofSeconds(60))
                 .setAppPackage("com.telkomsel.telkomselcm") 
@@ -70,7 +70,7 @@ public class BaseTest {
         capture = new CaptureHelper(driver);
         actions = new ActionHelper(driver);
 
-        ensureOnAyoLariDashboard();
+        // ensureOnAyoLariDashboard();
     }
 
     @BeforeMethod
