@@ -19,6 +19,9 @@
             <class name="tests.creation.negative.ChallengeTest" />
             <class name="tests.flow.negative.TestChallenge" />
             <class name="tests.creation.negative.ProfileTest" />
+
+            <!-- ini baru -->
+            <class name="tests.flow.positive.TestLeaderboard" />
         </classes>
     </test>
 </suite>
