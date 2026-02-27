@@ -57,15 +57,15 @@ public class TestAktifitas extends BaseTest {
     static boolean isRiwayatChallengeAda = false;
 
     // Test Cases - Riwayat Lari
-    @Test(priority = 1, description = "Navigasi ke Aktivitas")
+    @Test(priority = 1, description = "Pengguna membuka halaman Aktivitas")
     @TestInfo(
         testType = "Positive Case",
-        expected = "Akan terlihat daftar riwayat lari yang pernah dilakukan oleh user",
+        expected = "Menampilkan seluruh Riwayat Lari yang dilakukan pengguna dan Riwayat Challenge yang telah diikuti dan diselesaikan oleh pengguna",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testNavigasiAktivitas() {
-        System.out.println("TEST 1: Navigasi ke Aktivitas");
+        System.out.println("TEST 1: Pengguna membuka halaman Aktivitas");
 
         // Klik ikon Aktivitas di Bottom Navigation
         System.out.println("Klik ikon Aktivitas");
@@ -80,12 +80,12 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Akan terlihat daftar riwayat lari yang pernah dilakukan oleh user",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testMasukKeRiwayatLari() {
         System.out.println("TEST 2: Riwayat Lari");
 
-        actions.swipeVertical(0.3, 0.8); 
+        actions.scrollToTop();
         waitTime();
 
         clickTest(tabRiwayatLari, "Klik Tab Riwayat Lari");
@@ -95,9 +95,9 @@ public class TestAktifitas extends BaseTest {
     @Test(priority = 3, description = "Pengguna menekan salah satu Riwayat Lari dari hasil record dan atau dari hasil sync smartwatch")
     @TestInfo(
         testType = "Positive Case",
-        expected = "Pengguna menekan salah satu Riwayat Lari dari hasil record dan atau dari hasil sync smartwatch",
+        expected = "Saat pengguna membuka salah satu riwayat lari, sistem akan menampilkan informasi lengkap mengenai aktivitas tersebut, mulai dari jarak tempuh, hari tanggal dan jam, durasi lari, jarak, kecepatan rata-rata (pace), kecepatan maksimal (pace), kalori aktif, total kalori, peta jalur lintasan (polyline), hingga grafik elevasi ketinggian",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testKlikCard() {
         System.out.println("TEST 3: Pengguna menekan salah satu Riwayat Lari dari hasil record dan atau dari hasil sync smartwatch");
@@ -131,7 +131,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Semua elemen statistik seperti jarak (km) dan waktu/durasi tampil dengan benar pada halaman rincian lari",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testStatistikUI() {
         System.out.println("TEST 4: Validasi Elemen Statistik");
@@ -147,46 +147,42 @@ public class TestAktifitas extends BaseTest {
         
         System.out.println("Statistik aman.");
         capture.highlightRectangleByRatio(0.05, 0.26, 0.9, 0.25, "Statistik Jarak & Waktu tampil dengan benar.");
-    }
-    
-    @Test(priority = 5, description = "Tombol Unduh")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Pengguna dapat menggunakan tombol unduh pada halaman rincian lari",
-        note = "",
-        group = "Aktivitas"
-    )
-    public void testFiturUnduh() {
-        System.out.println("TEST 5: Tombol Unduh");
+        waitTime();
 
-        // Pastikan sedang di halaman rincian lari, kalau engga skip
-        if (!isDiHalamanRincianLari()) logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
-        
-        // Tombol Unduh
-        if (driver.findElements(btnUnduh).size() > 0) {
-            System.out.println("Tombol Unduh ada. Klik");
-            clickTest(btnUnduh, "Klik Tombol Unduh");
-            waitTime();
-        } else {
-            System.out.println("SKIP: Tombol Unduh tidak ditemukan.");
-            logSkip("Test di Skip karena Tombol Unduh tidak ditemukan.");
-        }
+        // balik ke list
+        driver.findElement(btnBack).click();
         waitTime();
     }
 
-    @Test(priority = 6, description = "Tombol Edit")
+    // Nama card hasil record dengan ayo lari, jangan lupa diganti dengan nama baru kalau mau tes dengan record riwayat lain
+    By CardAyoLari = AppiumBy.xpath("//android.widget.TextView[contains(@text, 'TEST RECORD AYOLARI')]");
+
+    String NewEditRecordLari = ""; 
+    By locatorNamaBaruRecordLari;
+
+    @Test(priority = 5, description = "Pengguna mengubah nama aktivitas lari dari hasil record dan dari hasil sync smartwatch")
     @TestInfo(
         testType = "Positive Case",
-        expected = "Pengguna dapat menggunakan tombol Edit pada halaman rincian lari",
-        note = "",
-        group = "Aktivitas"
+        expected = "Nama aktivitas lari yang disimpan pengguna akan tersimpan dan terupdate",
+        note = "RINCIAN LARI RECORD DENGAN AYOLARI",
+        group = "AKTIFITAS"
     )
     public void testFiturEdit() {
-        System.out.println("TEST 6: Tombol Edit");
+        System.out.println("TEST 5: Pengguna mengubah nama aktivitas lari dari hasil record dan dari hasil sync smartwatch");
 
-        // Pastikan sedang di halaman rincian lari, kalau engga skip
-        if (!isDiHalamanRincianLari()) logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
-        
+        if (driver.findElements(CardAyoLari).size() == 0) {
+            logSkip("Test dilewati: Card Ayo Lari tidak ditemukan.");
+            return;
+        } else {
+             System.out.println("Card Ayo Lari ditemukan. Klik card");
+             clickTest(CardAyoLari, "Klik card ayolari");
+             waitTime();
+        }
+
+        // Nama card baru (jangan lupa diganti)
+        NewEditRecordLari = "Lari Pagi Record AyoLari";
+        locatorNamaBaruRecordLari = AppiumBy.xpath("//*[contains(@text, '" + NewEditRecordLari + "')]");
+
         // Tombol Edit & Isi Nama
         if (driver.findElements(btnEditAktivitas).size() > 0) {
             System.out.println("Tombol Edit ada. Klik");
@@ -203,9 +199,9 @@ public class TestAktifitas extends BaseTest {
             try { Thread.sleep(500); } catch (Exception e) {}
             
             input.clear(); 
-            input.sendKeys("HALO TEST GANTI NAMA"); // Nama baru
+            input.sendKeys(NewEditRecordLari);
             waitTime();
-            System.out.println("Ketik nama baru selesai.");
+            System.out.println("Ketik nama baru selesai: " + NewEditRecordLari);
             
             try {
                 if(driver.findElements(titleModalEdit).size() > 0) {
@@ -226,32 +222,410 @@ public class TestAktifitas extends BaseTest {
                     // Tunggu modal hilang 
                     wait.until(ExpectedConditions.invisibilityOfElementLocated(inputNamaAktivitas));
                     System.out.println("Sukses: Modal Edit sudah tertutup.");
-                    
-                    logPass("Berhasil edit nama Aktivitas");
+
+                    // locator card dengan nama baru
+                    if(driver.findElements(locatorNamaBaruRecordLari).size() > 0) {
+                        capture.highlightAndCapture(locatorNamaBaruRecordLari, "Validasi: Nama berhasil diubah menjadi " + NewEditRecordLari);
+                        logPass("Berhasil edit nama Aktivitas Record Lari");
+
+                        // Validasi di list Riwayat Lari
+                        clickTest(btnBack, "Klik Tombol Back");
+                        waitTime();
+
+                        if(driver.findElements(locatorNamaBaruRecordLari).size() > 0) {
+                            capture.highlightAndCapture(locatorNamaBaruRecordLari, "Validasi: Nama baru juga tampil di list Riwayat Lari");
+                            waitTime();
+
+                            // balik lagi ke card
+                            driver.findElement(locatorNamaBaruRecordLari).click();
+                            waitTime();
+                        } else {
+                            logInfo("Nama baru tidak langsung ter-render di list Riwayat Lari, tapi modal berhasil disimpan");
+
+                            System.out.println("Fallback: Kembali klik card Ayo Lari yang lama");
+                            if(driver.findElements(CardAyoLari).size() > 0) {
+                                driver.findElement(CardAyoLari).click();
+                                waitTime();
+                            }
+                        }
+                    } else {
+                        logInfo("Nama baru tidak langsung ter-render di UI, tapi modal berhasil disimpan");
+                    }
                 } catch (Exception e) {
                     System.out.println("Warning: Modal masih nyangkut, paksa tap luar");
                     actions.tapAtScreenRatio(0.5, 0.15);
                 }
             }
-            
+
         } else {
             System.out.println("SKIP: Tombol Edit tidak ditemukan.");
             logSkip("Test di Skip karena Tombol Edit tidak ditemukan.");
         }
+    }
+    
+    @Test(priority = 6, description = "Tombol Unduh")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Pengguna dapat menggunakan tombol unduh pada halaman rincian lari",
+        note = "RINCIAN LARI RECORD DENGAN AYOLARI",
+        group = "AKTIFITAS"
+    )
+    public void testFiturUnduh() {
+        System.out.println("TEST 6: Tombol Unduh");
+
+        // Pastikan sedang di halaman rincian lari, kalau engga skip
+        if (!isDiHalamanRincianLari()) {
+            logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
+            return;
+        }
+        
+        // Tombol Unduh
+        if (driver.findElements(btnUnduh).size() > 0) {
+            System.out.println("Tombol Unduh ada. Klik");
+            clickTest(btnUnduh, "Klik Tombol Unduh");
+            logPass("Berhasil klik tombol unduh");
+            waitTime();
+        } else {
+            System.out.println("SKIP: Tombol Unduh tidak ditemukan.");
+            logSkip("Test di Skip karena Tombol Unduh tidak ditemukan.");
+        }
+        waitTime();
     }
 
     @Test(priority = 7, description = "Interaksi Peta")
     @TestInfo(
         testType = "Positive Case",
         expected = "Pengguna dapat Berinteraksi dengan peta pada halaman rincian lari",
-        note = "",
-        group = "Aktivitas"
+        note = "RINCIAN LARI RECORD DENGAN AYOLARI",
+        group = "AKTIFITAS"
     )
     public void testInteraksiPeta() {
         System.out.println("TEST 7: Interaksi Peta (Map)");
 
         // Pastikan sedang di halaman rincian lari, kalau engga skip
-        if (!isDiHalamanRincianLari()) logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
+        if (!isDiHalamanRincianLari()) {
+            logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
+            return;
+        }
+
+        waitTime();
+
+        // Validasi ada Container Peta atau engga
+        System.out.println("Mencari keberadaan Peta di layar...");
+        boolean isPetaAda = false;
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(btnZoomIn));
+            isPetaAda = true;
+        } catch (Exception e) {
+            // Kalau zoom in gak nemu, coba cek Info Map
+            isPetaAda = driver.findElements(btnInfoMap).size() > 0;
+        }
+
+        // 2. JIKA PETA DITEMUKAN, LAKUKAN INTERAKSI
+        if(isPetaAda) {
+            System.out.println("Peta berhasil dideteksi!");
+            
+            // Zoom In
+            if(driver.findElements(btnZoomIn).size() > 0) {
+                System.out.println("Klik Zoom In");
+                clickTest(btnZoomIn, "Klik Zoom In");
+                logPass("Berhasil Zoom In Peta");
+                waitTime(); 
+            } else {
+                logInfo("Tombol Zoom In tidak ditemukan di UI");
+            }
+
+            // Zoom Out
+            if(driver.findElements(btnZoomOut).size() > 0) {
+                System.out.println("Klik Zoom Out");
+                clickTest(btnZoomOut, "Klik Zoom Out");
+                logPass("Berhasil Zoom Out Peta");
+                waitTime(); 
+            } else {
+                logInfo("Tombol Zoom Out tidak ditemukan di UI");
+            }
+            
+            // Info Map
+            if(driver.findElements(btnInfoMap).size() > 0) {
+                System.out.println("Klik Info Map");
+                clickTest(btnInfoMap, "klik Info Map"); 
+                logPass("Berhasil klik info map");
+                waitTime();
+            }
+
+            // Panning Map
+            System.out.println("Simulasi Geser Peta (Panning)");
+            int screenWidth = driver.manage().window().getSize().width;
+            
+            // 1. Ambil lokasi tombol Zoom In
+            WebElement zoomBtn = driver.findElement(btnZoomIn);
+            
+            // 2. Set X di tengah layar (kiri-kanan aman)
+            int safeMapX = screenWidth / 2;
+            int safeMapY = zoomBtn.getLocation().getY() - 200;
+
+            // Rotate Map (Kita panggil manual pakai koordinat tanpa WebElement biar anti error!)
+            actions.dragMap(safeMapX, safeMapY, safeMapX + 200, safeMapY + 200);
+            waitTime();
+
+            // Rotate Map
+            System.out.println("Mencoba Memutar Peta");
+            try {
+                // Pakai titik aman yang sama untuk diputar
+                actions.rotateMapByCoordinates(safeMapX, safeMapY, (int)(screenWidth * 0.3)); 
+                logPass("Berhasil memutar Peta");
+                waitTime(); 
+            } catch (Exception e) {
+                System.out.println("Gagal rotate peta: " + e.getMessage());
+            }
+
+            // Compass
+            try {
+                if(driver.findElements(btnCompass).size() > 0) {
+                    System.out.println("Klik Kompas");
+                    clickTest(btnCompass, "Klik Kompas");
+                    logPass("Berhasil Klik Kompas");
+                    waitTime(); 
+                }
+            } catch (Exception e) {}
+            
+            logPass("Interaksi Peta Sudah Selesai Dilakukan");
+            
+        } else {
+            // Jika tombol Zoom dkk tidak ada, berarti benar-benar tidak ada peta
+            logSkip("Test dilewati: Peta tidak terdeteksi di layar.");
+        }        
+    }
+
+    @Test(priority = 8, description = "Interaksi Grafik Ketinggian")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Pengguna dapat Berinteraksi dengan Grafik Ketinggian pada halaman rincian lari",
+        note = "RINCIAN LARI RECORD DENGAN AYOLARI",
+        group = "AKTIFITAS"
+    )
+    public void testScrapingGrafikKetinggian() {
+        System.out.println("TEST 8: Interaksi Grafik Ketinggian");
+
+        // Pastikan sedang di halaman rincian lari, kalau engga skip
+        if (!isDiHalamanRincianLari()) {
+            logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
+            return; 
+        }
+
+        actions.swipeVertical(0.40, 0.2);
+        try { Thread.sleep(3000); } catch (Exception e) {}
+
+        // Cek grafik mana yang muncul
+        WebElement grafikContainer = null;
+
+        if (driver.findElements(grafikAreaApp).size() > 0) {
+            System.out.println("Grafik (versi App) ditemukan!");
+            grafikContainer = driver.findElement(grafikAreaApp);
+        } else if (driver.findElements(grafikAreaSmartwatch).size() > 0) {
+            System.out.println("Grafik (versi Smartwatch) ditemukan!");
+            grafikContainer = driver.findElement(grafikAreaSmartwatch);
+        }
+
+        // Interaksi jika grafik ditemukan
+        if (grafikContainer != null) {
+             
+             int startX = grafikContainer.getLocation().getX();
+             int totalWidth = grafikContainer.getSize().getWidth();
+             int centerY = grafikContainer.getLocation().getY() + (grafikContainer.getSize().getHeight() / 2);
+
+             // Tap tap Grafik
+             System.out.println("Tap data grafik");
+             int point1 = startX + (int)(totalWidth * 0.20); 
+             int point2 = startX + (int)(totalWidth * 0.50); 
+             int point3 = startX + (int)(totalWidth * 0.80); 
+             
+             int[] tapPoints = {point1, point2, point3};
+             
+             for (int pointX : tapPoints) {
+                 actions.tapByCoordinates(pointX, centerY);
+                 logPass("Klik Grafik Ketinggian");
+                 waitTime();
+             }
+
+             // Drag horizontal (Scrubbing)
+             System.out.println("Drag horizontal di grafik");
+             
+             int dragStartX = startX + (int)(totalWidth * 0.15); 
+             int dragEndX = startX + (int)(totalWidth * 0.85); 
+             
+             actions.dragMap(dragStartX, centerY, dragEndX, centerY);
+             logPass("Drag Grafik Ketinggian");
+             
+             waitTime();
+
+             logPass("Interaksi Grafik Ketinggian Selesai Dilakukan");
+        } else {
+             System.out.println("SKIP: Grafik tidak ditemukan.");
+             logSkip("Grafik Ketinggian tidak dapat ditemukan");
+        }
+        
+        waitTime();
+
+        // Scroll balik ke atas
+        actions.swipeVertical(0.1, 0.7);
+
+        // balik ke list
+        driver.findElement(btnBack).click();      
+        waitTime();
+    }
+
+    // Nama card hasil record dengan ayo lari, jangan lupa diganti dengan nama baru kalau mau tes dengan record riwayat lain
+    By CardSyncSmartwatch = AppiumBy.xpath("//android.widget.TextView[contains(@text, 'TEST RECORD SYNC SMARTWATCH')]");
+
+    String NewEditSyncSmartwatch = ""; 
+    By locatorNamaBaruSyncSmartwatch;
+
+    @Test(priority = 9, description = "Pengguna mengubah nama aktivitas lari dari hasil sync smartwatch")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Nama aktivitas lari yang disimpan pengguna akan tersimpan dan terupdate",
+        note = "RINCIAN LARI RECORD DENGAN SYNC SMARTWATCH",
+        group = "AKTIFITAS"
+    )
+    public void testFiturEditSyncSmartwatch() {
+        System.out.println("TEST 9: Pengguna mengubah nama aktivitas lari dari hasil record dan dari hasil sync smartwatch");
+
+        if (driver.findElements(CardSyncSmartwatch).size() == 0) {
+            logSkip("Test dilewati: Card Sync Smartwatch tidak ditemukan.");
+        } else {
+             System.out.println("Card Sync Smartwatch ditemukan. Klik card");
+             clickTest(CardSyncSmartwatch, "Klik card sync smartwatch");
+             waitTime();
+        }
+
+        // Nama card baru (jangan lupa diganti)
+        NewEditSyncSmartwatch = "Lari Pagi Sync Smartwatch";
+        locatorNamaBaruSyncSmartwatch = AppiumBy.xpath("//*[contains(@text, '" + NewEditSyncSmartwatch + "')]");
+
+        // Tombol Edit & Isi Nama
+        if (driver.findElements(btnEditAktivitas).size() > 0) {
+            System.out.println("Tombol Edit ada. Klik");
+            clickTest(btnEditAktivitas, "Klik Tombol Edit");
+            
+            System.out.println("Menunggu modal edit muncul");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(inputNamaAktivitas));
+
+            logInfo("Nama Aktivitas Sebelum di Edit");
+            
+            // Isi Nama Baru
+            WebElement input = driver.findElement(inputNamaAktivitas);
+            input.click(); 
+            try { Thread.sleep(500); } catch (Exception e) {}
+            
+            input.clear(); 
+            input.sendKeys(NewEditSyncSmartwatch);
+            waitTime();
+            System.out.println("Ketik nama baru selesai: " + NewEditSyncSmartwatch);
+            
+            try {
+                if(driver.findElements(titleModalEdit).size() > 0) {
+                    System.out.println("Klik judul modal (biar keyboard nutup)");
+                    clickTest(titleModalEdit, "Klik Judul Modal Edit");
+                }
+            } catch (Exception e) {}
+            waitTime();
+            
+            // Klik Simpan
+            if (driver.findElements(btnSimpan).size() > 0) {
+                System.out.println("Klik tombol Simpan");
+                wait.until(ExpectedConditions.elementToBeClickable(btnSimpan));
+                clickTest(btnSimpan, "Klik Tombol Simpan");
+                
+                System.out.println("Menunggu proses simpan");
+                try {
+                    // Tunggu modal hilang 
+                    wait.until(ExpectedConditions.invisibilityOfElementLocated(inputNamaAktivitas));
+                    System.out.println("Sukses: Modal Edit sudah tertutup.");
+
+                    // locator card dengan nama baru
+                    if(driver.findElements(locatorNamaBaruSyncSmartwatch).size() > 0) {
+                        capture.highlightAndCapture(locatorNamaBaruSyncSmartwatch, "Validasi: Nama berhasil diubah menjadi " + NewEditSyncSmartwatch);
+                        logPass("Berhasil edit nama Aktivitas Sync Smartwatch");
+
+                        // Validasi di list Riwayat Lari
+                        clickTest(btnBack, "Klik Tombol Back");
+                        waitTime();
+
+                        if(driver.findElements(locatorNamaBaruSyncSmartwatch).size() > 0) {
+                            capture.highlightAndCapture(locatorNamaBaruSyncSmartwatch, "Validasi: Nama baru juga tampil di list Riwayat Lari");
+                            waitTime();
+
+                            // balik lagi ke card
+                            driver.findElement(locatorNamaBaruSyncSmartwatch).click();
+                            waitTime();
+                        } else {
+                            logInfo("Nama baru tidak langsung ter-render di list Riwayat Lari, tapi modal berhasil disimpan");
+
+                            System.out.println("Fallback: Kembali klik card Ayo Lari yang lama");
+                            if(driver.findElements(CardAyoLari).size() > 0) {
+                                driver.findElement(CardAyoLari).click();
+                                waitTime();
+                            }
+                        }
+                    } else {
+                        logInfo("Nama baru tidak langsung ter-render di UI, tapi modal berhasil disimpan");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Warning: Modal masih nyangkut, paksa tap luar");
+                    actions.tapAtScreenRatio(0.5, 0.15);
+                }
+            }
+
+        } else {
+            System.out.println("SKIP: Tombol Edit tidak ditemukan.");
+            logSkip("Test di Skip karena Tombol Edit tidak ditemukan.");
+        }
+    }
+    
+    @Test(priority = 10, description = "Tombol Unduh")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Pengguna dapat menggunakan tombol unduh pada halaman rincian lari",
+        note = "RINCIAN LARI RECORD DENGAN SYNC SMARTWATCH",
+        group = "AKTIFITAS"
+    )
+    public void testFiturUnduhSyncSmartwatch() {
+        System.out.println("TEST 10: Tombol Unduh");
+
+        if (!isDiHalamanRincianLari()) {
+            logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
+            return;
+        }
+        
+        // Tombol Unduh
+        if (driver.findElements(btnUnduh).size() > 0) {
+            System.out.println("Tombol Unduh ada. Klik");
+            clickTest(btnUnduh, "Klik Tombol Unduh");
+            logPass("Berhasil klik tombol unduh");
+            waitTime();
+        } else {
+            System.out.println("SKIP: Tombol Unduh tidak ditemukan.");
+            logSkip("Test di Skip karena Tombol Unduh tidak ditemukan.");
+        }
+        waitTime();
+    }
+
+    @Test(priority = 11, description = "Interaksi Peta")
+    @TestInfo(
+        testType = "Positive Case",
+        expected = "Pengguna dapat Berinteraksi dengan peta pada halaman rincian lari",
+        note = "RINCIAN LARI RECORD DENGAN SYNC SMARTWATCH",
+        group = "AKTIFITAS"
+    )
+    public void testInteraksiPetaSyncSmartwatch() {
+        System.out.println("TEST 11: Interaksi Peta (Map)");
+
+        // Pastikan sedang di halaman rincian lari, kalau engga skip
+        if (!isDiHalamanRincianLari()) {
+            logSkip("Test dilewati: Tidak sedang di halaman Rincian Lari.");
+            return;
+        }
 
         waitTime();
 
@@ -335,15 +709,15 @@ public class TestAktifitas extends BaseTest {
         }        
     }
 
-    @Test(priority = 8, description = "Interaksi Grafik Ketinggian")
+    @Test(priority = 12, description = "Interaksi Grafik Ketinggian")
     @TestInfo(
         testType = "Positive Case",
         expected = "Pengguna dapat Berinteraksi dengan Grafik Ketinggian pada halaman rincian lari",
-        note = "",
-        group = "Aktivitas"
+        note = "RINCIAN LARI RECORD DENGAN SYNC SMARTWATCH",
+        group = "AKTIFITAS"
     )
-    public void testScrapingGrafikKetinggian() {
-        System.out.println("TEST 8: Interaksi Grafik Ketinggian");
+    public void testScrapingGrafikKetinggianSyncSmartwatch() {
+        System.out.println("TEST 12: Interaksi Grafik Ketinggian");
 
         // Pastikan sedang di halaman rincian lari, kalau engga skip
         if (!isDiHalamanRincianLari()) {
@@ -404,19 +778,20 @@ public class TestAktifitas extends BaseTest {
         }
         
         waitTime();
+
         // Scroll balik ke atas
         actions.swipeVertical(0.1, 0.7);
     }
     
-    @Test(priority = 9, description = "Navigasi Kembali ke List Riwayat Lari")
+    @Test(priority = 13, description = "Navigasi Kembali ke List Riwayat Lari")
     @TestInfo(
         testType = "Positive Case",
         expected = "Pengguna dapat kembali ke list riwayat setelah melihat detail aktivitas",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testKembaliKeMenu() {
-        System.out.println("TEST 9: Navigasi Kembali ke List Riwayat Lari");
+        System.out.println("TEST 13: Navigasi Kembali ke List Riwayat Lari");
 
         // Cek dulu apakah memang di halaman rincian (kalau engga, gausah back)
         if (!isDiHalamanRincianLari()) {
@@ -443,15 +818,15 @@ public class TestAktifitas extends BaseTest {
     By btnLeaderboard = AppiumBy.xpath("//android.widget.TextView[@text='Leaderboard'] | //android.view.View[contains(@resource-id, 'trigger-leaderboard')]");
 
     // Test Cases - Riwayat Challenge
-    @Test(priority = 10, description = "Navigasi ke List Riwayat Challenge")
+    @Test(priority = 14, description = "Navigasi ke List Riwayat Challenge")
     @TestInfo(
         testType = "Positive Case",
         expected = "Riwayat challenge akan muncul setelah masa aktif challenge yang diikuti sudah berakhir, walaupun syarat Jarak dalam challenge tidak terpenuhi",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testNavigasiKeListChallenge() {
-        System.out.println("TEST 10: Navigasi ke List Riwayat Challenge");
+        System.out.println("TEST 14: Navigasi ke List Riwayat Challenge");
 
         // Klik Riwayat Challenge di header
         System.out.println("Klik Riwayat Challenge");
@@ -471,21 +846,23 @@ public class TestAktifitas extends BaseTest {
         }
     }
 
-    @Test(priority = 11, description = "Interaksi pada Halaman Detail Riwayat Challenge")
+    @Test(priority = 15, description = "Interaksi pada Halaman Detail Riwayat Challenge")
     @TestInfo(
         testType = "Positive Case",
         expected = "Pengguna dapat melihat detail riwayat challenge dengan mengklik salah satu card riwayat challenge, lalu pengguna dapat berinteraksi dengan konten yang ada di dalamnya seperti melihat deskripsi challenge, melihat leaderboard, dan kembali ke list riwayat challenge",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testInteraksiDetailRiwayatChallenge() {
-        System.out.println("TEST 11: Interaksi pada Halaman Detail Riwayat Challenge");
+        System.out.println("TEST 15: Interaksi pada Halaman Detail Riwayat Challenge");
 
+        actions.scrollToTop();
         waitTime();
 
         // Pastikan ada card riwayat challenge, kalau engga skip
         if (!isRiwayatChallengeAda) {
-            logSkip("Test dilewati: Tidak ada riwayat challenge untuk dibuka.");
+            logSkip("Test dilewati: Tidak ada riwayat challenge untuk dibuka");
+            return;
         }
 
         // Masuk ke card
@@ -526,15 +903,15 @@ public class TestAktifitas extends BaseTest {
         logPass("Berhasil klik Tab Deskripsi");
     }
 
-    @Test(priority = 12, description = "Kembali ke List Riwayat Challenge")
+    @Test(priority = 16, description = "Kembali ke List Riwayat Challenge")
     @TestInfo(
         testType = "Positive Case",
-        expected = "",
+        expected = "Pengguna dapat kembali ke list riwayat challenge dengan mengklik tombol back",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testKembaliKeList() {
-        System.out.println("TEST 12: Kembali ke List Riwayat Challenge");
+        System.out.println("TEST 16: Kembali ke List Riwayat Challenge");
 
         // Pastikan benar-benar ada di dalam Detail Riwayat Challenge 
         boolean isDiDetailChallenge = driver.findElements(btnDeskripsi).size() > 0;

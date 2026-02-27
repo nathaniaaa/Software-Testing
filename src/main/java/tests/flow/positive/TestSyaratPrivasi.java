@@ -39,7 +39,7 @@ public class TestSyaratPrivasi extends BaseTest {
         testType = "Positive Case",
         expected = "Halaman Profile terbuka, user bisa masuk ke halaman Syarat & Privasi.",
         note = "",
-        group = "Syarat & Privasi"
+        group = "PROFILE"
     ) 
     public void testSyaratPrivasi(){
         System.out.println("Test 1: Navigasi ke Halaman Syarat & Privasi dari Profil");
@@ -73,9 +73,9 @@ public class TestSyaratPrivasi extends BaseTest {
     @Test(priority = 2, description = "Link Syarat dan Ketentuan")
     @TestInfo(
         testType = "Positive Case",
-        expected = "User bisa membuka detail Syarat dan Ketentuan.",
+        expected = "Pengguna masuk ke link yang berisi Syarat dan Ketentuan Ayolari",
         note = "",
-        group = "Syarat & Privasi"
+        group = "PROFILE"
     )
     public void testSyaratdanKetentuan(){
         System.out.println("Test 2: Link Syarat dan Ketentuan");
@@ -98,15 +98,15 @@ public class TestSyaratPrivasi extends BaseTest {
         actions.scrollToTopCustom(textvalidasi1, 15, 0.2, 0.85); 
     }
 
-    @Test(priority = 3, description = "Navigasi Kembali dari Syarat dan Ketentuan")
+    @Test(priority = 3, description = "Navigasi kembali pada halaman Syarat dan Ketentuan")
     @TestInfo(
         testType = "Positive Case",
         expected = "User bisa kembali dari halaman detail Syarat dan Ketentuan.",
         note = "",
-        group = "Syarat & Privasi"
+        group = "PROFILE"
     )
     public void testNavigasiKembaliSyaratdanKetentuan(){
-        System.out.println("Test 3: Navigasi Kembali dari Syarat dan Ketentuan");
+        System.out.println("Test 3: Navigasi kembali pada halaman Syarat dan Ketentuan");
 
         // Kembali dari Syarat dan Ketentuan
         System.out.println("Kembali dari Syarat dan Ketentuan");
@@ -127,9 +127,9 @@ public class TestSyaratPrivasi extends BaseTest {
     @Test(priority = 4, description = "Link Kebijakan Privasi")
     @TestInfo(
         testType = "Positive Case",
-        expected = "User bisa membuka detail Kebijakan Privasi.",
+        expected = "Pengguna masuk ke link yang berisi Kebijakan Privasi",
         note = "",
-        group = "Syarat & Privasi"
+        group = "PROFILE"
     )
     public void testKebijakanPrivasi(){
         System.out.println("Test 4: Link Kebijakan Privasi");
@@ -152,15 +152,15 @@ public class TestSyaratPrivasi extends BaseTest {
         actions.scrollToTopCustom(textvalidasi1, 8, 0.2, 0.85); 
     }
 
-    @Test(priority = 5, description = "Navigasi Kembali dari Kebijakan Privasi")
+    @Test(priority = 5, description = "Navigasi kembali pada halaman Kebijakan Privasi")
     @TestInfo(
         testType = "Positive Case",
         expected = "User bisa kembali dari halaman detail Kebijakan Privasi.",
         note = "",
-        group = "Syarat & Privasi"
+        group = "PROFILE"
     )
     public void testNavigasiKembaliKebijakanPrivasi(){
-        System.out.println("Test 5: Navigasi Kembali dari Kebijakan Privasi");
+        System.out.println("Test 5: Navigasi kembali pada halaman Kebijakan Privasi");
 
         // Kembali dari Kebijakan Privasi
         System.out.println("Kembali dari Kebijakan Privasi");
@@ -177,7 +177,7 @@ public class TestSyaratPrivasi extends BaseTest {
         testType = "Positive Case",
         expected = "User bisa kembali dari halaman Syarat & Privasi.",
         note = "",
-        group = "Syarat & Privasi"
+        group = "PROFILE"
     )
     public void testNavigasiKembalikeProfile(){
         System.out.println("Test 6: Navigasi Kembali dari Syarat & Privasi");
