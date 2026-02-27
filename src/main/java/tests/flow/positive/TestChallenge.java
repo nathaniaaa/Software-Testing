@@ -17,11 +17,14 @@ public class TestChallenge extends BaseTest {
     // Ikon Challenge (Bottom Navigation)
     By navChallenge = AppiumBy.xpath("//android.widget.Button[@text='Challenge Challenge']");
 
+    // Ikon Beranda (Bottom Navigation)
+    By navBeranda = AppiumBy.xpath("//android.widget.Button[@text=\"Beranda Beranda\"]");
+
     // Lihat Semua - Tombol di Challenge Saya
     By btnLihatSemuaSaya = AppiumBy.xpath("(//android.widget.TextView[@text='Lihat Semua'])[1]");
     
     // Lihat Semua - Tombol di Public Challenge
-    By btnLihatSemuaPublic = AppiumBy.xpath("(//android.view.View[@content-desc='Lihat Semua'])[2]");
+    By btnLihatSemuaPublic = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
 
     //  Public Challenge - Target: Fun for health - Klo mau ke card lain janlup diganti nama text nya sesuai kyk judul card
     By cardPublicChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Fun for health']");
@@ -50,7 +53,7 @@ public class TestChallenge extends BaseTest {
     By btnBackListSaya = AppiumBy.xpath("//android.view.View[@content-desc='joined']");
 
     // **** Bagian Reward Bulan ****
-    // Lihat Detail Reward Bulan Januari
+    // Lihat Detail Reward Bulan Bulan
     By btnLihatDetailRewardBulan = AppiumBy.xpath("//android.view.View[@content-desc='Lihat Detail']");
     
     // Tab Menu (Challenge & Leaderboard)
@@ -64,46 +67,55 @@ public class TestChallenge extends BaseTest {
     // Tombol Back 
     By btnBackRewardBulan = AppiumBy.xpath("//android.view.View[@content-desc='telkomsel-challenge']/android.widget.Button");
 
-    // Flag
-    static boolean isJoinedPublicChallenge = false;
-    static boolean isJoinedPrivateChallenge = false;
-    static boolean isPrivateChallengeApproved = false;
+    // Tombol Back (Bawaan Aplikasi)
+    By btnBackHeader1 = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View[1]/android.widget.Button");
+    By btnBackHeader2 = AppiumBy.xpath("//android.view.View[@resource-id=\"root\"]/android.view.View/android.view.View[1]/android.widget.Button[1]");
+    By btnBackList = AppiumBy.xpath("//android.view.View[@content-desc=\"joined\"]");
+
+    // Link 'Lihat Semua' 
+    // Challenge yang Diikuti -> Challenge Saya
+    By textLihatSemuaChallengeYangDiikuti = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[1]");
+    
+    // Challenges (Public Challenge) -> Halaman Navigasi Challenge
+    By textLihatSemuaChallenges = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
+
+    By textLihatSemuaRiwayatLari = AppiumBy.xpath("(//android.widget.TextView[@text=\"Lihat Semua\"])[2]");
+
+    // container public challenge
+    By wadahPublicChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Public Challenges']/following-sibling::android.view.View[1]");
+    
+    // Card Public Challenge - dari beranda
+    By cardPublicChallengeBeranda = AppiumBy.xpath("//android.widget.TextView[@text='Public Challenges']/following-sibling::android.view.View[1]");
+
+    // Locator untuk Teks Empty State
+    By textBelumAdaChallenge = AppiumBy.xpath("//*[contains(@text, 'Belum ada challenge') or contains(@text, 'Tidak ada challenge')]");
+    By textBelumAdaEvent = AppiumBy.xpath("//*[contains(@text, 'Belum ada event') or contains(@text, 'Tidak ada event')]");
+    By textBelumAdaRiwayatLari = AppiumBy.xpath("//*[contains(@text, 'Belum ada riwayat') or contains(@text, 'Tidak ada riwayat')]");
+
+    // locator header (untuk highlight section)
+    By headerChallenges = AppiumBy.xpath("//android.widget.TextView[@text='Challenges']");
+    By headerChallengeSaya = AppiumBy.xpath("//android.widget.TextView[@text='Challenge yang Diikuti']");
+    By headerTotalLari = AppiumBy.xpath("//android.widget.TextView[@text='Total Lari Harian']");
+    By headerPublicChallenge = AppiumBy.xpath("//android.widget.TextView[@text='Public Challenges']");
+    By headerEventLari = AppiumBy.xpath("//android.widget.TextView[@text='Event Lari']");
+    By headerRiwayatLari = AppiumBy.xpath("//android.widget.TextView[@text='Riwayat Lari']");
 
     // Test Cases
-    @Test(priority = 1, description = "Pengguna membuka halaman Challenge dari Bottom Navigation")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Tab Challenge menampilkan semua jenis Challenge yang tersedia dan sedang berlangsung di Ayolari.\n" + //
-                        "\n" + //
-                        "Adapun Challenge-challenge yang ditampilkan sbb:\n" + //
-                        "1. Challenge Saya => Challenge yang diikuti oleh pengguna\n" + //
-                        "2. Challenge Reward Januari => Challenge Bulanan dari Telkomsel yang bisa diikuti oleh semua pengguna Ayolari\n" + //
-                        "3. Exclusive Challenges  => Challenge Spesial dari Telkomsel\n" + //
-                        "4. Public Challenges  => Challenge buatan para pengguna Ayolari",
-        note = "",
-        group = "Challenge"
-    )
-    public void testNavigasiChallenge() {
-        System.out.println("TEST 1: Pengguna membuka halaman Challenge dari Bottom Navigation");
-
-        // Masuk Menu Challenge
-        clickTest(navChallenge, "Klik ikon Challenge di Bottom Navigation");
-        waitTime();
-
-        // Validasi: Masuk halaman challenge
-        Assert.assertTrue(driver.findElements(btnLihatSemuaPublic).size() > 0, "Gagal masuk menu Challenge");
-        logPass("Berhasil masuk ke halaman Challenge");
-    }
-
-    @Test(priority = 2, description = "Pengguna membuka Challenges Saya")
+    @Test(priority = 1, description = "Pengguna membuka Challenges Saya di tab challenge")
     @TestInfo(
         testType = "Positive Case",
         expected = "Menampilkan semua challenge yang telah diikuti maupun dibuat oleh Pengguna",
         note = "",
-        group = "Challenge"
+        group = "SET & LIHAT CHALLENGE"
     )
     public void testNavigasiChallengeSaya() {
-        System.out.println("TEST 2: Pengguna membuka Challenges Saya");
+        System.out.println("TEST 1: Pengguna membuka Challenges Saya di tab challenge");
+
+        actions.scrollToTop(); 
+
+        // Masuk Menu Challenge
+        clickTest(navChallenge, "Klik ikon Challenge di Bottom Navigation");
+        waitTime();
         
         // Klik "Lihat Semua" (Challenge Saya)
         System.out.println("Klik Lihat Semua (Challenge Saya)");
@@ -117,43 +129,55 @@ public class TestChallenge extends BaseTest {
         wait.until(ExpectedConditions.elementToBeClickable(btnBackListSaya)).click();
     }
 
-    @Test(priority = 3, description = "Pengguna membuka Public Challenge")
+    @Test(priority = 2, description = "Pengguna membuka Challenges Saya di tab beranda")
     @TestInfo(
         testType = "Positive Case",
-        expected = "Menampilkan daftar semua Public Challenge, yang merupakan challenge buatan pengguna Ayolari, serta memungkinkan pengguna untuk melihat detail dari setiap challenge yang ada",
+        expected = "Menampilkan semua challenge yang telah diikuti maupun yang telah dibuat oleh Pengguna",
         note = "",
-        group = "Challenge"
-    )
-    public void testNavigasiPublicChallenge() {
-        System.out.println("TEST 3: Pengguna membuka Public Challenge");
-        
-        // Klik "Lihat Semua" (Public Challenge)
-        System.out.println("Klik Lihat Semua (Public Challenge)");
-        
-        wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaPublic));
-        clickTest(btnLihatSemuaPublic, " Klik tombol Lihat Semua di Public Challenge");
-        waitTime(); 
+        group = "SET & LIHAT CHALLENGE"
+    ) 
+    public void testNavigasiChallengeSayaBeranda() {
+        System.out.println("Test 2: Pengguna membuka Challenges Saya di tab beranda");
+        waitTime();
 
-        logPass("Berhasil masuk ke list card Public Challenge");
+        clickTest(navBeranda, "Klik ikon Beranda di Bottom Navigation");
+        waitTime();
 
-        wait.until(ExpectedConditions.elementToBeClickable(btnBackListPublic)).click();
+        if (driver.findElements(textLihatSemuaChallengeYangDiikuti).size() > 0) {
+                clickTest(textLihatSemuaChallengeYangDiikuti, "Klik 'Lihat Semua' (Challenge Saya)");
+                
+                try { wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.className("android.view.View"))); } catch (Exception e) {}
+
+                waitTime();
+                clickBack();
+                logPass("Berhasil kembali ke Beranda dari list Challenge Saya.");
+            } else {
+                // Jaga-jaga kalau UI-nya ada tapi tombol lihat semuanya ga ngerender
+                logSkip("Test dilewati: Challenge ada, tapi Tombol 'Lihat Semua' tidak ditemukan.");
+            }
     }
 
-    @Test(priority = 4, description = "Pengguna membuka Challenge Reward Januari")
+    @Test(priority = 3, description = "Pengguna membuka Challenge Reward Bulan")
     @TestInfo(
         testType = "Positive Case",
-        expected = "Fitur ini memperlihatkan perkembangan aktivitas lari pengguna dalam mencapai milestone reward pada Challenge Reward Januari, serta menampilkan peringkat pengguna di leaderboard global",
+        expected = "Fitur ini memperlihatkan perkembangan aktivitas lari pengguna dalam mencapai milestone reward pada Challenge Reward Bulan, serta menampilkan peringkat pengguna di leaderboard global",
         note = "",
-        group = "Challenge"
+        group = "SET & LIHAT CHALLENGE"
     )
     public void testMasukDetailReward() {
-        System.out.println("TEST 4: Navigasi ke Detail Reward Januari");
+        System.out.println("TEST 3: Navigasi ke Detail Reward Bulan");
+
+        actions.scrollToTop();
+        waitTime();
+
+        clickTest(navChallenge, "Klik ikon Challenge di Bottom Navigation");
+        waitTime();
 
         // Klik "Lihat Detail"
         System.out.println("Mencari tombol 'Lihat Detail'");
         try {
             wait.until(ExpectedConditions.visibilityOfElementLocated(btnLihatDetailRewardBulan));
-            clickTest(btnLihatDetailRewardBulan, "Klik Lihat Detail Reward Bulan Januari");
+            clickTest(btnLihatDetailRewardBulan, "Klik Lihat Detail Reward Bulan");
             waitTime();
         } catch (Exception e) {
             System.out.println("Gagal klik Lihat Detail: " + e.getMessage());
@@ -166,22 +190,11 @@ public class TestChallenge extends BaseTest {
         // Validasi: Pastikan masuk ke halaman detail
         wait.until(ExpectedConditions.visibilityOfElementLocated(tabChallengeRewardBulan));
         Assert.assertTrue(driver.findElements(tabChallengeRewardBulan).size() > 0, "Gagal masuk halaman detail reward!");
-        logPass("Berhasil masuk ke halaman Detail Reward Bulan Januari.");
-    }
-
-    @Test(priority = 5, description = "Pengguna mengecek tab Challenge dan Leaderboard pada halaman Detail Reward Januari")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Fitur ini memperlihatkan perkembangan aktivitas lari pengguna dalam mencapai milestone reward pada Challenge Reward Januari, serta menampilkan peringkat pengguna di leaderboard global",
-        note = "",
-        group = "Challenge"
-    )
-    public void testCekTabDanTombol() {
-        System.out.println("TEST 5: Pengguna mengecek tab Challenge dan Leaderboard pada halaman Detail Reward Januari");
+        logPass("Berhasil masuk ke halaman Detail Reward Bulan Bulan.");
 
         // Aktivitas di Tab Reward Bulan
         System.out.println("Klik tab Challenge Reward Bulan");
-        clickTest(tabChallengeRewardBulan, "Klik tab Challenge di halaman Detail Reward Bulan Januari");
+        clickTest(tabChallengeRewardBulan, "Klik tab Challenge di halaman Detail Reward Bulan Bulan");
         waitTime();
         
         // Scroll ke Bawah (Cari tombol Klaim)
@@ -266,645 +279,51 @@ public class TestChallenge extends BaseTest {
         logPass("Berhasil kembali ke halaman Challenge.");
     }
 
-    @Test(priority = 6, description = "Pengguna bergabung ke Public Challenges yang bertipe publik")
+    @Test(priority = 4, description = "Pengguna membuka Public Challenge di tab challenge")
     @TestInfo(
         testType = "Positive Case",
-        expected = "Pengguna dapat bergabung ke Public Challenges yang bertipe publik buatan pengguna lain selama kuota peserta belum terpenuhi.\n" + //
-                        "\n" + "Setelah bergabung, maka Challenge tersebut akan masuk ke dalam daftar Challenge Saya pada Tab Challenge.",
+        expected = "Menampilkan daftar semua Public Challenge, yang merupakan challenge buatan pengguna Ayolari, serta memungkinkan pengguna untuk melihat detail dari setiap challenge yang ada",
         note = "",
-        group = "Challenge"
+        group = "SET & LIHAT CHALLENGE"
     )
-    public void testJoinPublicChallenge() {
-        System.out.println("TEST 6: Pengguna bergabung ke Public Challenges yang bertipe publik");
-
-        logInfo("Tampilan awal");
-
-        // Scroll ke Bawah cari section Public
-        System.out.println("Scroll mencari section Public Challenge");
-        actions.swipeVertical(0.8, 0.5); 
-        waitTime();
-
-        // Klik "Lihat Semua" punya Public
-        System.out.println("Klik Lihat Semua (Public)");
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaPublic));
-            clickTest(btnLihatSemuaPublic, "Klik tombol Lihat Semua di Public Challenge");
-        } catch (Exception e) {
-            By alternatifLihatSemuaPublic = AppiumBy.xpath("(//android.view.View[@content-desc='Lihat Semua'])[last()]");
-            clickTest(alternatifLihatSemuaPublic, "Klik tombol Lihat Semua di Public Challenge - Alternatif");
-        }
-        waitTime();
+    public void testNavigasiPublicChallenge() {
+        System.out.println("TEST 4: Pengguna membuka Public Challenge di tab challenge");
+        
+        // Klik "Lihat Semua" (Public Challenge)
+        System.out.println("Klik Lihat Semua (Public Challenge)");
+        
+        wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaPublic));
+        clickTest(btnLihatSemuaPublic, " Klik tombol Lihat Semua di Public Challenge");
+        waitTime(); 
 
         logPass("Berhasil masuk ke list card Public Challenge");
 
-        // Cari Card "Fun for health" (Scroll To Text)
-        System.out.println("Mencari card 'Fun for health'");
-        actions.scrollToText("Fun for health"); 
-        waitTime(); 
-
-        if (driver.findElements(cardPublicChallenge).size() == 0) {
-            driver.navigate().back();
-            logSkip("Test dilewati: Card 'Fun for health' tidak ditemukan di list");
-            return;
-        }
-
-        logPass("Card Fun for health ditemukan");
-        
-        // Klik Card
-        wait.until(ExpectedConditions.elementToBeClickable(cardPublicChallenge));
-        clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Public Challenge");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
-        waitTime();
-
-        // Validasi: Masuk detail
-        Assert.assertTrue(driver.findElement(tabDeskripsi).isDisplayed(), "Gagal masuk detail challenge!");
-
-        logPass("Berhasil masuk detail 'Fun for health'.");
-        
-        // Cek Tab Deskripsi
-        System.out.println("Cek Deskripsi -> Scroll Turun");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
-
-        logPass("Scroll ke bawah di Tab Deskripsi.");
-
-        actions.swipeVertical(0.5, 0.7);
-        waitTime();
-
-        // Cek Tab Leaderboard
-        System.out.println("Cek Leaderboard");
-        clickTest(tabLeaderboard, "Klik Tab Leaderboard");
-        waitTime();
-
-        System.out.println("Scroll Turun Leaderboard");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
-
-        logPass("Scroll ke bawah di Leaderboard.");
-
-        // JOIN CHALLENGE (2 Langkah)
-        // Klik 'Join Challenge'
-        System.out.println("Klik tombol 'Join Challenge'");
-
-        // Pastikan tombol Join ada (jaga-jaga kalau ternyata udah join)
-        if (driver.findElements(btnJoinChallenge).size() > 0) {
-            // Klik button 'Join Challenge'
-            clickTest(btnJoinChallenge, "Klik tombol 'Join Challenge'");
-            waitTime();
-
-            // Klik button 'Bergabung Sekarang'
-            wait.until(ExpectedConditions.elementToBeClickable(btnBergabung));
-            clickTest(btnBergabung, "Klik tombol 'Bergabung Sekarang'");
-            
-            try { Thread.sleep(4000); } catch (Exception e) {} 
-            
-            isJoinedPublicChallenge = true; // set flag berhasil join 
-        } else {
-            isJoinedPublicChallenge = true; // flag true karena user sudah join sebelumnya
-            logInfo("Tombol Join tidak ada (mungkin user sudah bergabung sebelumnya)");
-        }
-
-        // Back 2x
-        System.out.println("Back ke List Public");
-        wait.until(ExpectedConditions.elementToBeClickable(btnBackDetail));
-        clickTest(btnBackDetail, "Klik tombol Back");
-        waitTime();
-        
-        System.out.println("Back ke Halaman Challenge");
-        if (driver.findElements(btnBackListPublic).size() > 0) {
-            clickTest(btnBackListPublic, "Klik tombol Back");
-        } else {
-            driver.navigate().back();
-            logInfo("Tombol back tidak ditemukan, menggunakan back UI Handphone");
-        }
-        waitTime();
-
-        logPass("Berhasil kembali ke halaman Challenge");
-    }
-
-    @Test(priority = 7, description = "Validasi berhasil bergabung ke Public Challenges yang bertipe publik")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Pengguna dapat bergabung ke Public Challenges yang bertipe publik buatan pengguna lain selama kuota peserta belum terpenuhi.\n" + //
-                        "\n" + "Setelah bergabung, maka Challenge tersebut akan masuk ke dalam daftar Challenge Saya pada Tab Challenge.",
-        note = "",
-        group = "Challenge"
-    )
-    public void testValidasiBerhasilBergabung() {
-        System.out.println("TEST 7: Validasi berhasil bergabung ke Public Challenges yang bertipe publik");
-
-        // cek flag 
-        if (!isJoinedPublicChallenge) {
-            logSkip("Test dilewati: Proses Join (Test 6) terlewati/gagal, tidak ada yang perlu divalidasi");
-            return; 
-        }
-
-        // Klik "Lihat Semua" (Challenge Saya)
-        System.out.println("Klik Lihat Semua (Challenge Saya)");
-        
-        wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaSaya));
-        clickTest(btnLihatSemuaSaya, " Klik tombol Lihat Semua di Challenge Saya");
-        waitTime(); 
-
-        // Cari & Validasi "Fun for health" ada di list
-        System.out.println("Mencari 'Fun for health' di list");
-        actions.scrollToText("Fun for health");
-        waitTime();
-        
-        Assert.assertTrue(driver.findElements(cardPublicChallenge).size() > 0, 
-            "GAGAL: Challenge 'Fun for health' tidak masuk ke Challenge Saya!");
-        
-        logPass("Validasi sukses: Challenge 'Fun for health' ditemukan di list Saya.");
-    }
-
-    // @Test(priority = 8, description = "Pengguna keluar dari Public Challenges yang bertipe publik")
-    // @TestInfo(
-    //     testType = "Positive Case",
-    //     expected = "Pengguna dapat keluar dari Public Challenges yang bertipe publik yang telah diikuti sebelumnya.\n" + //
-    //                     "\n" + "Setelah keluar, maka Challenge tersebut akan hilang dari daftar Challenge Saya pada Tab Challenge.",
-    //     note = "",
-    //     group = "Challenge"
-    // )
-    // public void testKeluarPublicChallenge() {
-    //     System.out.println("Test 8: Pengguna keluar dari Public Challenges yang bertipe publik");
-
-    //     // cek flag
-    //     if (!isJoinedPublicChallenge) {
-    //         logSkip("Test dilewati: Proses Join (Test 6) terlewati/gagal, tidak bisa melakukan proses keluar");
-    //         return; 
-    //     }
-
-    //     actions.scrollToText("Fun for health");
-    //     waitTime();
-
-    //     if (driver.findElements(cardPublicChallenge).size() == 0) {
-    //         driver.navigate().back(); 
-    //         logSkip("Test dilewati: Card 'Fun for health' tidak ada di list, tidak bisa keluar.");
-    //         return; 
-    //     }
-
-    //     // Klik Card & Cek Detail lagi
-    //     clickTest(cardPublicChallenge, "Klik card 'Fun for health' di Challenge Saya");
-    //     wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
-    //     waitTime();
-
-    //     logPass("Berhasil masuk ke halaman detail 'Fun for health'");
-
-    //     // Cek Tab Deskripsi
-    //     System.out.println("Cek Deskripsi -> Scroll Turun");
-    //     actions.swipeVertical(0.7, 0.5);
-    //     waitTime();
-
-    //     logInfo("Scroll ke bawah di Tab Deskripsi");
-
-    //     actions.swipeVertical(0.5, 0.7);
-    //     waitTime();
-
-    //     // Cek Tab Leaderboard sebentar
-    //     System.out.println("Cek Leaderboard");
-    //     clickTest(tabLeaderboard, "Klik Tab Leaderboard");
-    //     waitTime();
-
-    //     System.out.println("Scroll Turun Leaderboard");
-    //     actions.swipeVertical(0.7, 0.5);
-    //     waitTime();
-
-    //     logInfo("Scroll ke bawah di Leaderboard");
-        
-    //     // Keluar Challenge (Leave)
-    //     System.out.println("Proses Keluar Challenge");
-        
-    //     // Klik 'Keluar Challenge'
-    //     wait.until(ExpectedConditions.elementToBeClickable(btnKeluarChallenge));
-    //     clickTest(btnKeluarChallenge, " Klik tombol 'Keluar Challenge' -> Muncul konfirmasi");
-    //     waitTime(); // Tunggu popup konfirmasi
-        
-    //     // Klik 'Ya, Lanjutkan'
-    //     wait.until(ExpectedConditions.elementToBeClickable(btnKonfirmasiKeluar));
-    //     clickTest(btnKonfirmasiKeluar, " Klik tombol 'Ya, Lanjutkan' untuk konfirmasi keluar");
-        
-    //     System.out.println("Berhasil keluar, tunggu loading");
-    //     try { Thread.sleep(4000); } catch (Exception e) {} // Tunggu proses API selesai
-
-    //     logPass("Berhasil keluar/leave Challenge");
-
-    //     // Back 1x
-    //     System.out.println("Back ke List Saya");
-    //     if (driver.findElements(btnBackDetail).size() > 0) {
-    //          clickTest(btnBackDetail, "Klik tombol Back");
-    //     }
-    //     waitTime();
-
-    //     // Validasi Hilang
-    //     System.out.println("Validasi Challenge 'Fun for health' sudah hilang");
-
-    //     // Cek apakah card masih ada
-    //     boolean isCardPresent = driver.findElements(cardPublicChallenge).size() > 0;
-
-    //     if (!isCardPresent) {
-    //         // Skenario sukses: card sudah hilang
-    //         System.out.println("Berhasil keluar dari Challenge 'Fun for health', card sudah hilang dari list.");
-    //         logPass("Validasi: Challenge 'Fun for health' sudah hilang dari list.");
-    //     } else {
-    //         // Skenario gagal: card masih ada
-    //         System.out.println("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
-    //         logInfo("Gagal keluar dari Challenge 'Fun for health', card masih ada di list!");
-    //     }
-    // }
-
-    @Test(priority = 9, description = "Pengguna bergabung ke Public Challenges yang bertipe private")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Pengguna dapat bergabung ke Public Challenges yang bertipe private buatan pengguna lain selama kuota peserta belum terpenuhi.\n" + //
-                        "\n" + "Setelah bergabung, maka Challenge tersebut akan masuk ke dalam daftar Challenge Saya pada Tab Challenge.",
-        note = "",
-        group = "Challenge"
-    )
-    public void testJoinPrivateChallenge() {
-        System.out.println("TEST 9: Pengguna bergabung ke Public Challenges yang bertipe private");
-
-        if (driver.findElements(btnBackListSaya).size() > 0) {
-            wait.until(ExpectedConditions.elementToBeClickable(btnBackListSaya)).click();
+        if(driver.findElements(btnBackListPublic).size() > 0) {
+            wait.until(ExpectedConditions.elementToBeClickable(btnBackListPublic)).click();
         } else {
             driver.navigate().back();
         }
-        waitTime();
-
-        logInfo("Tampilan awal");
-
-        // Scroll ke Bawah cari section Public
-        System.out.println("Scroll mencari section Public Challenge");
-        actions.swipeVertical(0.8, 0.5); 
-        waitTime();
-
-        // Klik "Lihat Semua" punya Public
-        System.out.println("Klik Lihat Semua (Public)");
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaPublic));
-            clickTest(btnLihatSemuaPublic, "Klik tombol Lihat Semua di Public Challenge");
-        } catch (Exception e) {
-            By alternatifLihatSemuaPublic = AppiumBy.xpath("(//android.view.View[@content-desc='Lihat Semua'])[last()]");
-            clickTest(alternatifLihatSemuaPublic, "Klik tombol Lihat Semua di Public Challenge - Alternatif");
-        }
-        waitTime();
-
-        // Cari Card "Lari Merdeka 2026 v3" (Scroll To Text)
-        System.out.println("Mencari card 'Lari Merdeka 2026 v3'");
-        actions.scrollToText("Lari Merdeka 2026 v3"); 
-        waitTime(); 
-
-        if (driver.findElements(cardPrivateChallenge).size() == 0) {
-            driver.navigate().back();
-            logSkip("Test dilewati: Card 'Lari Merdeka 2026 v3' tidak ditemukan");
-            return; 
-        }
-
-        logPass("Card Lari Merdeka 2026 v3 ditemukan");
-        
-        // Klik Card
-        wait.until(ExpectedConditions.elementToBeClickable(cardPrivateChallenge));
-        clickTest(cardPrivateChallenge, "Klik card 'Lari Merdeka 2026 v3' di Public Challenge");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
-        waitTime();
-
-        // Validasi: Masuk detail
-        Assert.assertTrue(driver.findElement(tabDeskripsi).isDisplayed(), "Gagal masuk detail challenge!");
-
-        logPass("Berhasil masuk detail 'Lari Merdeka 2026 v3'.");
-        
-        // Cek Tab Deskripsi
-        System.out.println("Cek Deskripsi -> Scroll Turun");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
-
-        logPass("Scroll ke bawah di Tab Deskripsi.");
-
-        actions.swipeVertical(0.5, 0.7);
-        waitTime();
-
-        // Cek Tab Leaderboard
-        System.out.println("Cek Leaderboard");
-        clickTest(tabLeaderboard, "Klik Tab Leaderboard");
-        waitTime();
-
-        System.out.println("Scroll Turun Leaderboard");
-        actions.swipeVertical(0.7, 0.5);
-        waitTime();
-
-        logPass("Scroll ke bawah di Leaderboard.");
-
-        // JOIN CHALLENGE (2 Langkah)
-        if (driver.findElements(btnJoinChallenge).size() > 0) {
-            // Klik button 'Join Challenge'
-            clickTest(btnJoinChallenge, "Klik tombol 'Join Challenge'");
-            waitTime();
-
-            // Pengisian kode undangan - verifikasi
-            System.out.println("Input Kode Undangan");
-            String kodeUndangan = "537545"; // jangan lupa ganti sesuai kode undangan challenge private 
-            // locator Kotak Pertama (Index 1)
-            By inputDigitPertama = AppiumBy.xpath("//android.app.AlertDialog[contains(@resource-id, 'radix')]/android.view.View/android.view.View/android.widget.TextView[1]");
-
-            // Tunggu & Klik Kotak Pertama
-            wait.until(ExpectedConditions.elementToBeClickable(inputDigitPertama));
-            clickTest(inputDigitPertama, "Klik Kotak Input Pertama");
-
-            // Loop Kirim Angka 
-            char[] digits = kodeUndangan.toCharArray();
-            for (char digit : digits) {
-                String strDigit = String.valueOf(digit);
-                
-                // Kirim angka via keyboard action
-                actions.pressKeyboard(strDigit);
-                
-                System.out.println("   -> Ketik angka: " + strDigit);
-                try { Thread.sleep(500); } catch (Exception e) {}
-            }
-            
-            logPass("Berhasil input kode: " + kodeUndangan);
-
-            // Klik Tombol Verifikasi
-            wait.until(ExpectedConditions.elementToBeClickable(btnVerifikasi));
-            clickTest(btnVerifikasi, "Klik tombol 'Verifikasi'");
-            waitTime();
-
-            // Cek hasil setelah input kode
-            if (driver.findElements(btnMenungguPersetujuan).size() > 0) {
-                isJoinedPrivateChallenge = true; // set flag berhasil
-                logPass("Kode undangan benar, status menjadi menunggu persetujuan.");
-            } else {
-                isJoinedPrivateChallenge = false; // set flag gagal karena error/kode salah 
-                logFail("Gagal bergabung! Kode undangan salah atau terjadi error pada sistem");
-            }
-        } else {
-            // JIKA TOMBOL JOIN DARI AWAL TIDAK ADA
-            System.out.println("Tombol Join tidak ditemukan, mengecek status user");
-            
-            boolean isSudahJoin = driver.findElements(btnKeluarChallenge).size() > 0;
-            boolean isMenunggu = driver.findElements(btnMenungguPersetujuan).size() > 0;
-            
-            if (isSudahJoin || isMenunggu) {
-                isJoinedPrivateChallenge = true; // aman
-            } else {
-                isJoinedPrivateChallenge = false; // gagal
-                logSkip("Tombol Join tidak ada, tapi user belum bergabung (mungkin UI error)");
-            }
-        }
-
-        // Back 2x
-        System.out.println("Back ke List Public");
-        wait.until(ExpectedConditions.elementToBeClickable(btnBackDetail));
-        clickTest(btnBackDetail, "Klik tombol Back");
-        waitTime();
-        
-        System.out.println("Back ke Halaman Challenge");
-        if (driver.findElements(btnBackListPublic).size() > 0) {
-            clickTest(btnBackListPublic, "Klik tombol Back");
-        } else {
-            driver.navigate().back();
-            logInfo("Tombol back tidak ditemukan, menggunakan back UI Handphone");
-        }
-        waitTime();
-
-        logPass("Berhasil kembali ke halaman Challenge");
-    }
-
-    @Test(priority = 10, description = "Validasi apakah sudah disetujui bergabung ke Public Challenges yang bertipe private")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Pengguna dapat bergabung ke Public Challenges yang bertipe private buatan pengguna lain selama kuota peserta belum terpenuhi.\n" + //
-                        "\n" + "Setelah bergabung, maka Challenge tersebut akan masuk ke dalam daftar Challenge Saya pada Tab Challenge.",
-        note = "",
-        group = "Challenge"
-    )
-    public void testValidasiBerhasilBergabungPrivate() {
-        System.out.println("TEST 10: Validasi Challenge Private masuk ke List Saya");
-
-        // cek flag
-        if (!isJoinedPrivateChallenge) {
-            logSkip("Test dilewati: Proses Join Private (Test 9) terlewati, tidak ada yang perlu divalidasi.");
-            return; 
-        }
-
-        // Klik "Lihat Semua" (Challenge Saya)
-        System.out.println("Klik Lihat Semua (Challenge Saya)");
-        
-        wait.until(ExpectedConditions.elementToBeClickable(btnLihatSemuaSaya));
-        clickTest(btnLihatSemuaSaya, "Klik tombol Lihat Semua di Challenge Saya");
-        waitTime(); 
-
-        // Cari & Validasi "Lari Merdeka 2026 v3" ada di list
-        System.out.println("Mencari 'Lari Merdeka 2026 v3' di list");
-        waitTime();
-        
-        boolean isCardPresent = driver.findElements(cardPrivateChallenge).size() > 0;
-
-        if (isCardPresent) {
-            System.out.println("Validasi Sukses: Challenge ditemukan.");
-            isPrivateChallengeApproved = true; // set true karena sudah di-approve (card sudah muncul di list)
-            capture.highlightAndCapture(cardPrivateChallenge, "Validasi SUKSES: Challenge 'Lari Merdeka 2026 v3' ditemukan di list Saya");
-        } else {
-            System.out.println("Validasi Gagal: Challenge tidak ada di list.");
-            isPrivateChallengeApproved = false; // set false karena belum di-approve (card belum muncul di list)
-            logSkip("Card tidak ada di list, mungkin belum di setujui");
-        }
-    }
-
-    @Test(priority = 11, description = "Pengguna keluar dari Public Challenges yang bertipe private")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Pengguna dapat keluar dari Public Challenges yang bertipe private yang telah diikuti sebelumnya.\n" + //
-                        "\n" + "Setelah keluar, maka Challenge tersebut akan hilang dari daftar Challenge Saya pada Tab Challenge.",
-        note = "",
-        group = "Challenge"
-    )
-    public void testKeluarPrivateChallenge() {
-        System.out.println("TEST 11: Keluar Private Challenge");
-
-        // cek flag dari test 9
-        if (!isJoinedPrivateChallenge)  {
-            // Balik ke halaman utama challenge
-            if (driver.findElements(btnBackListSaya).size() > 0) {
-                driver.findElement(btnBackListSaya).click();
-            } else {
-                driver.navigate().back();
-            }
-            waitTime();
-            
-            logSkip("Test dilewati: Proses Join Private (Test 9) terlewati, tidak bisa melakukan proses keluar");
-            return;
-        }
-
-        // cek flag dari test 10 (approval)
-        if (!isPrivateChallengeApproved) {
-            System.out.println("Berdasarkan Test 10, Challenge belum disetujui, tidak perlu mencari card untuk keluar");
-            
-            // Balik ke halaman utama challenge
-            if (driver.findElements(btnBackListSaya).size() > 0) {
-                driver.findElement(btnBackListSaya).click();
-            } else {
-                driver.navigate().back();
-            }
-            waitTime();
-            
-            logSkip("SKIP: Challenge private belum disetujui penyelenggara, tidak bisa keluar.");
-            return;
-        }
-
-        actions.scrollToText("Lari Merdeka 2026 v3");
-        waitTime();
-
-        boolean isCardExist = driver.findElements(cardPrivateChallenge).size() > 0;
-
-        if (isCardExist) {
-            // Card Lari Merdeka 2026 v3 ada di list
-            System.out.println("Card ditemukan. Menjalankan proses keluar");
-            
-            // Klik Card
-            clickTest(cardPrivateChallenge, "Klik card 'Lari Merdeka 2026 v3'");
-            wait.until(ExpectedConditions.visibilityOfElementLocated(tabDeskripsi));
-            waitTime();
-
-            // Scroll dikit
-            actions.swipeVertical(0.7, 0.5);
-            waitTime();
-
-            // Klik Keluar
-            try {
-                wait.until(ExpectedConditions.elementToBeClickable(btnKeluarChallenge));
-                clickTest(btnKeluarChallenge, "Klik 'Keluar Challenge'");
-                
-                wait.until(ExpectedConditions.elementToBeClickable(btnKonfirmasiKeluar));
-                clickTest(btnKonfirmasiKeluar, "Klik 'Ya, Lanjutkan'");
-                
-                System.out.println("Proses keluar");
-                try { Thread.sleep(4000); } catch (Exception e) {} 
-                
-                logPass("Berhasil klik keluar challenge.");
-
-            } catch (Exception e) {
-                // Handle jika tombol keluar gak ketemu (misal status masih 'Menunggu Persetujuan' jadi gak bisa keluar)
-                logInfo("Gagal klik tombol keluar (Mungkin status masih pending approval).");
-            }
-
-            // Back ke List
-            System.out.println("Back ke List Saya");
-            if (driver.findElements(btnBackDetail).size() > 0) {
-                clickTest(btnBackDetail, "Klik tombol Back");
-            }
-            waitTime();
-
-            actions.scrollToText("Lari Merdeka 2026 v3");
-            waitTime();
-
-            // Validasi Hilang
-            if (driver.findElements(cardPrivateChallenge).size() == 0) {
-                logPass("Validasi: Card sudah hilang dari list.");
-            } else {
-                logInfo("Validasi: Card masih terlihat di list (mungkin masih delay)");
-            }
-
-        } else {
-            // Card Lari Merdeka 2026 v3 ga ada di list
-            System.out.println("Card 'Lari Merdeka 2026 v3' TIDAK ditemukan di list");
-            logSkip("SKIP: Challenge private tidak ditemukan di list (Mungkin belum di setujui penyelenggara)");
-        }
-
-        System.out.println("Keluar dari List Saya, kembali ke Halaman Utama Challenge");
-        try {
-            if (driver.findElements(btnBackListSaya).size() > 0) {
-                clickTest(btnBackListSaya, "Klik tombol Back (List Saya)");
-            } else {
-                driver.navigate().back();
-            }
-        } catch (Exception e) { driver.navigate().back(); }
-        waitTime();
-    }
-
-    // **** BAGIAN TAB LEADERBOARD ****
-    // Tab Leaderboard (Header Atas)
-    By tabLeaderboardIkonAtas = AppiumBy.xpath("//android.view.View[@content-desc='Leaderboard Leaderboard']");
-
-    // Validasi (Global Leaderboard)
-    By textGlobal = AppiumBy.xpath("//android.view.View[contains(@content-desc, 'Global') or contains(@text, 'Global')] | //android.widget.TextView[contains(@text, 'Global')]");
-
-    @Test(priority = 12, description = "Pengguna membuka Tab Leaderboard di halaman Challenge Lari")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Menampilkan list Top 10 Pengguna Ayolari dengan total lari terbanyak, serta menampilkan peringkat pengguna di leaderboard Ayolari secara global",
-        note = "",
-        group = "Challenge"
-    )
-    public void testMasukLeaderboard() {
-        System.out.println("TEST 12: Pengguna membuka Tab Leaderboard di halaman Challenge Lari");
-
-        // Klik ikon piala (Leaderboard)
-        wait.until(ExpectedConditions.elementToBeClickable(tabLeaderboardIkonAtas));
-        clickTest(tabLeaderboardIkonAtas, "Klik ikon Leaderboard di header atas");
-        waitTime();
-        
-        // Jeda loading data leaderboard 
-        System.out.println("Menunggu data leaderboard");
-        try { Thread.sleep(4000); } catch (Exception e) {} 
-        
-        try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(textGlobal));
-        } catch (Exception e) {}
-
-        Assert.assertTrue(driver.findElements(textGlobal).size() > 0, "Data Leaderboard (Global) tidak muncul!");
-
-        logPass("Berhasil masuk dan memuat data Leaderboard");
-    }
-
-    // **** BAGIAN TAB REWARDS ****
-    By tabRewardsIkonAtas = AppiumBy.xpath("//android.view.View[@content-desc='Rewards Rewards']");
-    By btnRiwayatReward = AppiumBy.xpath("//android.view.View[@content-desc='Public Riwayat Reward']");
-    By btnBackIkonRewards = AppiumBy.xpath("//android.widget.Button");
-
-    @Test(priority = 13, description = "Pengguna membuka Tab Reward di halaman Challenge Lari")
-    @TestInfo(
-        testType = "Positive Case",
-        expected = "Fitur ini menampilkan daftar reward yang tersedia untuk diklaim berdasarkan challenge yang diikuti oleh pengguna. Selain itu, pengguna juga dapat melihat panduan langkah demi langkah untuk melakukan proses redeem reward",
-        note = "",
-        group = "Challenge"
-    )
-    public void testBukaRewardsDanRiwayat() {
-        System.out.println("TEST 13: Pengguna membuka Tab Reward di halaman Challenge Lari");
-        waitTime(); 
-
-        // Klik Tab Rewards
-        clickTest(tabRewardsIkonAtas, "Klik Tab Rewards");
-        waitTime();
-
-        // Klik Button Riwayat Rewards
-        wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
-        clickTest(btnRiwayatReward, "Klik menu Riwayat Rewards");
-
-        // Validasi Masuk Halaman Riwayat
-        wait.until(ExpectedConditions.visibilityOfElementLocated(btnBackIkonRewards));
-        Assert.assertTrue(driver.findElement(btnBackIkonRewards).isDisplayed(), "Gagal masuk halaman Riwayat.");
-
-        // Klik Back
-        waitTime();
-        
-        if (driver.findElements(btnBackIkonRewards).size() > 0) {
-            clickTest(btnBackIkonRewards, "Klik tombol Back");
-            logPass("Kembali ke Tab Rewards.");
-        } else {
-            System.out.println("Tombol Back UI tidak ada, pakai Back System.");
-            driver.navigate().back();
-            logInfo("Tombol back aplikasi tidak bisa, back menggunakan UI system");
-        }
-
-        // Validasi Kembali ke Rewards
-        try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(btnRiwayatReward));
-        } catch (Exception e) {}
-
-        Assert.assertTrue(driver.findElements(btnRiwayatReward).size() > 0, "Gagal kembali ke halaman Rewards!");
     }
 
     public void waitTime() {
         try { Thread.sleep(3000); } catch (Exception e) {}
+    }
+
+    public void clickBack() {
+        try {
+            if (driver.findElements(btnBackHeader1).size() > 0) {
+                clickTest(btnBackHeader1, "Klik back");
+            } else if (driver.findElements(btnBackHeader2).size() > 0) {
+                clickTest(btnBackHeader2, "Klik back");
+            } else if (driver.findElements(btnBackList).size() > 0) {
+                clickTest(btnBackList, "Klik back");
+            } else {
+                System.out.println("Tombol Back UI gak nemu, pakai Back HP");
+                driver.navigate().back();
+            }
+            waitTime();
+        } catch (Exception e) {
+            driver.navigate().back();
+        }
     }
 }

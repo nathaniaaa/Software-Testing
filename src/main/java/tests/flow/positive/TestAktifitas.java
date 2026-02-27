@@ -62,7 +62,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Menampilkan seluruh Riwayat Lari yang dilakukan pengguna dan Riwayat Challenge yang telah diikuti dan diselesaikan oleh pengguna",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testNavigasiAktivitas() {
         System.out.println("TEST 1: Pengguna membuka halaman Aktivitas");
@@ -80,7 +80,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Akan terlihat daftar riwayat lari yang pernah dilakukan oleh user",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testMasukKeRiwayatLari() {
         System.out.println("TEST 2: Riwayat Lari");
@@ -97,7 +97,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Saat pengguna membuka salah satu riwayat lari, sistem akan menampilkan informasi lengkap mengenai aktivitas tersebut, mulai dari jarak tempuh, hari tanggal dan jam, durasi lari, jarak, kecepatan rata-rata (pace), kecepatan maksimal (pace), kalori aktif, total kalori, peta jalur lintasan (polyline), hingga grafik elevasi ketinggian",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testKlikCard() {
         System.out.println("TEST 3: Pengguna menekan salah satu Riwayat Lari dari hasil record dan atau dari hasil sync smartwatch");
@@ -131,7 +131,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Semua elemen statistik seperti jarak (km) dan waktu/durasi tampil dengan benar pada halaman rincian lari",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testStatistikUI() {
         System.out.println("TEST 4: Validasi Elemen Statistik");
@@ -165,7 +165,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Nama aktivitas lari yang disimpan pengguna akan tersimpan dan terupdate",
         note = "RINCIAN LARI RECORD DENGAN AYOLARI",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testFiturEdit() {
         System.out.println("TEST 5: Pengguna mengubah nama aktivitas lari dari hasil record dan dari hasil sync smartwatch");
@@ -268,7 +268,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat menggunakan tombol unduh pada halaman rincian lari",
         note = "RINCIAN LARI RECORD DENGAN AYOLARI",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testFiturUnduh() {
         System.out.println("TEST 6: Tombol Unduh");
@@ -297,7 +297,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat Berinteraksi dengan peta pada halaman rincian lari",
         note = "RINCIAN LARI RECORD DENGAN AYOLARI",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testInteraksiPeta() {
         System.out.println("TEST 7: Interaksi Peta (Map)");
@@ -402,7 +402,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat Berinteraksi dengan Grafik Ketinggian pada halaman rincian lari",
         note = "RINCIAN LARI RECORD DENGAN AYOLARI",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testScrapingGrafikKetinggian() {
         System.out.println("TEST 8: Interaksi Grafik Ketinggian");
@@ -486,7 +486,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Nama aktivitas lari yang disimpan pengguna akan tersimpan dan terupdate",
         note = "RINCIAN LARI RECORD DENGAN SYNC SMARTWATCH",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testFiturEditSyncSmartwatch() {
         System.out.println("TEST 9: Pengguna mengubah nama aktivitas lari dari hasil record dan dari hasil sync smartwatch");
@@ -588,7 +588,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat menggunakan tombol unduh pada halaman rincian lari",
         note = "RINCIAN LARI RECORD DENGAN SYNC SMARTWATCH",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testFiturUnduhSyncSmartwatch() {
         System.out.println("TEST 10: Tombol Unduh");
@@ -616,7 +616,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat Berinteraksi dengan peta pada halaman rincian lari",
         note = "RINCIAN LARI RECORD DENGAN SYNC SMARTWATCH",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testInteraksiPetaSyncSmartwatch() {
         System.out.println("TEST 11: Interaksi Peta (Map)");
@@ -714,7 +714,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat Berinteraksi dengan Grafik Ketinggian pada halaman rincian lari",
         note = "RINCIAN LARI RECORD DENGAN SYNC SMARTWATCH",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testScrapingGrafikKetinggianSyncSmartwatch() {
         System.out.println("TEST 12: Interaksi Grafik Ketinggian");
@@ -788,7 +788,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat kembali ke list riwayat setelah melihat detail aktivitas",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testKembaliKeMenu() {
         System.out.println("TEST 13: Navigasi Kembali ke List Riwayat Lari");
@@ -823,7 +823,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Riwayat challenge akan muncul setelah masa aktif challenge yang diikuti sudah berakhir, walaupun syarat Jarak dalam challenge tidak terpenuhi",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testNavigasiKeListChallenge() {
         System.out.println("TEST 14: Navigasi ke List Riwayat Challenge");
@@ -851,11 +851,12 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat melihat detail riwayat challenge dengan mengklik salah satu card riwayat challenge, lalu pengguna dapat berinteraksi dengan konten yang ada di dalamnya seperti melihat deskripsi challenge, melihat leaderboard, dan kembali ke list riwayat challenge",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testInteraksiDetailRiwayatChallenge() {
         System.out.println("TEST 15: Interaksi pada Halaman Detail Riwayat Challenge");
 
+        actions.scrollToTop();
         waitTime();
 
         // Pastikan ada card riwayat challenge, kalau engga skip
@@ -907,7 +908,7 @@ public class TestAktifitas extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat kembali ke list riwayat challenge dengan mengklik tombol back",
         note = "",
-        group = "Aktivitas"
+        group = "AKTIFITAS"
     )
     public void testKembaliKeList() {
         System.out.println("TEST 16: Kembali ke List Riwayat Challenge");

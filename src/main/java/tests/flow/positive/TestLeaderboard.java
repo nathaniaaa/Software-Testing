@@ -17,6 +17,9 @@ public class TestLeaderboard extends BaseTest {
     By navChallenge = AppiumBy.xpath("//android.widget.Button[@text='Challenge Challenge']");
     By btnBack = AppiumBy.xpath("//android.widget.Button[1]"); 
 
+    // Ikon Aktivitas (Bottom Navigation)
+    By navAktivitas = AppiumBy.xpath("//android.widget.Button[@text=\"Aktivitas Aktivitas\"]");
+
     // Detail Page
     By tabDeskripsi = AppiumBy.xpath("//android.view.View[contains(@resource-id, 'trigger-deskripsi')]");
     By tabLeaderboard = AppiumBy.xpath("//android.view.View[contains(@resource-id, 'trigger-leaderboard')]");
@@ -38,7 +41,7 @@ public class TestLeaderboard extends BaseTest {
         testType = "Positive Case",
         expected = "Menampilkan list Top 10 Pengguna Ayolari dengan total lari terbanyak, serta menampilkan peringkat pengguna di leaderboard Ayolari secara global",
         note = "",
-        group = "Leaderboard"
+        group = "LEADERBOARD"
     )
     public void testMasukLeaderboard() {
         System.out.println("TEST 1: Pengguna membuka Tab Leaderboard di halaman Challenge Lari");
@@ -88,10 +91,16 @@ public class TestLeaderboard extends BaseTest {
         testType = "Positive Case",
         expected = "Pengguna dapat melihat detail riwayat challenge dengan mengklik salah satu card riwayat challenge, lalu pengguna dapat berinteraksi dengan konten yang ada di dalamnya seperti melihat deskripsi challenge, melihat leaderboard, dan kembali ke list riwayat challenge",
         note = "",
-        group = "Aktivitas"
+        group = "LEADERBOARD"
     )
     public void testInteraksiDetailRiwayatChallenge() {
         System.out.println("TEST 2: Interaksi pada Halaman Detail Riwayat Challenge");
+
+        actions.scrollToTop();
+        waitTime();
+
+        clickTest(navAktivitas, "Klik ikon Aktivitas di Bottom Navigation");
+        waitTime();
 
         System.out.println("Klik Riwayat Challenge");
         clickTest(tabRiwayatChallenge, "Klik Riwayat Challenge");
