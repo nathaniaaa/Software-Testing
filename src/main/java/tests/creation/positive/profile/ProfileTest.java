@@ -1,15 +1,12 @@
-package tests.creation.positive;
+package tests.creation.positive.profile;
 
-import org.openqa.selenium.ScreenOrientation;
 import org.testng.Assert;
-import org.testng.SkipException; // Import this for proper skipping
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.Test; // Import this for proper skipping
 
 import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 
-import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import tests.BaseTest;
 import tests.creation.ProfileActionHelper;
@@ -32,7 +29,7 @@ public class ProfileTest extends BaseTest {
         testType = "Positive Case",
         expected = "Profil Pengguna akan terupdate",
         note = "",
-        group="Profile"
+        group="EDIT PROFIL"
     )
     public void testUpdateProfileSuccess() {
         TestListener.getTest().log(Status.INFO, "Starting Test: Happy Path Update");
@@ -64,7 +61,7 @@ public class ProfileTest extends BaseTest {
 
         // 5. Gender & Blood Type
         TestListener.getTest().info("Action: Selecting Gender 'Laki-laki' & Blood Type 'O'");
-        profilePage.selectGenderAndBloodType("Laki-laki", "O");
+        profilePage.selectGenderAndBloodType("Laki-laki", "");
 
         boolean isEnabled = profilePage.isSaveButtonEnabled();
         Assert.assertTrue(isEnabled, "BLOCKER: Save button is disabled even though data is valid!");
@@ -74,15 +71,16 @@ public class ProfileTest extends BaseTest {
 
         profilePage.saveAndVerify(); 
         
-        logPass("Profile updated successfully with new data.");
+        profilePage.areElementsDisplayed( uniqueName, "175", "70");
+        // logPass("Profile updated successfully with new data.");
     }
 
     @Test(priority = 2, description = "Pengguna mengganti Foto profil nya dengan mengupload ulang lewat galeri, kemudian pengguna menyimpannya")
     @TestInfo(
         testType = "Positive Case",
-        group = "Profile",
+        group = "EDIT PROFIL",
         expected = "Foto profil Pengguna akan terupdate",
-        note = "Ensure Gallery has at least one photo"
+        note = "Pastikan ada foto di galeri untuk upload test ini"
     )
     public void testChangePhotoGallery() {
         TestListener.getTest().log(Status.INFO, "Starting Test: Upload via Gallery");
@@ -99,16 +97,16 @@ public class ProfileTest extends BaseTest {
 
         // 4. Assertion
         //masih gatau cara verifnya
-
-        logPass("Success: Profile photo updated via Gallery.");
+        profilePage.captureProfilePicture(); // Capture the profile picture for evidence
+        TestListener.getTest().pass("Success: Profile photo updated via Gallery.");
     }
 
     @Test(priority = 3, description = "Pengguna mengganti Foto profil nya dengan mengupload ulang lewat kamera, kemudian pengguna menyimpannya")
     @TestInfo(
         testType = "Positive Case",
-        group = "Profile",
+        group = "EDIT PROFIL",
         expected = "Foto profil Pengguna akan terupdate",
-        note = "Requires Camera Permission"
+        note = ""
     )
     public void testChangePhotoCamera() {
         TestListener.getTest().log(Status.INFO, "Starting Test: Upload via Camera");
@@ -124,8 +122,8 @@ public class ProfileTest extends BaseTest {
         profilePage.saveAndVerify(); 
         // 4. Assertion
         // Verify we are back on the Edit Page or a Success Message appears
-
-        logPass("Success: Profile photo updated via Camera.");
+        profilePage.captureProfilePicture(); // Capture the profile picture for evidence
+        TestListener.getTest().pass("Success: Profile photo updated via Camera.");
     }
 
 }

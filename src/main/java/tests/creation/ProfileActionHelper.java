@@ -43,6 +43,15 @@ public class ProfileActionHelper extends CreationActionHelper {
 
     private final By PROFILE_PAGE = AppiumBy.xpath("//android.widget.TextView[@text=\"Profil Kamu\"]");
     private final By TITLE_EDIT_PROFILE = AppiumBy.xpath("//*[contains(@text, 'Edit Profil')]");
+    private final By PROFILE_PICTURE = AppiumBy.xpath("//android.widget.Image[@content-desc=\"Profile Picture\"]");
+
+    public void captureProfilePicture() {
+        try {
+            capture.highlightAndCapture(PROFILE_PICTURE, "Screenshot Profile picture");
+        } catch (Exception e) {
+            System.out.println("WARN: Failed to capture profile picture.");
+        }
+    }
 
     public boolean isOnEditProfilePage() {
         try {

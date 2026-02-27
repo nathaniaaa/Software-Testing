@@ -70,7 +70,7 @@ public class BaseTest {
         capture = new CaptureHelper(driver);
         actions = new ActionHelper(driver);
 
-        ensureOnAyoLariDashboard();
+        // ensureOnAyoLariDashboard();
     }
 
     @BeforeMethod
@@ -309,18 +309,38 @@ public class BaseTest {
     }
 
     public void handlePotentialAds() {
+        System.out.println("Checking for Ads...");
         WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+
+        // --- TYPE A: Close Button ---
         try {
+            // Prioritas 1: Cari TEKS "Nanti Saja" atau sejenisnya
             shortWait.until(ExpectedConditions.presenceOfElementLocated(AD_CLOSE_BUTTON_TEXT)).click();
+            System.out.println("  -> Iklan Type A ditutup (via Teks).");
         } catch (Exception e1) {
+            // Prioritas 2: Cari via ID
             try {
                 shortWait.until(ExpectedConditions.presenceOfElementLocated(AD_CLOSE_BUTTON_ID)).click();
-            } catch (Exception e2) {}
+                System.out.println("  -> Iklan Type A ditutup (via ID).");
+            } catch (Exception e2) {
+                System.out.println("  -> Tidak ada iklan Type A.");
+            }
         }
+
+        // --- TYPE B: Iklan Overlay (Tap Outside) ---
+        System.out.println("Menunggu sejenak sebelum cek Iklan Type B (Overlay)...");
         try { Thread.sleep(3000); } catch (InterruptedException e) {}
+
         try {
+            // Cek apakah tab Mall bisa diklik dalam waktu 5 detik
             new WebDriverWait(driver, Duration.ofSeconds(5)).until(ExpectedConditions.elementToBeClickable(MALL_TAB_ID));
-        } catch (Exception e) { actions.tapAtScreenRatio(0.5, 0.15); }
+            System.out.println("  -> Aman: Layar tidak terblokir (Mall Tab clickable).");
+        } catch (Exception e) {
+            // Jika gagal diklik, berarti ada overlay transparan atau pop-up tanpa tombol close
+            System.out.println("  -> LAYAR TERBLOKIR! Mencoba tap outside (Type B)...");
+            actions.tapAtScreenRatio(0.5, 0.15); // Tap area aman atas (tengah atas layar)
+            try { Thread.sleep(1500); } catch (InterruptedException ex) {}
+        }
     }
 
     public boolean isElementVisible(By locator) {

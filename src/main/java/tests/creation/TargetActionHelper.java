@@ -4,11 +4,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
+import java.time.Duration;
 
 public class TargetActionHelper extends CreationActionHelper {
 
@@ -24,14 +26,44 @@ public class TargetActionHelper extends CreationActionHelper {
     private final By RADIO_HARIAN = AppiumBy.xpath("//*[contains(@text, 'Harian')]");
     
     // We override the generic submit button with the specific Target one
-   private final By BTN_SUBMIT_TARGET = AppiumBy.xpath("//android.widget.Button[@text=\"Atur Target\"]");
-   private final By BTN_SELANJUTNYA = AppiumBy.xpath("//android.widget.Button[@text=\"Selanjutnya\"]");
+    private final By BTN_SUBMIT_TARGET = AppiumBy.xpath("//android.widget.Button[@text=\"Atur Target\"]");
+    private final By BTN_SELANJUTNYA = AppiumBy.xpath("//android.widget.Button[@text=\"Selanjutnya\"]");
     private final By BTN_YA_RESET = AppiumBy.xpath("//*[contains(@text, 'Ya') or contains(@text, 'Reset')]");
-
+    private final By TEXT_BERANDA_PAGE = AppiumBy.xpath("//android.widget.TextView[@text=\"Challenge yang Diikuti\"]");
+   private final By BTN_BERANDA_TAB = AppiumBy.xpath("//android.widget.Button[@text=\"Beranda Beranda\"]");
+     
     // --- CONSTRUCTOR ---
     public TargetActionHelper(AndroidDriver driver) {
         super(driver); // Passes driver up to CreationActionHelper -> ActionHelper
     }
+
+        public boolean isBerandaPage() {
+        return isElementPresent(TEXT_BERANDA_PAGE, 3);
+    }
+
+    public void navigateToBeranda(boolean screenshot) {
+        if (isBerandaPage()) {
+            System.out.println("   -> Already on Beranda page.");
+            return;
+        }
+
+        try {
+            tap(BTN_BERANDA_TAB, "Tap Beranda Tab", screenshot);
+        } catch (Exception e) {
+            tapAtScreenRatio(0.100, 0.9567, screenshot); // Fallback for Tab
+        }
+        
+        // Wait for dashboard to load
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+            wait.until(ExpectedConditions.presenceOfElementLocated(TEXT_BERANDA_PAGE));
+        } catch (Exception e) {
+            System.out.println("   -> Dashboard load check timed out (Non-fatal)");
+        }
+
+        scrollToTop();
+    }
+
 
     // --- ACTIONS ---
         public void clearFieldAndBack(String value) {
@@ -115,7 +147,7 @@ public class TargetActionHelper extends CreationActionHelper {
         return hasText || hasBtn;
     }
 
-    public void cleanUpExistingTarget() {
+    public void cleanUpExistingTarget(boolean screenshot) {
         System.out.println("   -> [Target] Checking cleanup...");
         try {
             boolean isVisible = isTargetProgressVisible();
@@ -125,15 +157,15 @@ public class TargetActionHelper extends CreationActionHelper {
             
             // 1. Click Reset (Trash Icon)
             try {
-                tap(BTN_RESET_TARGET, "Click Reset Target Button");
+                tap(BTN_RESET_TARGET, "Click Reset Target Button", screenshot);
                 Thread.sleep(2000);
             } catch (Exception ignored) {
-                tapButtonByTextOrId("Reset Target", "Reset Target");
+                tapButtonByTextOrId("Reset Target", "Reset Target", screenshot);
             }
 
             // 2. Click Confirm 'Ya'
             try {
-                tap(BTN_YA_RESET, "Click Confirm 'Ya'");
+                tap(BTN_YA_RESET, "Click Confirm 'Ya'", screenshot);
                 waitForLoading(2500);
             } catch (Exception e) {
                 System.out.println("   -> Warning: 'Ya' popup missed.");
@@ -142,6 +174,10 @@ public class TargetActionHelper extends CreationActionHelper {
         } catch (Exception e) {
             System.out.println("   -> Error during cleanup: " + e.getMessage());
         }
+    }
+
+    public void cleanUpExistingTarget() {
+        cleanUpExistingTarget(true);
     }
 
     public void dismissModal() {

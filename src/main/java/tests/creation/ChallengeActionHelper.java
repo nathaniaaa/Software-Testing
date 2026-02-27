@@ -78,7 +78,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
     private final By KELOLA_CHALLENGE_PAGE = AppiumBy.xpath("//android.widget.TextView[@text=\"Ajak Temanmu Bergabung dan Ikuti Challenge Bersama!\"]");
     private final By ERROR_INVALID_TIME = AppiumBy.xpath("//android.widget.TextView[@text=\"Format waktu tidak valid\"]");
     private final By ERROR_IMAGE_SIZE = AppiumBy.xpath("//android.widget.TextView[@text=\"Ukuran file maksimal 5MB\"]");
-    
+    private final By NO_PARTICIPANT = AppiumBy.xpath("//android.widget.TextView[@text=\"Belum ada peserta yang mendaftar challenge ini.\"]");
     // ==========================================
     // A. NAVIGATION & SETUP
     // ==========================================
@@ -223,7 +223,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         scrollToTop();
     }
 
-        public void navigateToBeranda(boolean screenshot) {
+    public void navigateToBeranda(boolean screenshot) {
         try {
             tap(BTN_BERANDA_TAB, "Tap Beranda Tab", screenshot);
         } catch (Exception e) {
@@ -322,7 +322,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         }
     }
 
-    public void kickOutParticipant(String challengeName, boolean screenshot) {
+    public boolean  kickOutParticipant(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Kick Out Peserta...");
 
         // 1. Pastikan berada di halaman Kelola Challenge
@@ -332,12 +332,13 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 2. Berpindah ke Tab Peserta
         System.out.println("   -> Berpindah ke Tab Peserta...");
         try {
-            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta", true);
+            tap(BTN_TO_TAB_PESERTA, "Switch ke Tab Peserta", false);
         } catch (Exception e) {
             System.out.println("WARN: Gagal via locator. Using corrected Ratio untuk Tab Peserta.");
-            tapAtScreenRatio(0.723, 0.417, true);
+            tapAtScreenRatio(0.723, 0.417, false);
         }
         try { Thread.sleep(2000); } catch (Exception ignored) {} // Tunggu data me-render
+
 
         // 3. Kick Out Peserta
         System.out.println("   -> Mengeluarkan (Kick Out) 1 Peserta...");
@@ -351,15 +352,19 @@ public class ChallengeActionHelper extends CreationActionHelper {
         // 4. Konfirmasi Modal 'Ya, Lanjutkan'
         System.out.println("   -> Konfirmasi 'Ya, Lanjutkan'...");
         try {
-            Thread.sleep(1000); 
+            
             if (isElementPresent(BTN_CONFIRM_LANJUTKAN, 3)) {
                 tap(BTN_CONFIRM_LANJUTKAN, "Konfirmasi 'Ya, Lanjutkan'");
             } else {
                 throw new Exception("Tombol Lanjutkan tidak terlihat");
             }
         } catch (Exception e) {
-            System.out.println("WARN: Gagal via locator konfirmasi. Mencari berdasarkan teks...");
-            tapButtonByTextOrId("Ya, Lanjutkan", "Ya, Lanjutkan");
+            try {
+                System.out.println("WARN: Gagal via locator konfirmasi. Mencari berdasarkan teks...");
+                tapButtonByTextOrId("Ya, Lanjutkan", "Ya, Lanjutkan");
+            } catch (Exception er) {
+                return false;
+            }
         }
 
         // 5. Validasi Tab Peserta & Capture
@@ -367,13 +372,18 @@ public class ChallengeActionHelper extends CreationActionHelper {
         try { Thread.sleep(2000); } catch (Exception ignored) {} // Tunggu proses loading selesai
         scrollAndCapture(0, 0.8, 0.8, "Setelah mengeluarkan satu peserta");
         
+        return true;
     }
 
-    public void acceptOneParticipant(String challengeName, boolean screenshot) {
+    public boolean acceptOneParticipant(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Accept 1 Peserta...");
 
         navigateToDetailChallenge(challengeName, screenshot);
         navigateToKelolaChallenge(challengeName, true);
+
+        if(isElementPresent(NO_PARTICIPANT, 3)){
+            return false;
+        }
 
         // 2. Pastikan berada di Tab Persetujuan (Berjaga-jaga jika sebelumnya di tab lain)
         System.out.println("   -> Memastikan berada di Tab Persetujuan...");
@@ -404,13 +414,18 @@ public class ChallengeActionHelper extends CreationActionHelper {
         try { Thread.sleep(2000); } catch (Exception ignored) {} 
 
         scrollAndCapture(0, 0.8, 0.8, "Capture setelah menerima 1 peserta");
+        return true;
     }
 
-    public void acceptAllParticipants(String challengeName, boolean screenshot) {
+    public boolean acceptAllParticipants(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Accept SEMUA Peserta...");
 
         navigateToDetailChallenge(challengeName, screenshot);
         navigateToKelolaChallenge(challengeName, true);
+        
+        if(isElementPresent(NO_PARTICIPANT, 3)){
+            return false;
+        }
 
         // 2. Pastikan berada di Tab Persetujuan (Sangat penting jika fungsi ini dipanggil setelah acceptOnePeserta)
         System.out.println("   -> Kembali/Memastikan berada di Tab Persetujuan...");
@@ -456,18 +471,22 @@ public class ChallengeActionHelper extends CreationActionHelper {
         try { Thread.sleep(2000); } catch (Exception ignored) {} 
 
         scrollAndCapture(0, 0.8, 0.8, "Sebelum menerima semua peserta");
-         
+        return true;
     }
 
     // ==========================================
     // ACTION: KELOLA PESERTA (REJECT ONE)
     // ==========================================
 
-    public void rejectOneParticipant(String challengeName, boolean screenshot) {
+    public boolean rejectOneParticipant(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Reject 1 Peserta...");
 
         navigateToDetailChallenge(challengeName, screenshot);
         navigateToKelolaChallenge(challengeName, true);
+
+        if(isElementPresent(NO_PARTICIPANT, 3)){
+            return false;
+        }
 
         // 2. Pastikan berada di Tab Persetujuan
         System.out.println("   -> Memastikan berada di Tab Persetujuan...");
@@ -498,7 +517,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         try { Thread.sleep(2000); } catch (Exception ignored) {} 
         
         scrollAndCapture(0, 0.8, 0.8, "Sebelum menerima semua peserta");
-       
+        return true;
     }
 
 
@@ -506,11 +525,15 @@ public class ChallengeActionHelper extends CreationActionHelper {
     // ACTION: KELOLA PESERTA (REJECT ALL)
     // ==========================================
 
-    public void rejectAllParticipants(String challengeName, boolean screenshot) {
+    public boolean rejectAllParticipants(String challengeName, boolean screenshot) {
         System.out.println("   -> [Action] Memulai alur Reject SEMUA Peserta...");
         
         navigateToDetailChallenge(challengeName, screenshot);
         navigateToKelolaChallenge(challengeName, true);
+        
+        if(isElementPresent(NO_PARTICIPANT, 3)){
+            return false;
+        }
 
         // 2. Pastikan berada di Tab Persetujuan
         System.out.println("   -> Kembali/Memastikan berada di Tab Persetujuan...");
@@ -555,9 +578,10 @@ public class ChallengeActionHelper extends CreationActionHelper {
         
         try { Thread.sleep(2000); } catch (Exception ignored) {} 
         scrollAndCapture(0, 0.8, 0.8, "Sebelum menerima semua peserta");
+        return true;
     }
 
-    public void shareChallengeToWhatsApp(String contactName, String challengeName, boolean screenshot) {
+    public void shareChallengeToWhatsApp(String contactName, String challengeName, String expectedMessage, boolean screenshot) {
         System.out.println("   -> [Action] Memulai proses Share Challenge ke WhatsApp...");
 
         // 1. Pastikan berada di halaman Kelola Challenge
@@ -604,6 +628,10 @@ public class ChallengeActionHelper extends CreationActionHelper {
             System.out.println("WARN: Gagal menemukan kontak di WhatsApp.");
             return;
         }
+
+        try { 
+            areElementsDisplayed(expectedMessage);
+         } catch (Exception ignored) {}
 
         System.out.println("   -> [WhatsApp] Mengirim pesan...");
         try {
@@ -738,7 +766,7 @@ public class ChallengeActionHelper extends CreationActionHelper {
         System.out.println("   -> [Action] Filling Challenge Form...");
 
         // 1. Upload Poster (using your smart logic)
-        uploadPoster(1, screenshot);
+        uploadPoster(data.poster, true);
         
         scrollToExactText("Nama Challenge");
         try {

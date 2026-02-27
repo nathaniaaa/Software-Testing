@@ -6,6 +6,7 @@ import tests.utils.TestListener;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -27,8 +28,13 @@ import com.aventstack.extentreports.MediaEntityBuilder;
 import tests.BaseTest;        
 
 public class CaptureHelper {
+    
     protected  AndroidDriver driver; 
     protected  WebDriverWait wait; 
+
+    // --- KONFIGURASI HIGHLIGHT ---
+    private static final int HIGHLIGHT_PADDING = 10; 
+    private static final int STROKE_THICKNESS = 10;
 
     public CaptureHelper(AndroidDriver driver) {
         this.driver = driver;
@@ -55,14 +61,20 @@ public class CaptureHelper {
             double imgWidth = (double) image.getWidth();
             double scaleFactor = imgWidth / screenWidth;
 
-            int x = (int) (elementRect.getX() * scaleFactor);
-            int y = (int) (elementRect.getY() * scaleFactor);
-            int w = (int) (elementRect.getWidth() * scaleFactor);
-            int h = (int) (elementRect.getHeight() * scaleFactor);
+            int rawX = (int) (elementRect.getX() * scaleFactor);
+            int rawY = (int) (elementRect.getY() * scaleFactor);
+            int rawW = (int) (elementRect.getWidth() * scaleFactor);
+            int rawH = (int) (elementRect.getHeight() * scaleFactor);
+            int scaledPadding = (int) (HIGHLIGHT_PADDING * scaleFactor);
+
+            int x = rawX - scaledPadding;
+            int y = rawY - scaledPadding;
+            int w = rawW + (2 * scaledPadding); // Kiri + Kanan
+            int h = rawH + (2 * scaledPadding); // Atas + Bawah
 
             // Draw Red Border
             g.setColor(Color.BLUE);
-            g.setStroke(new BasicStroke(8)); 
+            g.setStroke(new BasicStroke(STROKE_THICKNESS)); 
             g.drawRect(x, y, w, h);
             
             // Draw Semi-transparent Red Fill
@@ -92,11 +104,27 @@ public class CaptureHelper {
             g2d.setColor(Color.BLUE);
             g2d.setStroke(new BasicStroke(8)); // Ketebalan garis kotak (sesuaikan jika perlu)
 
+            double screenWidth = (double) driver.manage().window().getSize().getWidth();
+            double imgWidth = (double) image.getWidth();
+            double scaleFactor = imgWidth / screenWidth;
+            int scaledPadding = (int) (HIGHLIGHT_PADDING * scaleFactor);
+
             // 3. Gambar kotak untuk SETIAP elemen yang ditemukan
             for (WebElement element : elements) {
-                Point location = element.getLocation();
-                Dimension size = element.getSize();
-                g2d.drawRect(location.getX(), location.getY(), size.getWidth(), size.getHeight());
+                try {
+                    // Gunakan getRect() yang lebih akurat daripada getLocation() + getSize() terpisah
+                    Rectangle rect = element.getRect();
+                    
+                    // Terapkan Skala + Padding
+                    int x = (int) (rect.getX() * scaleFactor) - scaledPadding;
+                    int y = (int) (rect.getY() * scaleFactor) - scaledPadding;
+                    int w = (int) (rect.getWidth() * scaleFactor) + (2 * scaledPadding);
+                    int h = (int) (rect.getHeight() * scaleFactor) + (2 * scaledPadding);
+                    
+                    g2d.drawRect(x, y, w, h);
+                } catch (StaleElementReferenceException e) {
+                    // Abaikan elemen jika hilang saat looping
+                }
             }
             g2d.dispose(); // Selesai menggambar
 

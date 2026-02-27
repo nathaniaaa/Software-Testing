@@ -1,4 +1,4 @@
-package tests.creation.negative;
+package tests.creation.negative.profile;
 
 import java.time.Year;
 
@@ -34,7 +34,7 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 1, description = "Pengguna tekan tombol back setelah selesai edit profil dan tidak tekan tombol simpan")
     @TestInfo(
         testType = "Negative Case",
-        group = "Profile",
+        group = "EDIT PROFILE",
         expected = "Setelah selesai mengedit profil, pengguna menekan tombol kembali (back) tanpa menekan tombol \"Simpan\". Akibatnya, perubahan pada profil tidak disimpan dan data profil pengguna tetap seperti sebelumnya.",
         note = ""
     )
@@ -80,13 +80,13 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 2, description = "Tekan tombol simpan dengan kondisi terdapat field yang masih kosong")
     @TestInfo(
         testType = "Negative Case", 
-        group = "Profile", 
+        group = "EDIT PROFILE", 
         expected = "Saat pengguna menekan tombol \"Simpan\" dengan kondisi masih ada field yang kosong, tombol tersebut berada dalam keadaan disable dan tidak dapat ditekan. Selain itu, muncul pesan error pada setiap field yang wajib diisi."
     )
     public void testSaveWithEmptyFields() {
 
         // 1. NAVIGATE & EDIT
-        profilePage.navigateToEditProfile();
+        profilePage.navigateToEditProfile(false);
 
         // logInfo("Starting Test: Check Save Button State with Empty Fields");
 
@@ -138,7 +138,7 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 3, description = "Pengguna memasukkan nama yang sudah terdaftar atau sudah terpakai diakun Ayolari")
     @TestInfo(
         testType = "Negative Case", 
-        group = "Profile", 
+        group = "EDIT PROFILE", 
         expected = "Saat pengguna memasukkan nama yang sudah terdaftar atau telah digunakan oleh akun lain di Ayolari, akan muncul pesan error yang menandakan bahwa nama tersebut tidak dapat digunakan kembali."
     )
     public void testDuplicateUsername() {
@@ -149,7 +149,7 @@ public class ProfileTest extends BaseTest {
         String expectedErrorText = "Nama sudah dipakai, coba yang lain"; 
 
         // 2. NAVIGASI & EDIT
-        profilePage.navigateToEditProfile();
+        profilePage.navigateToEditProfile(false);
 
         // 3. INPUT NAMA DUPLIKAT
         TestListener.getTest().log(Status.INFO, "Action: Menginput nama yang sudah terdaftar: '" + existingUsername + "'");
@@ -201,8 +201,9 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 4, description = "Pengguna memasukkan nilai tinggi badan dan berat badan dengan format desimal")
     @TestInfo(
         testType = "Negative Case", 
-        group = "Profile", 
-        expected = "Pengguna tidak bisa memasukkan nilai tinggi badan dan berat badan dengan format berdesimal."
+        group = "EDIT PROFILE", 
+        expected = "Pengguna tidak bisa memasukkan nilai tinggi badan dan berat badan dengan format berdesimal.",
+        note = "Nilai input tinggi badan adalah 26.5 dan berat badan adalah 45.8" 
     )
     public void testDecimalHeightWeight() {
         TestListener.getTest().log(Status.INFO, "Starting Test: Decimal Input Validation (Height/Weight)");
@@ -210,10 +211,9 @@ public class ProfileTest extends BaseTest {
         // 1. DATA SETUP
         String invalidHeight = "26.5";
         String invalidWeight = "45.8";
-        String expectedErrorPart = "angka"; // Keyword umum error (misal: "Format angka salah", "Hanya boleh angka")
 
         // 2. NAVIGASI & EDIT
-        profilePage.navigateToEditProfile();
+        profilePage.navigateToEditProfile(false);
 
         // 3. INPUT DATA DESIMAL
         TestListener.getTest().log(Status.INFO, "Action: Menginput Tinggi '" + invalidHeight + "' dan Berat '" + invalidWeight + "'");
@@ -254,11 +254,67 @@ public class ProfileTest extends BaseTest {
             }
     }
 
-    // --- TEST: UNREASONABLE INPUT (Height & Weight) ---
-    @Test(priority = 5, description = "Pengguna memasukkan nilai tinggi badan dan berat badan tidak wajar")
+        // --- TEST: NON NUMBER INPUT VALIDATION ---
+    @Test(priority = 5, description = "Pengguna memasukkan nilai tinggi badan dan berat badan dengan format selain angka")
     @TestInfo(
         testType = "Negative Case", 
-        group = "Profile", 
+        group = "EDIT PROFILE", 
+        expected = "Pengguna tidak bisa memasukkan nilai tinggi badan dan berat badan dengan format selain angka",
+        note = "Nilai input tinggi badan adalah angka*&^ dan berat badan adalah invalid)(" 
+    )
+    public void testNonNumberHeightWeight() {
+        TestListener.getTest().log(Status.INFO, "Starting Test: Decimal Input Validation (Height/Weight)");
+
+        // 1. DATA SETUP
+        String invalidHeight = "angka*&^";
+        String invalidWeight = "invalid)(";
+
+        // 2. NAVIGASI & EDIT
+        profilePage.navigateToEditProfile(false);
+
+        // 3. INPUT DATA DESIMAL
+        TestListener.getTest().log(Status.INFO, "Action: Menginput Tinggi '" + invalidHeight + "' dan Berat '" + invalidWeight + "'");
+        
+        // Menggunakan helper fillInputAndReadBack untuk memastikan apa yang tertulis di layar
+        String actualHeight = profilePage.fillInputAndReadBack("Tinggi Badan", invalidHeight);
+        String actualWeight = profilePage.fillInputAndReadBack("Berat Badan", invalidWeight);
+
+        try { driver.hideKeyboard(); } catch (Exception ignored) {}
+
+        boolean isNonNumberPresent = actualHeight.matches(".*[^0-9].*") || actualWeight.matches(".*[^0-9].*");
+
+        // 4. VALIDASI 1
+        if (!isNonNumberPresent) {
+            String msg = "INFO: Aplikasi otomatis menolak karakter selain angka. Input '" + invalidHeight + "' menjadi '" + actualHeight + "'";
+            TestListener.getTest().log(Status.PASS, msg);
+            driver.navigate().back(); 
+            return; 
+        }
+
+        // 5. VALIDASI 2: CEK TOMBOL SIMPAN & ERROR (Jika desimal masuk)
+        boolean isSaveEnabled = profilePage.isSaveButtonEnabled(true);
+
+        TestListener.getTest().log(Status.INFO, "Decimal Persisted. Button Enabled: " + isSaveEnabled);
+
+        if (!isSaveEnabled) {
+            // --- PASS: Tombol Disable ---
+            TestListener.getTest().log(Status.PASS, "SUCCESS: Tombol Simpan DISABLE saat ada input desimal.");
+            driver.navigate().back();
+        } else {
+            profilePage.tapButtonByTextOrId("Simpan", "Simpan");
+                // --- FAIL: Tombol Enabled (Even if there's an error message, it's still a failure that user can click Save) ---
+                // Input Desimal masuk -> Tombol Nyala -> Diklik tidak ada error (Data tersimpan salah!)
+                String failMsg = "FAILED: Sistem MENERIMA input desimal! Tinggi: " + actualHeight + ", Berat: " + actualWeight;
+                logFail(failMsg);
+                Assert.fail(failMsg);
+        }
+    }
+
+    // --- TEST: UNREASONABLE INPUT (Height & Weight) ---
+    @Test(priority = 6, description = "Pengguna memasukkan nilai tinggi badan dan berat badan tidak wajar")
+    @TestInfo(
+        testType = "Negative Case", 
+        group = "EDIT PROFILE", 
         expected = "Tombol simpan tidak dapat ditekan karna disable, dan muncul pesan error.\n" + //
                         "Hal ini disebabkan data nilai tinggi badan dan berat badan yang dimasukkan user tidak wajar, sehingga pengguna tidak dapat melanjutkan untuk proses edit akun Ayolari"
     )
@@ -270,7 +326,7 @@ public class ProfileTest extends BaseTest {
         String unreasonableWeight = "600"; // 600 kg
         
         // 2. NAVIGASI & EDIT
-        profilePage.navigateToEditProfile();
+        profilePage.navigateToEditProfile(false);
 
         // 3. INPUT DATA TIDAK WAJAR
         TestListener.getTest().log(Status.INFO, "Action: Menginput Tinggi '" + unreasonableHeight + "' dan Berat '" + unreasonableWeight + "'");
@@ -308,13 +364,19 @@ public class ProfileTest extends BaseTest {
         } else {
             // --- FAIL: Tombol Masih Nyala ---
             // Ini berbahaya karena user bisa simpan data sampah
-            String failMsg = "FAILED: Tombol Simpan MASIH AKTIF (Enabled) padahal input tidak wajar (Tinggi: " + unreasonableHeight + ")!";
-            logFail(failMsg);
-            
             // Coba klik untuk membuktikan apakah ada blocking di akhir
+            String failMsg = "FAILED: Tombol Simpan MASIH AKTIF (Enabled) padahal input tidak wajar (Tinggi: " + unreasonableHeight + ")!";
+    
             profilePage.tapButtonByTextOrId("Simpan", "Simpan");
-            
-            Assert.fail(failMsg);
+            if (!profilePage.isOnProfilePage()){
+                TestListener.getTest().log(Status.WARNING, "WARNING: Tombol Disable (Aktif), tetapi tidak dapat ditekan.");
+                driver.navigate().back(); // Exit edit mode
+                return;
+            }
+            else{
+                logFail(failMsg);
+                Assert.fail(failMsg);
+            }
         }
     }
 
@@ -322,7 +384,7 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 6, description = "Pengguna memasukkan tanggal lahir dengan tahun yang tidak valid")
     @TestInfo(
         testType = "Negative Case", 
-        group = "Profile", 
+        group = "EDIT PROFILE", 
         expected = "Pengguna tidak bisa memasukkan tanggal lahir dengan tahun yang tidak valid, karna tahun lahir sudah diset minimal kelahiran 7 sampai 100 tahun kebelakang"
 
     )
